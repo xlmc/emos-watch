@@ -53,6 +53,8 @@ jobs:
 
       - name: Refresh jsDelivr cover cache
         run: |
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-japan.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-japan.gif
 
