@@ -31,7 +31,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
     "Referer": "https://m.douban.com/tv/",
 }
-CHINESE_REGIONS = ("中国大陆", "中国香港", "中国台湾", "香港", "台湾", "新加坡", "马来西亚")
+CHINESE_REGIONS = ("中国大陆",)
 
 
 def load_json(path: Path, default):
@@ -75,8 +75,8 @@ def fetch_douban_top(limit: int) -> list[dict]:
             "douban_rank": index + 1,
             "douban_url": f"https://movie.douban.com/subject/{item['id']}/",
         }
-        for index, item in enumerate(items[:limit])
-    ][:limit]
+        for index, item in enumerate(items)
+    ]
 
 
 def tmdb_headers() -> dict:
@@ -186,8 +186,8 @@ def main():
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
     headers = tmdb_headers()
 
-    # 多取 10 条候选：少数豆瓣条目可能尚未收录到 TMDB，跳过后仍保持 50 部可识别剧集。
-    subjects = fetch_douban_top(limit + 10)
+    # 豆瓣热门综合榜会返回多于 50 条华语候选，少数条目可能尚未收录到 TMDB，跳过后仍保持 50 部可识别剧集。
+    subjects = fetch_douban_top(limit)
     resolved = []
     unresolved = []
     for subject in subjects:
@@ -204,10 +204,10 @@ def main():
             continue
         resolved.append({**subject, "tmdb_id": match["id"], "tmdb_name": match.get("name", subject["title"]), "poster_path": match["poster_path"]})
 
-    if len(resolved) != limit:
+    if len(resolved) < limit:
         unresolved_path = DATA_DIR / "unresolved.json"
         unresolved_path.write_text(json.dumps(unresolved, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        raise RuntimeError(f"前 {limit + 10} 条豆瓣候选中只有 {len(resolved)} 部能匹配 TMDB，无法凑够 {limit} 部")
+        raise RuntimeError(f"豆瓣候选中只有 {len(resolved)} 部能匹配 TMDB，无法凑够 {limit} 部")
 
     if unresolved:
         (DATA_DIR / "unresolved.json").write_text(json.dumps(unresolved, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
