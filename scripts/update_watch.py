@@ -870,7 +870,7 @@ def main():
     make_cover(japan_selected, now, JAPAN_COVER_PATH)
     japan_watch = {
         "name": f"今年最新日番（{len(japan_items)}部）",
-        "cover": f"{base}/cover-japan.gif?v={now.strftime('%Y%m%d%H%M')}",
+        "cover": f"{base}/cover-japan.gif",
         "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
         "videos": [
             {
@@ -892,7 +892,7 @@ def main():
     make_cover(variety_selected, now, COVER_PATH)
     variety_watch = {
         "name": f"国内流媒体热播更新综艺（{len(variety_items)}部）",
-        "cover": f"{base}/cover.gif?v={now.strftime('%Y%m%d%H%M')}",
+        "cover": f"{base}/cover.gif",
         "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
         "videos": [
             {
