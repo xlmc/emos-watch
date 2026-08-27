@@ -551,6 +551,96 @@ def resolve_category(subjects: list[dict], target: int, headers: dict, manual: d
     return resolved, unresolved
 
 
+def douban_release_date(detail: dict, now: datetime) -> str | None:
+    """提取豆瓣条目的首个今年已发生的上映/上线日期。"""
+    dates = []
+    for value in (detail.get("pubdates") or []) + (detail.get("pubdate") or [] if isinstance(detail.get("pubdate"), list) else []):
+        match = re.search(r"(20\d{2})[-/.年](\d{1,2})[-/.月](\d{1,2})", str(value))
+        if not match:
+            continue
+        date = f"{int(match.group(1)):04d}-{int(match.group(2)):02d}-{int(match.group(3)):02d}"
+        if f"{now.year}-01-01" <= date <= now.strftime("%Y-%m-%d"):
+            dates.append(date)
+    if dates:
+        return min(dates)
+    year = detail.get("year")
+    if str(year) == str(now.year):
+        return f"{now.year}-01-01"
+    return None
+
+
+def fetch_douban_japanese_anime(
+    headers: dict,
+    now: datetime,
+    manual: dict,
+    cache: dict,
+    limit: int = 50,
+) -> list[dict]:
+    """以豆瓣为主源抓取今年日本动画，再映射为 EMOS 所需的 TMDB TV ID。"""
+    raw_items = []
+    tv_payload = get_json(
+        DOUBAN_TV_URL,
+        params={"start": 0, "limit": 100, "category": "热门", "type": "tv_animation"},
+        headers=HEADERS,
+    )
+    raw_items.extend(item for item in tv_payload.get("items", []) if item.get("type") == "tv")
+
+    # 豆瓣新番榜数量不足时，用动画搜索结果补充，再由详情中的国家和类型筛选。
+    for tag in ("日本动画", "动画"):
+        raw_items.extend(fetch_search_subjects(tag))
+
+    subject_ids = list(dict.fromkeys(str(item["id"]) for item in raw_items if item.get("id")))
+    detail_cache = {}
+    fetch_douban_details(subject_ids, detail_cache)
+    subjects = []
+    seen = set()
+    for item in raw_items:
+        subject_id = str(item.get("id", ""))
+        if not subject_id or subject_id in seen:
+            continue
+        detail = detail_cache.get(subject_id, {})
+        if not is_animation(detail) or not is_japanese(detail):
+            continue
+        # 搜索接口可能返回动画电影；片单 1 保持“日番”口径，只收 TV 条目。
+        if item.get("type") not in (None, "tv") and detail.get("type") not in (None, "tv"):
+            continue
+        release_date = douban_release_date(detail, now)
+        if not release_date:
+            continue
+        seen.add(subject_id)
+        subjects.append(
+            {
+                "douban_id": subject_id,
+                "title": detail.get("title") or item.get("title") or "",
+                "year": now.year,
+                "category": "日番",
+                "tmdb_type": "tv",
+                "douban_url": f"https://movie.douban.com/subject/{subject_id}/",
+                "first_air_date": release_date,
+            }
+        )
+
+    subjects.sort(key=lambda item: (item["first_air_date"], item["douban_id"]), reverse=True)
+    resolved = []
+    resolved_tmdb_ids = set()
+    for subject in subjects:
+        match = resolve_tmdb(subject, headers, manual, cache)
+        if not match or not match.get("poster_path") or match["id"] in resolved_tmdb_ids:
+            continue
+        resolved_tmdb_ids.add(match["id"])
+        resolved.append(
+            {
+                **subject,
+                "tmdb_id": match["id"],
+                "tmdb_name": match.get("name", subject["title"]),
+                "poster_path": match["poster_path"],
+            }
+        )
+        if len(resolved) >= limit:
+            break
+    return resolved
+
+
 def fetch_tmdb_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> list[dict]:
     """从 TMDB 获取今年以来已上线的日本动画电视剧，按首播日期倒序。"""
     start_date = f"{now.year}-01-01"
@@ -858,11 +948,13 @@ def select_daily_cover(candidates: list[dict], now: datetime, selection_path: Pa
 
 def main():
     config = load_json(CONFIG_PATH, {})
+    manual = load_json(MAPPING_PATH, {})
+    cache = load_json(CACHE_PATH, {})
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
     headers = tmdb_headers()
     base = config["site_base_url"].rstrip("/")
 
-    japan_items = fetch_japanese_anime(headers, now, limit=50)
+    japan_items = fetch_douban_japanese_anime(headers, now, manual, cache, limit=50)
     japan_cover_candidates = [item for item in japan_items if item.get("poster_path")]
     if len(japan_cover_candidates) < 3:
         raise RuntimeError(f"今年以来 TMDB/Bangumi/AniList 日番海报不足 3 张，当前仅有 {len(japan_cover_candidates)} 张")
@@ -905,6 +997,7 @@ def main():
         ],
     }
     WATCH_PATH.write_text(json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         f"已生成日番 {len(japan_items)} 部和国内流媒体热播综艺 {len(variety_items)} 部；"
         f"今日封面：{', '.join(item['title'] for item in japan_selected)} / "
