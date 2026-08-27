@@ -1031,7 +1031,6 @@ def fetch_tmdb_mainland_tv(
             "with_origin_country": "CN",
             "with_genres": "18",
             "without_genres": "16,99,10764,10763,10767,10762",
-            "vote_count.gte": 5,
             "include_null_first_air_dates": "false",
         },
         limit=100,
@@ -1068,8 +1067,6 @@ def fetch_tmdb_mainland_tv(
             str(data.get(key) or "") for key in ("name", "original_name")
         )
         if any(keyword in title_text for keyword in ("赛事", "自行车赛", "文学经典", "寓言", "警长", "巡逻行动", "玩家", "游戏")):
-            continue
-        if int(data.get("vote_count") or 0) >= 5 and float(data.get("vote_average") or 0) < 5.5:
             continue
 
         key = f"tv:{data['id']}"
