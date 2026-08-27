@@ -1346,11 +1346,12 @@ def fetch_tmdb_mainland_movies(headers: dict, now: datetime, limit: int = 5) -> 
                 for country in (data.get("release_dates", {}).get("results") or [])
             }
             cn_release_dates = release_date_by_country.get("CN") or []
-            if cn_release_dates:
-                if min(cn_release_dates) > today_text:
-                    continue
-                # 国内电影按大陆实际发行日期排序，而不是按海外或节展日期排序。
-                release_date = min(cn_release_dates)
+            # 只接受 TMDB 明确记录了中国大陆发行日期且已经发行的电影；
+            # 没有 CN 发行记录时不使用海外日期替代，避免把未在国内上映的片子带入。
+            if not cn_release_dates or min(cn_release_dates) > today_text:
+                continue
+            # 国内电影按大陆实际发行日期排序，而不是按海外或节展日期排序。
+            release_date = min(cn_release_dates)
             if "CN" not in (data.get("origin_country") or item.get("origin_country") or []):
                 continue
             if data.get("status") != "Released":
