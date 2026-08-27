@@ -1187,20 +1187,17 @@ def fetch_tmdb_mainland_tv(
 
 
 def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20) -> list[dict]:
-    """抓取正在更新优先、再按最新上线时间排列的大陆动画 TV。
+    """抓取正在更新、并按最新上线时间排列的大陆动画 TV。
 
-    只按动画类型和首播日期会把已经结束多年的老番也带进来；这里同时抓取
-    本年度新番和 TMDB 标记为近期仍在更新的条目。正在更新的排在最前面，
-    其后才是本年度最新上线的条目，不使用多年以前的老番凑数。
+    只按动画类型和首播日期会把已经结束多年的老番也带进来；这里要求 TMDB
+    标记为正在播/连载，并且近期有上一集或即将有下一集。不使用已完结作品凑数。
     """
-    year_start = f"{now.year}-01-01"
     current_year_items = fetch_tmdb_discover(
         "tv",
         headers,
         {
             "language": "zh-CN",
             "sort_by": "first_air_date.desc",
-            "first_air_date.gte": year_start,
             "first_air_date.lte": now.strftime("%Y-%m-%d"),
             "with_origin_country": "CN",
             "with_original_language": "zh",
@@ -1277,8 +1274,7 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
                 or bool(data.get("in_production"))
             )
         )
-        is_current_year = first_air_date.startswith(f"{now.year}-")
-        if not is_currently_updating and not is_current_year:
+        if not is_currently_updating:
             continue
         catalog_item = tmdb_catalog_item(
             {**item, **data, "first_air_date": first_air_date},
@@ -1292,7 +1288,6 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
         results,
         key=lambda value: (
             value["_currently_updating"],
-            value["_activity_date"] if value["_currently_updating"] else value["first_air_date"],
             value["first_air_date"],
             value["tmdb_id"],
         ),
