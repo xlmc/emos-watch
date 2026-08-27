@@ -1739,7 +1739,12 @@ def main():
     mixed_items = tv_items + animation_items + movie_items
     # 新文件名用于避开旧 watch-douban-tv.json 的 CDN 长缓存；旧文件继续同步，兼容已经填入旧地址的用户。
     tv_output_path = TMDB_MIX_WATCH_PATH if TMDB_MIX_WATCH_PATH.exists() else DOUBAN_TV_WATCH_PATH
-    tv_feed_should_update = mixed_feed_changed(mixed_items, tv_output_path)
+    expected_tv_cover = f"{base}/{TMDB_MIX_COVER_PATH.name}"
+    existing_tv_feed = load_json(tv_output_path, {})
+    tv_feed_should_update = (
+        mixed_feed_changed(mixed_items, tv_output_path)
+        or existing_tv_feed.get("cover") != expected_tv_cover
+    )
     tv_cover_candidates = [item for item in mixed_items if item.get("poster_path")]
     if len(tv_cover_candidates) < 3:
         raise RuntimeError(f"TMDB 混合片单可用海报不足 3 张，当前仅有 {len(tv_cover_candidates)} 张")
