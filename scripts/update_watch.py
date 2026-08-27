@@ -62,7 +62,7 @@ def fetch_douban_top(limit: int) -> list[dict]:
     payload = response.json()
     items = payload.get("items", [])
     if len(items) < limit:
-        raise RuntimeError(f"豆瓣返回 {len(items)} 条，少于要求的 {limit} 条")
+        raise RuntimeError(f"豆瓣返回 {len(items)} 条，少于要求的候选数量 {limit} 条")
     return [
         {
             "douban_id": str(item["id"]),
@@ -182,7 +182,8 @@ def main():
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
     headers = tmdb_headers()
 
-    subjects = fetch_douban_top(limit)
+    # 多取 10 条候选：少数豆瓣条目可能尚未收录到 TMDB，跳过后仍保持 50 部可识别剧集。
+    subjects = fetch_douban_top(limit + 10)
     resolved = []
     unresolved = []
     for subject in subjects:
@@ -199,13 +200,14 @@ def main():
             continue
         resolved.append({**subject, "tmdb_id": match["id"], "tmdb_name": match.get("name", subject["title"]), "poster_path": match["poster_path"]})
 
-    if unresolved:
+    if len(resolved) != limit:
         unresolved_path = DATA_DIR / "unresolved.json"
         unresolved_path.write_text(json.dumps(unresolved, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        names = "、".join(item["title"] for item in unresolved)
-        raise RuntimeError(f"有 {len(unresolved)} 部无法匹配 TMDB，请把 Douban ID→TMDB ID 写入 mapping.json：{names}")
-    if len(resolved) != limit:
-        raise RuntimeError(f"最终只得到 {len(resolved)} 部，要求 {limit} 部")
+        raise RuntimeError(f"前 {limit + 10} 条豆瓣候选中只有 {len(resolved)} 部能匹配 TMDB，无法凑够 {limit} 部")
+
+    if unresolved:
+        (DATA_DIR / "unresolved.json").write_text(json.dumps(unresolved, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    resolved = resolved[:limit]
 
     selected = random.SystemRandom().sample(resolved, 3)
     make_cover(selected, now)
@@ -230,3 +232,4 @@ if __name__ == "__main__":
     except Exception as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         raise
+
