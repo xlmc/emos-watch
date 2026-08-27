@@ -5,6 +5,7 @@ import os
 import random
 import re
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
@@ -117,6 +118,17 @@ def fetch_douban_detail(subject_id: str, detail_cache: dict) -> dict:
     return detail_cache[subject_id]
 
 
+def fetch_douban_details(subject_ids: list[str], detail_cache: dict):
+    pending = list(dict.fromkeys(subject_id for subject_id in subject_ids if subject_id not in detail_cache))
+    if not pending:
+        return
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        details = list(executor.map(lambda subject_id: get_json(
+            DOUBAN_DETAIL_URL.format(subject_id=subject_id), headers=HEADERS
+        ), pending))
+    detail_cache.update(dict(zip(pending, details)))
+
+
 def is_mainland(detail: dict) -> bool:
     return MAINLAND in (detail.get("countries") or [])
 
@@ -131,8 +143,10 @@ def is_animation(detail: dict) -> bool:
 
 def fetch_movie_subjects(limit: int, detail_cache: dict) -> list[dict]:
     subjects = []
-    for rank, item in enumerate(fetch_search_subjects("热门"), start=1):
-        detail = fetch_douban_detail(str(item["id"]), detail_cache)
+    items = fetch_search_subjects("热门")
+    fetch_douban_details([str(item["id"]) for item in items], detail_cache)
+    for rank, item in enumerate(items, start=1):
+        detail = detail_cache[str(item["id"])]
         if is_mainland(detail) and not is_animation(detail):
             subject = item_to_subject(item, "电影", "movie", rank)
             subject["year"] = detail.get("year")
@@ -154,9 +168,10 @@ def fetch_animation_subjects(limit: int, detail_cache: dict) -> list[dict]:
         params={"start": 0, "limit": 100, "category": "热门", "type": "tv_animation"},
         headers=HEADERS,
     )
+    fetch_douban_details([str(item["id"]) for item in tv_payload.get("items", [])], detail_cache)
     for rank, item in enumerate(tv_payload.get("items", []), start=1):
         subject_id = str(item["id"])
-        detail = fetch_douban_detail(subject_id, detail_cache)
+        detail = detail_cache[subject_id]
         if subject_id not in seen and is_animation(detail) and (is_mainland(detail) or is_japanese(detail)):
             subject = item_to_subject(item, "国漫", "tv", rank)
             subject["year"] = detail.get("year")
@@ -169,11 +184,13 @@ def fetch_animation_subjects(limit: int, detail_cache: dict) -> list[dict]:
     if len(mainland_subjects) + len(japanese_subjects) >= limit:
         return mainland_subjects + japanese_subjects
 
-    for rank, item in enumerate(fetch_search_subjects("动画"), start=1):
+    animation_items = fetch_search_subjects("动画")
+    fetch_douban_details([str(item["id"]) for item in animation_items], detail_cache)
+    for rank, item in enumerate(animation_items, start=1):
         subject_id = str(item["id"])
         if subject_id in seen:
             continue
-        detail = fetch_douban_detail(subject_id, detail_cache)
+        detail = detail_cache[subject_id]
         if is_animation(detail) and (is_mainland(detail) or is_japanese(detail)):
             subject = item_to_subject(item, "国漫", "movie", rank)
             subject["year"] = detail.get("year")
