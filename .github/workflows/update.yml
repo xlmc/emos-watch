@@ -1,5 +1,7 @@
 name: 更新 TMDB 电视剧、综艺、假面骑士与超级战队片单
 
+# 内容筛选规则变更时自动重新生成片单。
+
 on:
   workflow_dispatch:
   schedule:
