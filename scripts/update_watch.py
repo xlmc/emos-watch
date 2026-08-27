@@ -956,6 +956,23 @@ VARIETY_PLATFORM_KEYWORDS = (
 )
 
 
+def latest_regular_season(data: dict, today) -> dict | None:
+    """取得截至今天已上线的最新普通季，排除 specials（第 0 季）。"""
+    seasons = []
+    for season in data.get("seasons") or []:
+        try:
+            season_number = int(season.get("season_number") or 0)
+        except (TypeError, ValueError):
+            season_number = 0
+        air_date = season.get("air_date") or ""
+        if season_number <= 0 or not air_date or air_date > today.isoformat():
+            continue
+        seasons.append((air_date, season_number, season))
+    if not seasons:
+        return None
+    return max(seasons, key=lambda value: (value[0], value[1]))[2]
+
+
 def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list[dict]:
     """从 TMDB 筛选国内综艺：指定平台、仍在制作/连载且近期或即将播出。"""
     today = now.date()
@@ -990,6 +1007,12 @@ def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list
             params={"language": "zh-CN", "append_to_response": "watch/providers"},
             headers=headers,
         )
+        latest_season = latest_regular_season(data, today)
+        if not latest_season:
+            continue
+        season_air_date = latest_season.get("air_date") or ""
+        if not season_air_date.startswith(str(now.year)):
+            continue
         network_names = [network.get("name", "") for network in data.get("networks", [])]
         provider_names = []
         cn_providers = (data.get("watch/providers") or {}).get("results", {}).get("CN", {})
@@ -1025,6 +1048,8 @@ def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list
                 "tmdb_type": "tv",
                 "title": data.get("name") or item.get("name") or f"TMDB {data['id']}",
                 "first_air_date": data.get("first_air_date") or "",
+                "season_air_date": season_air_date,
+                "season_number": int(latest_season.get("season_number") or 0),
                 "last_air_date": last_air,
                 "next_air_date": next_air,
                 "sort_date": last_air or next_air or data.get("first_air_date") or "",
@@ -1032,11 +1057,9 @@ def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list
                 "poster_path": data.get("poster_path") or item.get("poster_path"),
             }
         )
-        if len(results) >= limit:
-            break
 
-    # 最终只按综艺节目的首播/上线日期排序；热度只用于发现候选，不参与最终排序。
-    results.sort(key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)
+    # 最终只按当前年度最新普通季的上线日期排序；热度只用于发现候选。
+    results.sort(key=lambda item: (item["season_air_date"], item["tmdb_id"]), reverse=True)
     return results[:limit]
 
 
@@ -1068,53 +1091,42 @@ def select_daily_cover(candidates: list[dict], now: datetime, selection_path: Pa
     return selected
 
 
-def item_release_date(item: dict, feed_key: str) -> str:
-    if feed_key == "douban_tv":
-        return item.get("first_air_date") or ""
-    return item.get("sort_date") or ""
-
-
-def detect_daily_release(
+def detect_new_variety_today(
     items: list[dict],
-    feed_key: str,
     output_path: Path,
     now: datetime,
     state: dict,
 ) -> bool:
-    """仅在发现当天的新首播/正片时允许更新视频列表。"""
-    previous = state.get(feed_key) or {}
-    current = {}
+    """只有当天出现新综艺节目首播/上线时，才允许重排综艺片单。"""
+    state_key = "variety_new_show_v1"
+    previous = state.get(state_key)
+    existing = load_json(output_path, {}).get("videos", []) if output_path.exists() else []
+    existing_keys = {
+        (item.get("tmdb_type"), item.get("tmdb_id"))
+        for item in existing
+    }
     today = now.strftime("%Y-%m-%d")
-    has_new_release = not output_path.exists() or not previous
+
+    # 首次启用这条规则时，以当前片单作为基线，不因历史节目被重复判定为“新上线”。
+    if previous is None:
+        previous = {
+            f"{item['tmdb_type']}:{item['tmdb_id']}": item.get("season_air_date") or ""
+            for item in items
+            if (item.get("tmdb_type"), item.get("tmdb_id")) in existing_keys
+        }
+
+    current = {}
+    has_new_show = False
     for item in items:
-        release_date = item_release_date(item, feed_key)
+        release_date = item.get("season_air_date") or ""
         if not release_date:
             continue
         key = f"{item['tmdb_type']}:{item['tmdb_id']}"
         current[key] = release_date
         if release_date == today and previous.get(key) != today:
-            has_new_release = True
-    state[feed_key] = current
-    return has_new_release
-
-
-def cover_candidates_for_feed(
-    current_items: list[dict],
-    output_path: Path,
-    should_update_feed: bool,
-) -> list[dict]:
-    """无新正片时，封面仍从当前片单已有的视频中抽取。"""
-    if should_update_feed or not output_path.exists():
-        return [item for item in current_items if item.get("poster_path")]
-    current_map = {(item["tmdb_type"], item["tmdb_id"]): item for item in current_items}
-    existing = load_json(output_path, {}).get("videos", [])
-    preserved = [
-        current_map[(item.get("tmdb_type"), item.get("tmdb_id"))]
-        for item in existing
-        if (item.get("tmdb_type"), item.get("tmdb_id")) in current_map
-        and current_map[(item.get("tmdb_type"), item.get("tmdb_id"))].get("poster_path")
-    ]
-    return preserved or [item for item in current_items if item.get("poster_path")]
+            has_new_show = True
+    state[state_key] = current
+    return has_new_show
 
 
 def main():
@@ -1127,83 +1139,74 @@ def main():
     base = config["site_base_url"].rstrip("/")
 
     douban_tv_items = fetch_douban_hot_mainland_tv(headers, now, manual, cache, limit=50)
-    douban_tv_should_update = detect_daily_release(
-        douban_tv_items, "douban_tv", DOUBAN_TV_WATCH_PATH, now, release_state
-    )
-    douban_tv_cover_candidates = cover_candidates_for_feed(
-        douban_tv_items, DOUBAN_TV_WATCH_PATH, douban_tv_should_update
-    )
+    douban_tv_cover_candidates = [item for item in douban_tv_items if item.get("poster_path")]
     if len(douban_tv_cover_candidates) < 3:
         raise RuntimeError(f"豆瓣热门大陆电视剧海报不足 3 张，当前仅有 {len(douban_tv_cover_candidates)} 张")
     douban_tv_selected = select_daily_cover(douban_tv_cover_candidates, now, DOUBAN_TV_SELECTION_PATH)
     make_cover(douban_tv_selected, now, DOUBAN_TV_COVER_PATH)
-    if douban_tv_should_update:
-        douban_tv_watch = {
-            "name": f"豆瓣热门大陆电视剧（{len(douban_tv_items)}部）",
-            "cover": f"{base}/cover-douban-tv.gif",
-            "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
-            "videos": [
-                {
-                    "tmdb_id": item["tmdb_id"],
-                    "tmdb_type": item["tmdb_type"],
-                    "title": item["title"],
-                    "sort": position,
-                }
-                for position, item in enumerate(douban_tv_items, start=1)
-            ],
-        }
-        DOUBAN_TV_WATCH_PATH.write_text(
-            json.dumps(douban_tv_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-        )
+    douban_tv_watch = {
+        "name": f"豆瓣热门大陆电视剧（{len(douban_tv_items)}部）",
+        "cover": f"{base}/cover-douban-tv.gif",
+        "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "videos": [
+            {
+                "tmdb_id": item["tmdb_id"],
+                "tmdb_type": item["tmdb_type"],
+                "title": item["title"],
+                "sort": position,
+            }
+            for position, item in enumerate(douban_tv_items, start=1)
+        ],
+    }
+    DOUBAN_TV_WATCH_PATH.write_text(
+        json.dumps(douban_tv_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
 
     variety_items = fetch_chinese_variety(headers, now, limit=50)
-    # 使用新状态键做一次排序规则迁移，让本次修改立即重排一次；之后仍按当天正片去重。
-    variety_should_update = detect_daily_release(
-        variety_items, "variety_first_air_v1", WATCH_PATH, now, release_state
+    variety_cover_candidates = [item for item in variety_items if item.get("poster_path")]
+    variety_should_update = detect_new_variety_today(
+        variety_items, WATCH_PATH, now, release_state
     )
-    variety_cover_candidates = cover_candidates_for_feed(
-        variety_items, WATCH_PATH, variety_should_update
-    )
+    if not variety_should_update and VARIETY_WATCH_PATH.exists():
+        # 没有当天新综艺时，视频列表和封面均保持原样。
+        RELEASE_STATE_PATH.write_text(
+            json.dumps(release_state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(
+            f"已生成豆瓣热门大陆电视剧 {len(douban_tv_items)} 部；综艺无当日新上线，保持原片单不变。"
+        )
+        return
     if len(variety_cover_candidates) < 3:
         raise RuntimeError(f"指定平台的在播综艺海报不足 3 张，当前仅有 {len(variety_cover_candidates)} 张")
     variety_selected = select_daily_cover(variety_cover_candidates, now, VARIETY_SELECTION_PATH)
     make_cover(variety_selected, now, VARIETY_COVER_PATH)
     # 保留旧地址，避免已经填入 cover.gif 的用户丢图；两个文件内容保持一致。
     shutil.copyfile(VARIETY_COVER_PATH, COVER_PATH)
-    if variety_should_update:
-        variety_watch = {
-            "name": f"国内流媒体热播更新综艺（{len(variety_items)}部）",
-            "cover": f"{base}/cover-variety.gif",
-            "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
-            "videos": [
-                {
-                    "tmdb_id": item["tmdb_id"],
-                    "tmdb_type": item["tmdb_type"],
-                    "title": item["title"],
-                    "sort": position,
-                }
-                for position, item in enumerate(variety_items, start=1)
-            ],
-        }
-        WATCH_PATH.write_text(json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        VARIETY_WATCH_PATH.write_text(
-            json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-        )
-    elif not VARIETY_WATCH_PATH.exists() and WATCH_PATH.exists():
-        # 首次切换到独立地址时只创建别名，不改变视频顺序和更新时间。
-        legacy_variety_watch = load_json(WATCH_PATH, {})
-        if legacy_variety_watch:
-            legacy_variety_watch["cover"] = f"{base}/cover-variety.gif"
-            VARIETY_WATCH_PATH.write_text(
-                json.dumps(legacy_variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-            )
+    variety_watch = {
+        "name": f"国内流媒体热播更新综艺（{len(variety_items)}部）",
+        "cover": f"{base}/cover-variety.gif",
+        "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "videos": [
+            {
+                "tmdb_id": item["tmdb_id"],
+                "tmdb_type": item["tmdb_type"],
+                "title": item["title"],
+                "sort": position,
+            }
+            for position, item in enumerate(variety_items, start=1)
+        ],
+    }
+    WATCH_PATH.write_text(json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    VARIETY_WATCH_PATH.write_text(
+        json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     RELEASE_STATE_PATH.write_text(
         json.dumps(release_state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         f"已生成豆瓣热门大陆电视剧 {len(douban_tv_items)} 部和国内流媒体热播综艺 {len(variety_items)} 部；"
-        f"视频更新：电视剧={'是' if douban_tv_should_update else '否'}，综艺={'是' if variety_should_update else '否'}；"
         f"今日封面：{', '.join(item['title'] for item in douban_tv_selected)} / "
         f"{', '.join(item['title'] for item in variety_selected)}"
     )
