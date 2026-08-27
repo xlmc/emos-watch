@@ -1,7 +1,7 @@
 {
   "name": "豆瓣实时热门大陆电视剧20 + 电影10 + 国漫20",
-  "cover": "https://xlmc.github.io/emos-watch/cover.jpg?v=202608280029",
-  "updated_at": "2026-08-28 00:29:50",
+  "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover.jpg?v=202608280039",
+  "updated_at": "2026-08-28 00:39:31",
   "videos": [
     {
       "tmdb_id": 287496,
