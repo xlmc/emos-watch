@@ -1138,30 +1138,6 @@ def main():
     headers = tmdb_headers()
     base = config["site_base_url"].rstrip("/")
 
-    douban_tv_items = fetch_douban_hot_mainland_tv(headers, now, manual, cache, limit=50)
-    douban_tv_cover_candidates = [item for item in douban_tv_items if item.get("poster_path")]
-    if len(douban_tv_cover_candidates) < 3:
-        raise RuntimeError(f"豆瓣热门大陆电视剧海报不足 3 张，当前仅有 {len(douban_tv_cover_candidates)} 张")
-    douban_tv_selected = select_daily_cover(douban_tv_cover_candidates, now, DOUBAN_TV_SELECTION_PATH)
-    make_cover(douban_tv_selected, now, DOUBAN_TV_COVER_PATH)
-    douban_tv_watch = {
-        "name": f"豆瓣热门大陆电视剧（{len(douban_tv_items)}部）",
-        "cover": f"{base}/cover-douban-tv.gif",
-        "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
-        "videos": [
-            {
-                "tmdb_id": item["tmdb_id"],
-                "tmdb_type": item["tmdb_type"],
-                "title": item["title"],
-                "sort": position,
-            }
-            for position, item in enumerate(douban_tv_items, start=1)
-        ],
-    }
-    DOUBAN_TV_WATCH_PATH.write_text(
-        json.dumps(douban_tv_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-
     variety_items = fetch_chinese_variety(headers, now, limit=50)
     variety_cover_candidates = [item for item in variety_items if item.get("poster_path")]
     variety_should_update = detect_new_variety_today(
@@ -1173,9 +1149,7 @@ def main():
             json.dumps(release_state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
         CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print(
-            f"已生成豆瓣热门大陆电视剧 {len(douban_tv_items)} 部；综艺无当日新上线，保持原片单不变。"
-        )
+        print("综艺无当日新上线，保持综艺片单和封面不变；电视剧片单不处理。")
         return
     if len(variety_cover_candidates) < 3:
         raise RuntimeError(f"指定平台的在播综艺海报不足 3 张，当前仅有 {len(variety_cover_candidates)} 张")
@@ -1206,9 +1180,8 @@ def main():
     )
     CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
-        f"已生成豆瓣热门大陆电视剧 {len(douban_tv_items)} 部和国内流媒体热播综艺 {len(variety_items)} 部；"
-        f"今日封面：{', '.join(item['title'] for item in douban_tv_selected)} / "
-        f"{', '.join(item['title'] for item in variety_selected)}"
+        f"已更新国内流媒体热播综艺 {len(variety_items)} 部；"
+        f"今日封面：{', '.join(item['title'] for item in variety_selected)}；电视剧片单不处理。"
     )
 
 
