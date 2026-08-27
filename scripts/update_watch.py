@@ -7,7 +7,7 @@ import re
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -23,14 +23,19 @@ DATA_DIR = ROOT / "data"
 DATA_DIR.mkdir(exist_ok=True)
 CACHE_PATH = DATA_DIR / "mapping-cache.json"
 SELECTION_PATH = DATA_DIR / "cover-selection.json"
+JAPAN_SELECTION_PATH = DATA_DIR / "cover-japan-selection.json"
 WATCH_PATH = ROOT / "watch.json"
+JAPAN_WATCH_PATH = ROOT / "watch-japan.json"
 COVER_PATH = ROOT / "cover.gif"
+JAPAN_COVER_PATH = ROOT / "cover-japan.gif"
 
 DOUBAN_TV_URL = "https://m.douban.com/rexxar/api/v2/subject/recent_hot/tv"
 DOUBAN_SEARCH_URL = "https://movie.douban.com/j/search_subjects"
 DOUBAN_DETAIL_URL = "https://m.douban.com/rexxar/api/v2/subject/{subject_id}"
 TMDB_API_BASE = "https://api.themoviedb.org/3"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w780"
+BGM_API_BASE = "https://api.bgm.tv/v0"
+ANILIST_API_URL = "https://graphql.anilist.co"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
     "Referer": "https://m.douban.com/tv/",
@@ -64,6 +69,31 @@ def get_json(url: str, *, params: dict | None = None, headers: dict | None = Non
     for attempt in range(4):
         try:
             response = requests.get(url, params=params, headers=headers, timeout=30)
+            if response.status_code in {429, 500, 502, 503, 504} and attempt < 3:
+                time.sleep(2 ** attempt)
+                continue
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            last_error = exc
+            if attempt < 3:
+                time.sleep(2 ** attempt)
+                continue
+            raise
+    raise last_error
+
+
+def post_json(
+    url: str,
+    payload: dict,
+    *,
+    params: dict | None = None,
+    headers: dict | None = None,
+) -> dict:
+    last_error = None
+    for attempt in range(4):
+        try:
+            response = requests.post(url, params=params, json=payload, headers=headers, timeout=30)
             if response.status_code in {429, 500, 502, 503, 504} and attempt < 3:
                 time.sleep(2 ** attempt)
                 continue
@@ -480,7 +510,7 @@ def ripple_frame(base: Image.Image, frame_index: int, frame_count: int) -> Image
     return Image.alpha_composite(warped, sheen).convert("RGB")
 
 
-def make_cover(selected: list[dict], now: datetime):
+def make_cover(selected: list[dict], now: datetime, output_path: Path):
     posters = [download_poster(item["poster_path"]) for item in selected]
     base = build_cover_base(posters)
     frame_count = 18
@@ -489,7 +519,7 @@ def make_cover(selected: list[dict], now: datetime):
     gif_frames = [palette]
     gif_frames.extend(frame.quantize(palette=palette, dither=Image.Dither.FLOYDSTEINBERG) for frame in frames[1:])
     gif_frames[0].save(
-        COVER_PATH,
+        output_path,
         format="GIF",
         save_all=True,
         append_images=gif_frames[1:],
@@ -521,75 +551,347 @@ def resolve_category(subjects: list[dict], target: int, headers: dict, manual: d
     return resolved, unresolved
 
 
-def main():
-    config = load_json(CONFIG_PATH, {})
-    manual = load_json(MAPPING_PATH, {})
-    cache = load_json(CACHE_PATH, {})
-    tv_limit = int(config.get("tv_limit", 20))
-    movie_limit = int(config.get("movie_limit", 10))
-    animation_limit = int(config.get("animation_limit", 20))
-    now = datetime.now(ZoneInfo("Asia/Shanghai"))
-    headers = tmdb_headers()
-    detail_cache = {}
+def fetch_tmdb_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> list[dict]:
+    """从 TMDB 获取今年以来已上线的日本动画电视剧，按首播日期倒序。"""
+    start_date = f"{now.year}-01-01"
+    end_date = now.strftime("%Y-%m-%d")
+    results = []
+    seen = set()
 
-    categories = [
-        ("电视剧", tv_limit, fetch_tv_subjects(tv_limit)),
-        ("电影", movie_limit, fetch_movie_subjects(movie_limit, detail_cache)),
-        ("国漫", animation_limit, fetch_animation_subjects(animation_limit, detail_cache)),
-    ]
-    all_resolved = []
-    all_unresolved = []
-    for category, target, subjects in categories:
-        resolved, unresolved = resolve_category(subjects, target, headers, manual, cache)
-        if len(resolved) < target:
-            all_unresolved.extend({**item, "category": category} for item in unresolved)
-            all_unresolved.append({"category": category, "required": target, "resolved": len(resolved)})
-            continue
-        all_resolved.extend(resolved[:target])
-        all_unresolved.extend({**item, "category": category} for item in unresolved)
-
-    if len(all_resolved) != tv_limit + movie_limit + animation_limit:
-        unresolved_path = DATA_DIR / "unresolved.json"
-        unresolved_path.write_text(json.dumps(all_unresolved, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        raise RuntimeError(
-            f"TMDB 匹配不足：需要 {tv_limit}+{movie_limit}+{animation_limit} 部，实际得到 {len(all_resolved)} 部"
+    for page in range(1, 11):
+        payload = get_json(
+            f"{TMDB_API_BASE}/discover/tv",
+            params={
+                "language": "zh-CN",
+                "sort_by": "first_air_date.desc",
+                "first_air_date.gte": start_date,
+                "first_air_date.lte": end_date,
+                "with_origin_country": "JP",
+                "with_original_language": "ja",
+                "with_genres": "16",
+                "include_null_first_air_dates": "false",
+                "page": page,
+            },
+            headers=headers,
         )
+        for item in payload.get("results", []):
+            tmdb_id = int(item["id"])
+            first_air_date = item.get("first_air_date", "")
+            if tmdb_id in seen or not first_air_date:
+                continue
+            seen.add(tmdb_id)
+            results.append(
+                {
+                    "tmdb_id": tmdb_id,
+                    "tmdb_type": "tv",
+                    "title": item.get("name") or item.get("original_name") or f"TMDB {tmdb_id}",
+                    "first_air_date": first_air_date,
+                    "poster_path": item.get("poster_path"),
+                }
+            )
+            if len(results) >= limit:
+                break
+        if len(results) >= limit or page >= int(payload.get("total_pages", page)):
+            break
 
-    cover_candidates = [item for item in all_resolved if item.get("poster_path")]
-    if len(cover_candidates) < 3:
-        raise RuntimeError("TMDB 可用海报少于 3 张，无法生成动态封面")
-    # 当天优先复用已记录的三张图；第二天再从当前片单重新随机。
-    candidates = sorted(cover_candidates, key=lambda item: (item["tmdb_type"], item["tmdb_id"]))
-    selection_state = load_json(SELECTION_PATH, {})
+    results.sort(key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)
+    return results[:limit]
+
+
+def fetch_bangumi_anime(now: datetime, limit: int = 100) -> list[dict]:
+    """从 Bangumi 获取今年日本 TV 动画，日期稍后与 TMDB/AniList 合并。"""
+    items = []
+    try:
+        for offset in range(0, 200, 50):
+            payload = post_json(
+                f"{BGM_API_BASE}/search/subjects",
+                {
+                    "keyword": "",
+                    "sort": "heat",
+                    "filter": {
+                        "type": [2],
+                        "tag": ["日本", "TV"],
+                        "air_date": [f">={now.year}-01-01", f"<={now.strftime('%Y-%m-%d')}"],
+                        "nsfw": False,
+                    },
+                },
+                params={"limit": 50, "offset": offset},
+                headers={"User-Agent": "emos-watch/1.0 (https://github.com/xlmc/emos-watch)"},
+            )
+            page = payload.get("data", [])
+            for item in page:
+                if item.get("type") != 2 or not item.get("date"):
+                    continue
+                items.append(
+                    {
+                        "source": "bgm",
+                        "title": item.get("name_cn") or item.get("name"),
+                        "search_titles": [item.get("name_cn"), item.get("name")],
+                        "first_air_date": item["date"],
+                    }
+                )
+            if len(page) < 50 or offset + len(page) >= int(payload.get("total", 0)) or len(items) >= limit:
+                break
+    except Exception as exc:
+        print(f"警告：Bangumi 获取失败，继续使用其他日番源：{exc}")
+        return []
+    return sorted(items, key=lambda item: item["first_air_date"], reverse=True)[:limit]
+
+
+ANILIST_QUERY = """
+query ($page: Int, $perPage: Int, $from: FuzzyDateInt, $until: FuzzyDateInt) {
+  Page(page: $page, perPage: $perPage) {
+    pageInfo { hasNextPage }
+    media(
+      type: ANIME,
+      countryOfOrigin: JP,
+      startDate_greater: $from,
+      startDate_lesser: $until,
+      format_in: [TV, TV_SHORT, ONA],
+      sort: START_DATE_DESC
+    ) {
+      id
+      title { romaji english native }
+      startDate { year month day }
+    }
+  }
+}
+"""
+
+
+def fetch_anilist_anime(now: datetime, limit: int = 100) -> list[dict]:
+    """从 AniList 获取今年日本 TV/短番/ONA，日期稍后与其他源合并。"""
+    items = []
+    try:
+        payload = post_json(
+            ANILIST_API_URL,
+            {
+                "query": ANILIST_QUERY,
+                "variables": {
+                    "page": 1,
+                    "perPage": min(limit, 50),
+                    "from": int(f"{now.year - 1}1231"),
+                    "until": int((now.date() + timedelta(days=1)).strftime("%Y%m%d")),
+                },
+            },
+            headers={"Content-Type": "application/json", "User-Agent": "emos-watch/1.0"},
+        )
+        if payload.get("errors"):
+            raise RuntimeError(payload["errors"])
+        for item in payload.get("data", {}).get("Page", {}).get("media", []):
+            date = item.get("startDate") or {}
+            if not date.get("year") or not date.get("month") or not date.get("day"):
+                continue
+            title = item.get("title") or {}
+            items.append(
+                {
+                    "source": "anilist",
+                    "title": title.get("romaji") or title.get("native") or title.get("english"),
+                    "search_titles": [title.get("romaji"), title.get("native"), title.get("english")],
+                    "first_air_date": f"{date['year']:04d}-{date['month']:02d}-{date['day']:02d}",
+                }
+            )
+    except Exception as exc:
+        print(f"警告：AniList 获取失败，继续使用其他日番源：{exc}")
+        return []
+    return sorted(items, key=lambda item: item["first_air_date"], reverse=True)[:limit]
+
+
+def resolve_external_tv_to_tmdb(item: dict, headers: dict) -> dict | None:
+    year = int(item["first_air_date"][:4])
+    subject = {"title": item["title"], "year": year, "tmdb_type": "tv"}
+    for title in dict.fromkeys(value for value in item.get("search_titles", []) if value):
+        params = {
+            "query": title,
+            "language": "zh-CN",
+            "include_adult": "false",
+            "first_air_date_year": year,
+            "page": 1,
+        }
+        result = choose_tmdb_result(
+            {**subject, "title": title},
+            get_json(f"{TMDB_API_BASE}/search/tv", params=params, headers=headers).get("results", []),
+        )
+        if not result:
+            continue
+        data = get_json(f"{TMDB_API_BASE}/tv/{result['id']}", params={"language": "zh-CN"}, headers=headers)
+        if "JP" not in (data.get("origin_country") or []) and data.get("original_language") != "ja":
+            continue
+        return {
+            "tmdb_id": int(data["id"]),
+            "tmdb_type": "tv",
+            "title": data.get("name") or item["title"],
+            "first_air_date": data.get("first_air_date") or item["first_air_date"],
+            "poster_path": data.get("poster_path"),
+        }
+    return None
+
+
+def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> list[dict]:
+    """联合 TMDB、Bangumi、AniList，按首播时间倒序合并并统一为 TMDB ID。"""
+    tmdb_items = fetch_tmdb_japanese_anime(headers, now, limit)
+    merged = {item["tmdb_id"]: item for item in tmdb_items}
+    known_titles = {normalize_title(item["title"]) for item in merged.values()}
+
+    external_items = fetch_bangumi_anime(now, 100) + fetch_anilist_anime(now, 100)
+    external_items.sort(key=lambda item: item["first_air_date"], reverse=True)
+    for item in external_items:
+        aliases = {normalize_title(value) for value in item.get("search_titles", []) if value}
+        if aliases & known_titles:
+            continue
+        if len(merged) >= limit:
+            break
+        resolved = resolve_external_tv_to_tmdb(item, headers)
+        if not resolved or resolved["tmdb_id"] in merged:
+            continue
+        merged[resolved["tmdb_id"]] = resolved
+        known_titles.add(normalize_title(resolved["title"]))
+
+    return sorted(merged.values(), key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)[:limit]
+
+
+VARIETY_PLATFORM_KEYWORDS = (
+    "优酷", "youku", "腾讯", "tencent", "芒果", "mango", "爱奇艺", "iqiyi", "iQIYI"
+)
+
+
+def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list[dict]:
+    """从 TMDB 筛选国内综艺：指定平台、仍在制作/连载且近期或即将播出。"""
+    today = now.date()
+    recent_date = (today - timedelta(days=120)).isoformat()
+    future_date = (today + timedelta(days=30)).isoformat()
+    discovered = {}
+
+    for page in range(1, 11):
+        payload = get_json(
+            f"{TMDB_API_BASE}/discover/tv",
+            params={
+                "language": "zh-CN",
+                "sort_by": "popularity.desc",
+                "air_date.gte": recent_date,
+                "air_date.lte": future_date,
+                "with_origin_country": "CN",
+                "with_genres": "10764",
+                "include_null_first_air_dates": "false",
+                "page": page,
+            },
+            headers=headers,
+        )
+        for item in payload.get("results", []):
+            discovered[int(item["id"])] = item
+        if page >= int(payload.get("total_pages", page)):
+            break
+
+    results = []
+    for item in sorted(discovered.values(), key=lambda value: float(value.get("popularity") or 0), reverse=True):
+        data = get_json(
+            f"{TMDB_API_BASE}/tv/{item['id']}",
+            params={"language": "zh-CN", "append_to_response": "watch/providers"},
+            headers=headers,
+        )
+        network_names = [network.get("name", "") for network in data.get("networks", [])]
+        provider_names = []
+        cn_providers = (data.get("watch/providers") or {}).get("results", {}).get("CN", {})
+        for group in ("flatrate", "free", "ads", "rent", "buy"):
+            provider_names.extend(provider.get("provider_name", "") for provider in cn_providers.get(group, []))
+        platform_names = network_names + provider_names
+        if not any(
+            keyword.lower() in name.lower()
+            for name in platform_names
+            for keyword in VARIETY_PLATFORM_KEYWORDS
+        ):
+            continue
+
+        last_air = (data.get("last_episode_to_air") or {}).get("air_date") or data.get("last_air_date") or ""
+        next_air = (data.get("next_episode_to_air") or {}).get("air_date") or ""
+        last_is_recent = bool(last_air and last_air >= recent_date)
+        next_is_near = bool(next_air and next_air <= future_date)
+        active_status = data.get("status") in {"Returning Series", "In Production", "Pilot"}
+        if not active_status or not (last_is_recent or next_is_near or data.get("in_production")):
+            continue
+        results.append(
+            {
+                "tmdb_id": int(data["id"]),
+                "tmdb_type": "tv",
+                "title": data.get("name") or item.get("name") or f"TMDB {data['id']}",
+                "first_air_date": data.get("first_air_date") or "",
+                "last_air_date": last_air,
+                "next_air_date": next_air,
+                "popularity": float(data.get("popularity") or item.get("popularity") or 0),
+                "poster_path": data.get("poster_path") or item.get("poster_path"),
+            }
+        )
+        if len(results) >= limit:
+            break
+
+    results.sort(key=lambda item: (item["popularity"], item["last_air_date"], item["next_air_date"]), reverse=True)
+    return results[:limit]
+
+
+def select_daily_cover(candidates: list[dict], now: datetime, selection_path: Path) -> list[dict]:
+    candidates = sorted(candidates, key=lambda item: (item["tmdb_type"], item["tmdb_id"]))
     candidate_map = {(item["tmdb_type"], item["tmdb_id"]): item for item in candidates}
+    selection_state = load_json(selection_path, {})
     saved_keys = [tuple(value) for value in selection_state.get("items", [])]
     if (
         selection_state.get("date") == now.strftime("%Y-%m-%d")
         and len(saved_keys) == 3
         and all(key in candidate_map for key in saved_keys)
     ):
-        selected = [candidate_map[key] for key in saved_keys]
-    else:
-        selected = random.SystemRandom().sample(candidates, 3)
-        SELECTION_PATH.write_text(
-            json.dumps(
-                {
-                    "date": now.strftime("%Y-%m-%d"),
-                    "items": [[item["tmdb_type"], item["tmdb_id"]] for item in selected],
-                    "titles": [item["title"] for item in selected],
-                },
-                ensure_ascii=False,
-                indent=2,
-            ) + "\n",
-            encoding="utf-8",
-        )
-    make_cover(selected, now)
-    CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return [candidate_map[key] for key in saved_keys]
 
+    selected = random.SystemRandom().sample(candidates, 3)
+    selection_path.write_text(
+        json.dumps(
+            {
+                "date": now.strftime("%Y-%m-%d"),
+                "items": [[item["tmdb_type"], item["tmdb_id"]] for item in selected],
+                "titles": [item["title"] for item in selected],
+            },
+            ensure_ascii=False,
+            indent=2,
+        ) + "\n",
+        encoding="utf-8",
+    )
+    return selected
+
+
+def main():
+    config = load_json(CONFIG_PATH, {})
+    now = datetime.now(ZoneInfo("Asia/Shanghai"))
+    headers = tmdb_headers()
     base = config["site_base_url"].rstrip("/")
-    watch = {
-        "name": "豆瓣实时热门大陆电视剧20 + 电影10 + 国漫20",
-        # 用本次更新时间破除 CDN 缓存，确保新生成的 TMDB 海报立即生效。
+
+    japan_items = fetch_japanese_anime(headers, now, limit=50)
+    japan_cover_candidates = [item for item in japan_items if item.get("poster_path")]
+    if len(japan_cover_candidates) < 3:
+        raise RuntimeError(f"今年以来 TMDB/Bangumi/AniList 日番海报不足 3 张，当前仅有 {len(japan_cover_candidates)} 张")
+    japan_selected = select_daily_cover(japan_cover_candidates, now, JAPAN_SELECTION_PATH)
+    make_cover(japan_selected, now, JAPAN_COVER_PATH)
+    japan_watch = {
+        "name": f"今年最新日番（{len(japan_items)}部）",
+        "cover": f"{base}/cover-japan.gif?v={now.strftime('%Y%m%d%H%M')}",
+        "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "videos": [
+            {
+                "tmdb_id": item["tmdb_id"],
+                "tmdb_type": item["tmdb_type"],
+                "title": item["title"],
+                "sort": position,
+            }
+            for position, item in enumerate(japan_items, start=1)
+        ],
+    }
+    JAPAN_WATCH_PATH.write_text(json.dumps(japan_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    variety_items = fetch_chinese_variety(headers, now, limit=50)
+    variety_cover_candidates = [item for item in variety_items if item.get("poster_path")]
+    if len(variety_cover_candidates) < 3:
+        raise RuntimeError(f"指定平台的在播综艺海报不足 3 张，当前仅有 {len(variety_cover_candidates)} 张")
+    variety_selected = select_daily_cover(variety_cover_candidates, now, SELECTION_PATH)
+    make_cover(variety_selected, now, COVER_PATH)
+    variety_watch = {
+        "name": f"国内流媒体热播更新综艺（{len(variety_items)}部）",
         "cover": f"{base}/cover.gif?v={now.strftime('%Y%m%d%H%M')}",
         "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
         "videos": [
@@ -599,11 +901,15 @@ def main():
                 "title": item["title"],
                 "sort": position,
             }
-            for position, item in enumerate(all_resolved, start=1)
+            for position, item in enumerate(variety_items, start=1)
         ],
     }
-    WATCH_PATH.write_text(json.dumps(watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"已生成 {len(all_resolved)} 部；今日 GIF 封面：{', '.join(item['title'] for item in selected)}")
+    WATCH_PATH.write_text(json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(
+        f"已生成日番 {len(japan_items)} 部和国内流媒体热播综艺 {len(variety_items)} 部；"
+        f"今日封面：{', '.join(item['title'] for item in japan_selected)} / "
+        f"{', '.join(item['title'] for item in variety_selected)}"
+    )
 
 
 if __name__ == "__main__":

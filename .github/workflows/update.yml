@@ -1,4 +1,4 @@
-name: 更新豆瓣热门大陆影视与国漫片单
+name: 更新热门日番与国内流媒体综艺片单
 
 on:
   workflow_dispatch:
@@ -47,7 +47,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A watch.json cover.gif data
-          git diff --cached --quiet || git commit -m "更新豆瓣热门大陆影视与国漫片单"
+          git add -A watch.json watch-japan.json cover.gif cover-japan.gif data
+          git diff --cached --quiet || git commit -m "更新热门日番与国内流媒体综艺片单"
           git push
 
