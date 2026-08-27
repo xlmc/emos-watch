@@ -1,7 +1,7 @@
 {
   "name": "东映超级战队正剧（1975年至今）（48部）",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-super-sentai.gif",
-  "updated_at": "2026-08-28 03:48:35",
+  "updated_at": "2026-08-28 03:51:11",
   "videos": [
     {
       "tmdb_id": 275648,
@@ -16,9 +16,9 @@
       "sort": 2
     },
     {
-      "tmdb_id": 302013,
+      "tmdb_id": 213439,
       "tmdb_type": "tv",
-      "title": "Ohsama Sentai King-Ohger: Stop Motion Series",
+      "title": "王样战队君王者",
       "sort": 3
     },
     {
@@ -40,9 +40,9 @@
       "sort": 6
     },
     {
-      "tmdb_id": 298568,
+      "tmdb_id": 120409,
       "tmdb_type": "tv",
-      "title": "Kishiryu Sentai Ryusoulger: Ryusoul Challenges",
+      "title": "骑士龙战队龙装者",
       "sort": 7
     },
     {
@@ -52,27 +52,27 @@
       "sort": 8
     },
     {
-      "tmdb_id": 298575,
+      "tmdb_id": 103386,
       "tmdb_type": "tv",
-      "title": "Uchu Sentai Kyuranger: SAY THE TALKING",
+      "title": "宇宙战队球连者",
       "sort": 9
     },
     {
-      "tmdb_id": 298571,
+      "tmdb_id": 68695,
       "tmdb_type": "tv",
-      "title": "Doubutsu Sentai Zyuohger: Zyuoh Talks",
+      "title": "动物战队兽王者",
       "sort": 10
     },
     {
-      "tmdb_id": 298573,
+      "tmdb_id": 74432,
       "tmdb_type": "tv",
-      "title": "Shuriken Sentai Ninninger: Nintality Theatre",
+      "title": "手里剑战队忍忍者",
       "sort": 11
     },
     {
-      "tmdb_id": 298569,
+      "tmdb_id": 68696,
       "tmdb_type": "tv",
-      "title": "Ressha Sentai ToQger CROSSRAIL",
+      "title": "烈车战队特急者",
       "sort": 12
     },
     {
