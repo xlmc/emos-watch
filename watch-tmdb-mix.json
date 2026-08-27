@@ -1,7 +1,7 @@
 {
   "name": "TMDB大陆电视剧、国漫与国内电影（33部）",
-  "cover": "https://raw.githack.com/xlmc/emos-watch/main/cover-tmdb-mix.gif",
-  "updated_at": "2026-08-28 06:11:27",
+  "cover": "https://raw.githubusercontent.com/xlmc/emos-watch/main/cover-tmdb-mix.gif",
+  "updated_at": "2026-08-28 06:14:19",
   "videos": [
     {
       "tmdb_id": 299952,
