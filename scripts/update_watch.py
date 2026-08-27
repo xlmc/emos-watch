@@ -1029,7 +1029,8 @@ def fetch_tmdb_mainland_tv(
             "first_air_date.gte": start_text,
             "first_air_date.lte": today_text,
             "with_origin_country": "CN",
-            "without_genres": "16,10764,10763,10767,10762",
+            "with_genres": "18",
+            "without_genres": "16,99,10764,10763,10767,10762",
             "include_null_first_air_dates": "false",
         },
         limit=100,
@@ -1059,6 +1060,16 @@ def fetch_tmdb_mainland_tv(
             if str(genre.get("id", "")).isdigit()
         )
         if genre_ids.intersection({16, 10764, 10763, 10767, 10762}):
+            continue
+        if int(data.get("vote_count") or 0) < 3:
+            continue
+        run_times = [int(value) for value in (data.get("episode_run_time") or []) if str(value).isdigit()]
+        if run_times and max(run_times) < 20:
+            continue
+        title_text = " ".join(
+            str(data.get(key) or "") for key in ("name", "original_name")
+        )
+        if any(keyword in title_text for keyword in ("赛事", "自行车赛", "文学经典", "寓言", "警长", "巡逻行动", "玩家", "游戏")):
             continue
 
         key = f"tv:{data['id']}"
@@ -1098,34 +1109,93 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
             "sort_by": "first_air_date.desc",
             "first_air_date.lte": now.strftime("%Y-%m-%d"),
             "with_origin_country": "CN",
+            "with_original_language": "zh",
             "with_genres": "16",
-            "without_genres": "10764,10767",
+            "without_genres": "99,10764,10767",
+            "vote_count.gte": 1,
             "include_null_first_air_dates": "false",
         },
         limit=limit,
         max_pages=10,
     )
-    results = [tmdb_catalog_item(item, "tv", "国漫") for item in items if item.get("first_air_date")]
+    results = []
+    for item in items:
+        if not item.get("first_air_date"):
+            continue
+        title_text = " ".join(str(item.get(key) or "") for key in ("name", "original_name"))
+        if any(keyword in title_text for keyword in ("特别篇", "剧场版", "宣传片", "短片")):
+            continue
+        results.append(tmdb_catalog_item(item, "tv", "国漫"))
     return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
 
 
 def fetch_tmdb_mainland_movies(headers: dict, now: datetime, limit: int = 5) -> list[dict]:
     """抓取 TMDB 最新大陆非动画电影，按上映时间倒序。"""
-    items = fetch_tmdb_discover(
-        "movie",
-        headers,
-        {
-            "language": "zh-CN",
-            "sort_by": "primary_release_date.desc",
-            "primary_release_date.lte": now.strftime("%Y-%m-%d"),
-            "with_origin_country": "CN",
-            "without_genres": "16",
-            "include_adult": "false",
-        },
-        limit=limit,
-        max_pages=5,
-    )
-    results = [tmdb_catalog_item(item, "movie", "电影") for item in items if item.get("release_date")]
+    today_text = now.strftime("%Y-%m-%d")
+    start_text = previous_month_start(now.date())
+
+    def discover_movies(start_date: str, max_pages: int) -> list[dict]:
+        return fetch_tmdb_discover(
+            "movie",
+            headers,
+            {
+                "language": "zh-CN",
+                "sort_by": "primary_release_date.desc",
+                "primary_release_date.gte": start_date,
+                "primary_release_date.lte": today_text,
+                "with_origin_country": "CN",
+                "with_original_language": "zh",
+                "without_genres": "16,99,10770",
+                "vote_count.gte": 3,
+                "include_adult": "false",
+            },
+            limit=100,
+            max_pages=max_pages,
+        )
+
+    results = []
+    seen = set()
+    def collect_movies(discovered: list[dict]):
+        for item in discovered:
+            tmdb_id = int(item["id"])
+            if tmdb_id in seen or len(results) >= limit:
+                continue
+            seen.add(tmdb_id)
+            data = get_json(
+                f"{TMDB_API_BASE}/movie/{tmdb_id}",
+                params={"language": "zh-CN"},
+                headers=headers,
+            )
+            release_date = data.get("release_date") or item.get("release_date") or ""
+            if not release_date or release_date > today_text:
+                continue
+            if "CN" not in (data.get("origin_country") or item.get("origin_country") or []):
+                continue
+            if data.get("status") != "Released":
+                continue
+            if int(data.get("vote_count") or item.get("vote_count") or 0) < 3:
+                continue
+            if int(data.get("runtime") or 0) < 60:
+                continue
+            genre_ids = {int(value) for value in (item.get("genre_ids") or []) if str(value).isdigit()}
+            genre_ids.update(
+                int(genre.get("id"))
+                for genre in (data.get("genres") or [])
+                if str(genre.get("id", "")).isdigit()
+            )
+            if genre_ids.intersection({16, 99, 10770}):
+                continue
+            results.append(
+                {
+                    **tmdb_catalog_item(data, "movie", "电影"),
+                    "first_air_date": release_date,
+                }
+            )
+
+    # 先取当前月和上个月；若长片不足 5 部，再向前扩展半年补足。
+    collect_movies(discover_movies(start_text, 5))
+    if len(results) < limit:
+        collect_movies(discover_movies((now.date() - timedelta(days=180)).isoformat(), 10))
     return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
 
 
