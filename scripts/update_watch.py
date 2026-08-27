@@ -1035,8 +1035,8 @@ def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list
         if len(results) >= limit:
             break
 
-    # 只按正片最近一次上线时间排序；热度只用于发现候选，不参与最终排序。
-    results.sort(key=lambda item: (item["sort_date"], item["tmdb_id"]), reverse=True)
+    # 最终只按综艺节目的首播/上线日期排序；热度只用于发现候选，不参与最终排序。
+    results.sort(key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)
     return results[:limit]
 
 
@@ -1157,8 +1157,9 @@ def main():
         )
 
     variety_items = fetch_chinese_variety(headers, now, limit=50)
+    # 使用新状态键做一次排序规则迁移，让本次修改立即重排一次；之后仍按当天正片去重。
     variety_should_update = detect_daily_release(
-        variety_items, "variety", WATCH_PATH, now, release_state
+        variety_items, "variety_first_air_v1", WATCH_PATH, now, release_state
     )
     variety_cover_candidates = cover_candidates_for_feed(
         variety_items, WATCH_PATH, variety_should_update
