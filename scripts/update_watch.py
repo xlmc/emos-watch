@@ -28,14 +28,20 @@ SELECTION_PATH = DATA_DIR / "cover-selection.json"
 VARIETY_SELECTION_PATH = DATA_DIR / "cover-variety-selection.json"
 JAPAN_SELECTION_PATH = DATA_DIR / "cover-japan-selection.json"
 DOUBAN_TV_SELECTION_PATH = DATA_DIR / "cover-douban-tv-selection.json"
+KAMEN_SELECTION_PATH = DATA_DIR / "cover-kamen-rider-selection.json"
+SENTAI_SELECTION_PATH = DATA_DIR / "cover-super-sentai-selection.json"
 WATCH_PATH = ROOT / "watch.json"
 VARIETY_WATCH_PATH = ROOT / "watch-variety.json"
 JAPAN_WATCH_PATH = ROOT / "watch-japan.json"
 DOUBAN_TV_WATCH_PATH = ROOT / "watch-douban-tv.json"
+KAMEN_WATCH_PATH = ROOT / "watch-kamen-rider.json"
+SENTAI_WATCH_PATH = ROOT / "watch-super-sentai.json"
 COVER_PATH = ROOT / "cover.gif"
 VARIETY_COVER_PATH = ROOT / "cover-variety.gif"
 JAPAN_COVER_PATH = ROOT / "cover-japan.gif"
 DOUBAN_TV_COVER_PATH = ROOT / "cover-douban-tv.gif"
+KAMEN_COVER_PATH = ROOT / "cover-kamen-rider.gif"
+SENTAI_COVER_PATH = ROOT / "cover-super-sentai.gif"
 
 DOUBAN_TV_URL = "https://m.douban.com/rexxar/api/v2/subject/recent_hot/tv"
 DOUBAN_SEARCH_URL = "https://movie.douban.com/j/search_subjects"
@@ -956,6 +962,203 @@ VARIETY_PLATFORM_KEYWORDS = (
 )
 
 
+# 只维护系列正剧的白名单。通过白名单搜索 TMDB TV，故不会把电影、特别篇、剧场版或
+# 同系列衍生剧混入片单；年份同时用于确认 TMDB 返回的是对应一季正剧。
+KAMEN_RIDER_SERIES = (
+    (2000, "Kamen Rider Kuuga", "仮面ライダークウガ", "假面骑士空我"),
+    (2001, "Kamen Rider Agito", "仮面ライダーアギト", "假面骑士亚极陀"),
+    (2002, "Kamen Rider Ryuki", "仮面ライダー龍騎", "假面骑士龙骑"),
+    (2003, "Kamen Rider 555", "Kamen Rider Faiz", "仮面ライダー555", "假面骑士555"),
+    (2004, "Kamen Rider Blade", "仮面ライダーブレイド", "假面骑士剑"),
+    (2005, "Kamen Rider Hibiki", "仮面ライダー響鬼", "假面骑士响鬼"),
+    (2006, "Kamen Rider Kabuto", "仮面ライダーカブト", "假面骑士甲斗"),
+    (2007, "Kamen Rider Den-O", "仮面ライダー電王", "假面骑士电王"),
+    (2008, "Kamen Rider Kiva", "仮面ライダーキバ", "假面骑士Kiva"),
+    (2009, "Kamen Rider Decade", "仮面ライダーディケイド", "假面骑士帝骑"),
+    (2009, "Kamen Rider W", "Kamen Rider Double", "仮面ライダーW", "假面骑士W"),
+    (2010, "Kamen Rider OOO", "Kamen Rider Ozu", "仮面ライダーオーズ", "假面骑士OOO"),
+    (2011, "Kamen Rider Fourze", "仮面ライダーフォーゼ", "假面骑士Fourze"),
+    (2012, "Kamen Rider Wizard", "仮面ライダーウィザード", "假面骑士巫骑"),
+    (2013, "Kamen Rider Gaim", "仮面ライダー鎧武", "假面骑士铠武"),
+    (2014, "Kamen Rider Drive", "仮面ライダードライブ", "假面骑士驰骑"),
+    (2015, "Kamen Rider Ghost", "仮面ライダーゴースト", "假面骑士Ghost"),
+    (2016, "Kamen Rider Ex-Aid", "仮面ライダーエグゼイド", "假面骑士Ex-Aid"),
+    (2017, "Kamen Rider Build", "仮面ライダービルド", "假面骑士创骑"),
+    (2018, "Kamen Rider Zi-O", "仮面ライダージオウ", "假面骑士时王"),
+    (2019, "Kamen Rider Zero-One", "仮面ライダーゼロワン", "假面骑士Zero-One"),
+    (2020, "Kamen Rider Saber", "仮面ライダーセイバー", "假面骑士圣刃"),
+    (2021, "Kamen Rider Revice", "仮面ライダーリバイス", "假面骑士利维斯"),
+    (2022, "Kamen Rider Geats", "仮面ライダーギーツ", "假面骑士极狐"),
+    (2023, "Kamen Rider Gotchard", "仮面ライダーガッチャード", "假面骑士歌查德"),
+    (2024, "Kamen Rider Gavv", "仮面ライダーガヴ", "假面骑士加布"),
+    (2025, "Kamen Rider Zeztz", "Kamen Rider ZEZTZ", "仮面ライダーゼッツ"),
+)
+
+SUPER_SENTAI_SERIES = (
+    (1975, "Himitsu Sentai Gorenger"),
+    (1977, "J.A.K.Q. Dengekitai", "JAKQ Dengekitai"),
+    (1979, "Battle Fever J"),
+    (1980, "Denshi Sentai Denziman"),
+    (1981, "Taiyo Sentai Sun Vulcan"),
+    (1982, "Dai Sentai Goggle-V", "Dai Sentai Goggle Five"),
+    (1983, "Kagaku Sentai Dynaman"),
+    (1984, "Choudenshi Bioman", "超電子バイオマン"),
+    (1985, "Dengeki Sentai Changeman"),
+    (1986, "Choushinsei Flashman"),
+    (1987, "Hikari Sentai Maskman"),
+    (1988, "Choujuu Sentai Liveman"),
+    (1989, "Kousoku Sentai Turboranger"),
+    (1990, "Chikyu Sentai Fiveman"),
+    (1991, "Choujin Sentai Jetman"),
+    (1992, "Kyoryu Sentai Zyuranger"),
+    (1993, "Gosei Sentai Dairanger"),
+    (1994, "Ninja Sentai Kakuranger"),
+    (1995, "Chouriki Sentai Ohranger"),
+    (1996, "Gekisou Sentai Carranger"),
+    (1997, "Denji Sentai Megaranger"),
+    (1998, "Seijuu Sentai Gingaman"),
+    (1999, "Kyuukyuu Sentai GoGoFive", "Kyukyu Sentai GoGoFive"),
+    (2000, "Mirai Sentai Timeranger"),
+    (2001, "Hyakujuu Sentai Gaoranger"),
+    (2002, "Ninpuu Sentai Hurricaneger"),
+    (2003, "Bakuryuu Sentai Abaranger"),
+    (2004, "Tokusou Sentai Dekaranger"),
+    (2005, "Mahou Sentai Magiranger"),
+    (2006, "GoGo Sentai Boukenger", "Gogo Sentai Boukenger"),
+    (2007, "Juken Sentai Gekiranger"),
+    (2008, "Engine Sentai Go-onger"),
+    (2009, "Samurai Sentai Shinkenger"),
+    (2010, "Tensou Sentai Goseiger"),
+    (2011, "Kaizoku Sentai Gokaiger"),
+    (2012, "Tokumei Sentai Go-Busters"),
+    (2013, "Zyuden Sentai Kyoryuger"),
+    (2014, "Ressha Sentai ToQger"),
+    (2015, "Shuriken Sentai Ninninger"),
+    (2016, "Doubutsu Sentai Zyuohger"),
+    (2017, "Uchu Sentai Kyuranger"),
+    (2018, "Kaitou Sentai Lupinranger VS Keisatsu Sentai Patranger"),
+    (2019, "Kishiryu Sentai Ryusoulger"),
+    (2020, "Mashin Sentai Kiramager"),
+    (2021, "Kikai Sentai Zenkaiger"),
+    (2022, "Avataro Sentai Donbrothers"),
+    (2023, "Ohsama Sentai King-Ohger"),
+    (2024, "Bakuage Sentai Boonboomger"),
+    (2025, "No.1 Sentai Gozyuger", "No. 1 Sentai Gozyuger"),
+)
+
+
+def choose_franchise_result(entry: tuple, results: list[dict]) -> dict | None:
+    """从指定年份的 TMDB TV 搜索结果中选出白名单正剧。"""
+    if not results:
+        return None
+    year = int(entry[0])
+    aliases = [normalize_title(value) for value in entry[1:] if value]
+
+    def score(result: dict) -> tuple[int, float]:
+        names = [
+            normalize_title(result.get("name") or ""),
+            normalize_title(result.get("original_name") or ""),
+        ]
+        points = 0
+        if any(name == alias for name in names for alias in aliases):
+            points += 200
+        elif any(alias in name or name in alias for name in names for alias in aliases if name and alias):
+            points += 80
+        if (result.get("first_air_date") or "")[:4] == str(year):
+            points += 100
+        if result.get("poster_path"):
+            points += 5
+        return points, float(result.get("popularity") or 0)
+
+    best = max(results, key=score)
+    return best if score(best)[0] >= 80 else None
+
+
+def franchise_entry(entry: tuple) -> dict:
+    return {"year": int(entry[0]), "aliases": list(entry[1:])}
+
+
+def fetch_franchise_series(entries: tuple[tuple, ...], headers: dict, now: datetime) -> list[dict]:
+    """按固定正剧白名单从 TMDB 搜索系列，返回首播日期倒序的 TV 条目。"""
+    today = now.strftime("%Y-%m-%d")
+    resolved = []
+    seen = set()
+    for raw_entry in entries:
+        entry = franchise_entry(raw_entry)
+        if entry["year"] > now.year:
+            continue
+        result = None
+        for query in entry["aliases"]:
+            payload = get_json(
+                f"{TMDB_API_BASE}/search/tv",
+                params={
+                    "query": query,
+                    "language": "zh-CN",
+                    "include_adult": "false",
+                    "first_air_date_year": entry["year"],
+                    "page": 1,
+                },
+                headers=headers,
+            )
+            result = choose_franchise_result(raw_entry, payload.get("results", []))
+            if result:
+                break
+        if not result:
+            print(f"警告：TMDB 未匹配到正剧：{entry['year']} {entry['aliases'][0]}")
+            continue
+        first_air_date = result.get("first_air_date") or ""
+        if not first_air_date or first_air_date > today or first_air_date[:4] != str(entry["year"]):
+            print(f"警告：TMDB 日期不符，跳过正剧：{entry['year']} {entry['aliases'][0]} -> {first_air_date}")
+            continue
+        tmdb_id = int(result["id"])
+        if tmdb_id in seen:
+            continue
+        seen.add(tmdb_id)
+        resolved.append(
+            {
+                "tmdb_id": tmdb_id,
+                "tmdb_type": "tv",
+                "title": result.get("name") or result.get("original_name") or entry["aliases"][0],
+                "first_air_date": first_air_date,
+                "poster_path": result.get("poster_path"),
+            }
+        )
+    resolved.sort(key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)
+    return resolved
+
+
+def write_franchise_feed(
+    items: list[dict],
+    name: str,
+    base: str,
+    now: datetime,
+    watch_path: Path,
+    cover_path: Path,
+    selection_path: Path,
+):
+    cover_candidates = [item for item in items if item.get("poster_path")]
+    if len(cover_candidates) < 3:
+        raise RuntimeError(f"{name} 可用 TMDB 海报不足 3 张，当前仅有 {len(cover_candidates)} 张")
+    selected = select_daily_cover(cover_candidates, now, selection_path)
+    make_cover(selected, now, cover_path)
+    feed = {
+        "name": f"{name}（{len(items)}部）",
+        "cover": f"{base}/{cover_path.name}",
+        "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "videos": [
+            {
+                "tmdb_id": item["tmdb_id"],
+                "tmdb_type": item["tmdb_type"],
+                "title": item["title"],
+                "sort": position,
+            }
+            for position, item in enumerate(items, start=1)
+        ],
+    }
+    watch_path.write_text(json.dumps(feed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return selected
+
+
 def latest_regular_season(data: dict, today) -> dict | None:
     """取得截至今天已上线的最新普通季，排除 specials（第 0 季）。"""
     seasons = []
@@ -1147,6 +1350,27 @@ def main():
     headers = tmdb_headers()
     base = config["site_base_url"].rstrip("/")
 
+    kamen_items = fetch_franchise_series(KAMEN_RIDER_SERIES, headers, now)
+    kamen_selected = write_franchise_feed(
+        kamen_items,
+        "假面骑士正剧（2000年至今）",
+        base,
+        now,
+        KAMEN_WATCH_PATH,
+        KAMEN_COVER_PATH,
+        KAMEN_SELECTION_PATH,
+    )
+    sentai_items = fetch_franchise_series(SUPER_SENTAI_SERIES, headers, now)
+    sentai_selected = write_franchise_feed(
+        sentai_items,
+        "东映超级战队正剧（1975年至今）",
+        base,
+        now,
+        SENTAI_WATCH_PATH,
+        SENTAI_COVER_PATH,
+        SENTAI_SELECTION_PATH,
+    )
+
     variety_items = fetch_chinese_variety(headers, now, limit=50)
     variety_cover_candidates = [item for item in variety_items if item.get("poster_path")]
     variety_should_update = detect_new_variety_today(
@@ -1158,7 +1382,10 @@ def main():
             json.dumps(release_state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
         CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print("综艺无当日新上线，保持综艺片单和封面不变；电视剧片单不处理。")
+        print(
+            f"已更新假面骑士正剧 {len(kamen_items)} 部、超级战队正剧 {len(sentai_items)} 部；"
+            "综艺无当日新上线，保持综艺片单和封面不变；电视剧片单不处理。"
+        )
         return
     if len(variety_cover_candidates) < 3:
         raise RuntimeError(f"指定平台的在播综艺海报不足 3 张，当前仅有 {len(variety_cover_candidates)} 张")
@@ -1189,8 +1416,9 @@ def main():
     )
     CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
+        f"已更新假面骑士正剧 {len(kamen_items)} 部、超级战队正剧 {len(sentai_items)} 部；"
         f"已更新国内流媒体热播综艺 {len(variety_items)} 部；"
-        f"今日封面：{', '.join(item['title'] for item in variety_selected)}；电视剧片单不处理。"
+        f"综艺今日封面：{', '.join(item['title'] for item in variety_selected)}；电视剧片单不处理。"
     )
 
 

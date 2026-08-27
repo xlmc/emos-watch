@@ -1,4 +1,4 @@
-name: 更新豆瓣热门电视剧与国内流媒体综艺片单
+name: 更新豆瓣热门电视剧、综艺、假面骑士与超级战队片单
 
 on:
   workflow_dispatch:
@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
 
-      - name: Generate watch feed and liquid glass GIF cover
+      - name: Generate watch feeds and liquid glass GIF covers
         env:
           TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
         run: python scripts/update_watch.py
@@ -47,8 +47,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A watch.json watch-variety.json watch-douban-tv.json cover.gif cover-variety.gif cover-douban-tv.gif data
-          git diff --cached --quiet || git commit -m "更新豆瓣热门电视剧与国内流媒体综艺片单"
+          git add -A watch.json watch-variety.json watch-douban-tv.json watch-kamen-rider.json watch-super-sentai.json cover.gif cover-variety.gif cover-douban-tv.gif cover-kamen-rider.gif cover-super-sentai.gif data
+          git diff --cached --quiet || git commit -m "更新豆瓣电视剧综艺及特摄正剧片单"
           git push
 
       - name: Refresh jsDelivr cover cache
@@ -56,7 +56,11 @@ jobs:
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-douban-tv.json
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-kamen-rider.json
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-super-sentai.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-douban-tv.gif
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-kamen-rider.gif
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-super-sentai.gif
 
