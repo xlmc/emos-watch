@@ -31,6 +31,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
     "Referer": "https://m.douban.com/tv/",
 }
+CHINESE_REGIONS = ("中国大陆", "中国香港", "中国台湾", "香港", "台湾", "新加坡", "马来西亚")
 
 
 def load_json(path: Path, default):
@@ -54,13 +55,16 @@ def get_year(subject: dict) -> int | None:
 def fetch_douban_top(limit: int) -> list[dict]:
     response = requests.get(
         DOUBAN_URL,
-        params={"start": 0, "limit": limit, "category": "热门", "type": "tv_domestic"},
+        params={"start": 0, "limit": max(200, limit), "category": "热门", "type": "tv"},
         headers=HEADERS,
         timeout=30,
     )
     response.raise_for_status()
     payload = response.json()
-    items = payload.get("items", [])
+    items = [
+        item for item in payload.get("items", [])
+        if item.get("type") == "tv" and any(region in item.get("card_subtitle", "") for region in CHINESE_REGIONS)
+    ]
     if len(items) < limit:
         raise RuntimeError(f"豆瓣返回 {len(items)} 条，少于要求的候选数量 {limit} 条")
     return [
@@ -72,7 +76,7 @@ def fetch_douban_top(limit: int) -> list[dict]:
             "douban_url": f"https://movie.douban.com/subject/{item['id']}/",
         }
         for index, item in enumerate(items[:limit])
-    ]
+    ][:limit]
 
 
 def tmdb_headers() -> dict:
@@ -232,4 +236,3 @@ if __name__ == "__main__":
     except Exception as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         raise
-
