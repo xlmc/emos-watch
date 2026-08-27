@@ -1031,6 +1031,7 @@ def fetch_tmdb_mainland_tv(
             "with_origin_country": "CN",
             "with_genres": "18",
             "without_genres": "16,99,10764,10763,10767,10762",
+            "vote_count.gte": 3,
             "include_null_first_air_dates": "false",
         },
         limit=100,
@@ -1052,6 +1053,8 @@ def fetch_tmdb_mainland_tv(
             continue
         origin_country = data.get("origin_country") or item.get("origin_country") or []
         if "CN" not in origin_country and data.get("original_language") not in {"zh", "cn"}:
+            continue
+        if data.get("original_language") not in {"zh", "cn"}:
             continue
         genre_ids = {int(value) for value in (item.get("genre_ids") or []) if str(value).isdigit()}
         genre_ids.update(
@@ -1119,8 +1122,10 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
             "sort_by": "first_air_date.desc",
             "first_air_date.lte": now.strftime("%Y-%m-%d"),
             "with_origin_country": "CN",
+            "with_original_language": "zh",
             "with_genres": "16",
             "without_genres": "99,10764,10767",
+            "vote_count.gte": 1,
             "include_null_first_air_dates": "false",
         },
         limit=limit,
@@ -1131,7 +1136,7 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
         if not item.get("first_air_date"):
             continue
         title_text = " ".join(str(item.get(key) or "") for key in ("name", "original_name"))
-        if any(keyword in title_text for keyword in ("特别篇", "剧场版", "宣传片", "短片")):
+        if any(keyword in title_text for keyword in ("特别篇", "剧场版", "宣传片", "短片", "玩家", "安全警长", "摸金")):
             continue
         results.append(tmdb_catalog_item(item, "tv", "国漫"))
     return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
