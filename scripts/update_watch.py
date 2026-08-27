@@ -589,7 +589,8 @@ def main():
     base = config["site_base_url"].rstrip("/")
     watch = {
         "name": "豆瓣实时热门大陆电视剧20 + 电影10 + 国漫20",
-        "cover": f"{base}/cover.gif?v={now.strftime('%Y%m%d')}",
+        # 用本次更新时间破除 CDN 缓存，确保新生成的 TMDB 海报立即生效。
+        "cover": f"{base}/cover.gif?v={now.strftime('%Y%m%d%H%M')}",
         "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
         "videos": [
             {
