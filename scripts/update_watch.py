@@ -5,6 +5,7 @@ import os
 import random
 import re
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from io import BytesIO
@@ -59,9 +60,22 @@ def get_year(subject: dict) -> int | None:
 
 
 def get_json(url: str, *, params: dict | None = None, headers: dict | None = None) -> dict:
-    response = requests.get(url, params=params, headers=headers, timeout=30)
-    response.raise_for_status()
-    return response.json()
+    last_error = None
+    for attempt in range(4):
+        try:
+            response = requests.get(url, params=params, headers=headers, timeout=30)
+            if response.status_code in {429, 500, 502, 503, 504} and attempt < 3:
+                time.sleep(2 ** attempt)
+                continue
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            last_error = exc
+            if attempt < 3:
+                time.sleep(2 ** attempt)
+                continue
+            raise
+    raise last_error
 
 
 def item_to_subject(item: dict, category: str, tmdb_type: str, rank: int) -> dict:
@@ -123,7 +137,8 @@ def fetch_douban_details(subject_ids: list[str], detail_cache: dict):
     pending = list(dict.fromkeys(subject_id for subject_id in subject_ids if subject_id not in detail_cache))
     if not pending:
         return
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    # 豆瓣详情接口对并发和短时间重复请求较敏感，降低并发并配合 get_json 重试。
+    with ThreadPoolExecutor(max_workers=4) as executor:
         details = list(executor.map(lambda subject_id: get_json(
             DOUBAN_DETAIL_URL.format(subject_id=subject_id), headers=HEADERS
         ), pending))
@@ -301,9 +316,20 @@ def resolve_tmdb(subject: dict, headers: dict, manual: dict, cache: dict) -> dic
 
 
 def download_poster(poster_path: str) -> Image.Image:
-    response = requests.get(f"{TMDB_IMAGE_BASE}{poster_path}", timeout=30)
-    response.raise_for_status()
-    return Image.open(BytesIO(response.content)).convert("RGB")
+    url = f"{TMDB_IMAGE_BASE}{poster_path}"
+    for attempt in range(4):
+        try:
+            response = requests.get(url, timeout=30)
+            if response.status_code in {429, 500, 502, 503, 504} and attempt < 3:
+                time.sleep(2 ** attempt)
+                continue
+            response.raise_for_status()
+            return Image.open(BytesIO(response.content)).convert("RGB")
+        except (requests.RequestException, OSError):
+            if attempt == 3:
+                raise
+            time.sleep(2 ** attempt)
+    raise RuntimeError(f"TMDB 海报下载失败：{url}")
 
 
 def rounded_mask(size: tuple[int, int], radius: int) -> Image.Image:
