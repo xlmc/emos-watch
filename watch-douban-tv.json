@@ -1,7 +1,7 @@
 {
-  "name": "TMDB大陆电视剧、国漫与国内电影（44部）",
+  "name": "TMDB大陆电视剧、国漫与国内电影（45部）",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-douban-tv.gif",
-  "updated_at": "2026-08-28 05:05:11",
+  "updated_at": "2026-08-28 05:09:56",
   "videos": [
     {
       "tmdb_id": 332800,
@@ -118,154 +118,160 @@
       "sort": 19
     },
     {
+      "tmdb_id": 326385,
+      "tmdb_type": "tv",
+      "title": "底色之重来",
+      "sort": 20
+    },
+    {
       "tmdb_id": 332942,
       "tmdb_type": "tv",
       "title": "机械飞升",
-      "sort": 20
+      "sort": 21
     },
     {
       "tmdb_id": 332645,
       "tmdb_type": "tv",
       "title": "永夜之王",
-      "sort": 21
+      "sort": 22
     },
     {
       "tmdb_id": 332564,
       "tmdb_type": "tv",
       "title": "深渊之上",
-      "sort": 22
+      "sort": 23
     },
     {
       "tmdb_id": 332565,
       "tmdb_type": "tv",
       "title": "我家小师叔不可能这么强",
-      "sort": 23
+      "sort": 24
     },
     {
       "tmdb_id": 330609,
       "tmdb_type": "tv",
       "title": "财神窦占龙",
-      "sort": 24
+      "sort": 25
     },
     {
       "tmdb_id": 331660,
       "tmdb_type": "tv",
       "title": "封天契",
-      "sort": 25
+      "sort": 26
     },
     {
       "tmdb_id": 332020,
       "tmdb_type": "tv",
       "title": "安全警长啦咘啦哆之巡逻行动",
-      "sort": 26
+      "sort": 27
     },
     {
       "tmdb_id": 331747,
       "tmdb_type": "tv",
       "title": "我的坟冢能滋养修为",
-      "sort": 27
+      "sort": 28
     },
     {
       "tmdb_id": 331320,
       "tmdb_type": "tv",
       "title": "三角洲：造物主玩家",
-      "sort": 28
+      "sort": 29
     },
     {
       "tmdb_id": 332035,
       "tmdb_type": "tv",
       "title": "阿木的摸金日记",
-      "sort": 29
+      "sort": 30
     },
     {
       "tmdb_id": 331213,
       "tmdb_type": "tv",
       "title": "缔灵爱水心缠",
-      "sort": 30
+      "sort": 31
     },
     {
       "tmdb_id": 331159,
       "tmdb_type": "tv",
       "title": "谷雨街后巷",
-      "sort": 31
+      "sort": 32
     },
     {
       "tmdb_id": 331064,
       "tmdb_type": "tv",
       "title": "掌门低调点",
-      "sort": 32
+      "sort": 33
     },
     {
       "tmdb_id": 322955,
       "tmdb_type": "tv",
       "title": "成也萧河",
-      "sort": 33
+      "sort": 34
     },
     {
       "tmdb_id": 330506,
       "tmdb_type": "tv",
       "title": "1999！神秘学对策部",
-      "sort": 34
+      "sort": 35
     },
     {
       "tmdb_id": 280564,
       "tmdb_type": "tv",
       "title": "记忆管理局",
-      "sort": 35
+      "sort": 36
     },
     {
       "tmdb_id": 331570,
       "tmdb_type": "tv",
       "title": "المقاتلة الجميلة بحارة القمر آرس",
-      "sort": 36
+      "sort": 37
     },
     {
       "tmdb_id": 330355,
       "tmdb_type": "tv",
       "title": "长生猫",
-      "sort": 37
+      "sort": 38
     },
     {
       "tmdb_id": 330275,
       "tmdb_type": "tv",
       "title": "太古神尊",
-      "sort": 38
+      "sort": 39
     },
     {
       "tmdb_id": 330094,
       "tmdb_type": "tv",
       "title": "界门之下",
-      "sort": 39
+      "sort": 40
     },
     {
       "tmdb_id": 1391021,
       "tmdb_type": "movie",
       "title": "欢迎来龙餐馆",
-      "sort": 40
+      "sort": 41
     },
     {
       "tmdb_id": 1628071,
       "tmdb_type": "movie",
       "title": "宗师叶问2",
-      "sort": 41
+      "sort": 42
     },
     {
       "tmdb_id": 1491920,
       "tmdb_type": "movie",
       "title": "功夫女足",
-      "sort": 42
+      "sort": 43
     },
     {
       "tmdb_id": 1728566,
       "tmdb_type": "movie",
       "title": "致命潮汐",
-      "sort": 43
+      "sort": 44
     },
     {
       "tmdb_id": 1424435,
       "tmdb_type": "movie",
       "title": "万米危机",
-      "sort": 44
+      "sort": 45
     }
   ]
 }
