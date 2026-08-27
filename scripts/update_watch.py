@@ -34,12 +34,14 @@ WATCH_PATH = ROOT / "watch.json"
 VARIETY_WATCH_PATH = ROOT / "watch-variety.json"
 JAPAN_WATCH_PATH = ROOT / "watch-japan.json"
 DOUBAN_TV_WATCH_PATH = ROOT / "watch-douban-tv.json"
+TMDB_MIX_WATCH_PATH = ROOT / "watch-tmdb-mix.json"
 KAMEN_WATCH_PATH = ROOT / "watch-kamen-rider.json"
 SENTAI_WATCH_PATH = ROOT / "watch-super-sentai.json"
 COVER_PATH = ROOT / "cover.gif"
 VARIETY_COVER_PATH = ROOT / "cover-variety.gif"
 JAPAN_COVER_PATH = ROOT / "cover-japan.gif"
 DOUBAN_TV_COVER_PATH = ROOT / "cover-douban-tv.gif"
+TMDB_MIX_COVER_PATH = ROOT / "cover-tmdb-mix.gif"
 KAMEN_COVER_PATH = ROOT / "cover-kamen-rider.gif"
 SENTAI_COVER_PATH = ROOT / "cover-super-sentai.gif"
 
@@ -1016,7 +1018,11 @@ def fetch_tmdb_mainland_tv(
     state: dict,
     limit: int = 20,
 ) -> list[dict]:
-    """抓取 TMDB 当前仍在更新的大陆长篇电视剧，按首播时间倒序。"""
+    """抓取 TMDB 当前仍在更新的大陆长篇电视剧，按首播时间倒序。
+
+    TMDB 的中国大陆条目里会混入微短剧、竖屏剧和游戏/宣传类条目。
+    先用质量和长剧条件筛选，再按上线时间输出，避免为了凑满 20 部而混入明显异常内容。
+    """
     today = now.date()
     today_text = today.isoformat()
     recent_text = (today - timedelta(days=60)).isoformat()
@@ -1026,7 +1032,8 @@ def fetch_tmdb_mainland_tv(
         headers,
         {
             "language": "zh-CN",
-            "sort_by": "first_air_date.desc",
+            # 先从较成熟、热度更高的条目中挑选候选；最终输出仍按首播日期倒序。
+            "sort_by": "popularity.desc",
             "first_air_date.lte": today_text,
             "with_origin_country": "CN",
             "with_genres": "18",
@@ -1040,7 +1047,7 @@ def fetch_tmdb_mainland_tv(
     if not isinstance(finale_state, dict):
         finale_state = {}
 
-    results = []
+    candidates = []
     for item in discovered:
         data = get_json(
             f"{TMDB_API_BASE}/tv/{item['id']}",
@@ -1066,7 +1073,14 @@ def fetch_tmdb_mainland_tv(
         title_text = " ".join(
             str(data.get(key) or "") for key in ("name", "original_name")
         )
-        if any(keyword in title_text for keyword in ("赛事", "自行车赛", "文学经典", "寓言", "警长", "巡逻行动", "玩家", "游戏")):
+        if any(
+            keyword in title_text
+            for keyword in (
+                "赛事", "自行车赛", "文学经典", "寓言", "警长", "巡逻行动", "玩家", "游戏",
+                "微短剧", "短剧", "竖屏", "快穿", "系统", "总裁", "闪婚", "离婚",
+                "替身", "千金", "萌宝", "神医", "王妃", "王爷", "夫人", "少爷",
+            )
+        ):
             continue
 
         key = f"tv:{data['id']}"
@@ -1094,21 +1108,44 @@ def fetch_tmdb_mainland_tv(
         if not is_currently_updating and not is_finale_grace_period:
             continue
         run_times = [int(value) for value in (data.get("episode_run_time") or []) if str(value).isdigit()]
-        if run_times and max(run_times) < 20:
+        max_runtime = max(run_times, default=0)
+        try:
+            episode_count = int(data.get("number_of_episodes") or 0)
+        except (TypeError, ValueError):
+            episode_count = 0
+        try:
+            vote_count = int(data.get("vote_count") or 0)
+        except (TypeError, ValueError):
+            vote_count = 0
+        popularity = float(data.get("popularity") or item.get("popularity") or 0)
+        # 长剧优先：有片长时至少 20 分钟；没有片长的条目，必须有足够集数或投票数据。
+        if max_runtime and max_runtime < 20:
+            continue
+        if not max_runtime and episode_count < 12 and vote_count < 20:
             continue
 
-        results.append(
+        quality_score = (
+            popularity
+            + min(float(data.get("vote_average") or 0), 10.0) * 1.5
+            + min(vote_count, 500) / 100
+            + min(max_runtime, 60) / 20
+            + min(episode_count, 60) / 30
+        )
+
+        candidates.append(
             {
                 **tmdb_catalog_item(data, "tv", "电视剧"),
                 "first_air_date": first_air_date,
                 "finale_date": finale_date,
+                "quality_score": quality_score,
             }
         )
-        if len(results) >= limit:
-            break
 
     state["tv_finale_dates_v1"] = finale_state
-    return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
+    # 先取质量更可靠的候选，再按用户要求以首播时间从新到旧排列。
+    candidates.sort(key=lambda value: value["quality_score"], reverse=True)
+    selected = candidates[: max(limit * 2, limit)]
+    return sorted(selected, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
 
 
 def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20) -> list[dict]:
@@ -1656,14 +1693,18 @@ def main():
     animation_items = fetch_tmdb_mainland_animation(headers, now, limit=20)
     movie_items = fetch_tmdb_mainland_movies(headers, now, limit=5)
     mixed_items = tv_items + animation_items + movie_items
-    tv_feed_should_update = mixed_feed_changed(mixed_items, DOUBAN_TV_WATCH_PATH)
+    # 新文件名用于避开旧 watch-douban-tv.json 的 CDN 长缓存；旧文件继续同步，兼容已经填入旧地址的用户。
+    tv_output_path = TMDB_MIX_WATCH_PATH if TMDB_MIX_WATCH_PATH.exists() else DOUBAN_TV_WATCH_PATH
+    tv_feed_should_update = mixed_feed_changed(mixed_items, tv_output_path)
     tv_cover_candidates = [item for item in mixed_items if item.get("poster_path")]
     if len(tv_cover_candidates) < 3:
         raise RuntimeError(f"TMDB 混合片单可用海报不足 3 张，当前仅有 {len(tv_cover_candidates)} 张")
     tv_selected = select_daily_cover(tv_cover_candidates, now, DOUBAN_TV_SELECTION_PATH)
-    make_cover(tv_selected, now, DOUBAN_TV_COVER_PATH)
+    make_cover(tv_selected, now, TMDB_MIX_COVER_PATH)
     if tv_feed_should_update:
-        write_tmdb_mixed_feed(mixed_items, base, now, DOUBAN_TV_WATCH_PATH, DOUBAN_TV_COVER_PATH)
+        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_WATCH_PATH, TMDB_MIX_COVER_PATH)
+        write_tmdb_mixed_feed(mixed_items, base, now, DOUBAN_TV_WATCH_PATH, TMDB_MIX_COVER_PATH)
+    shutil.copyfile(TMDB_MIX_COVER_PATH, DOUBAN_TV_COVER_PATH)
 
     kamen_items = fetch_franchise_series(KAMEN_RIDER_SERIES, headers, now)
     kamen_selected = write_franchise_feed(
