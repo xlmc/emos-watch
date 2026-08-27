@@ -49,7 +49,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A watch.json watch-variety.json watch-douban-tv.json watch-tmdb-mix.json watch-tmdb-mix-v2.json watch-kamen-rider.json watch-super-sentai.json cover.gif cover-variety.gif cover-douban-tv.gif cover-tmdb-mix.gif cover-tmdb-mix-v2.gif cover-kamen-rider.gif cover-super-sentai.gif data
+          git add -A watch.json watch-variety.json watch-douban-tv.json watch-tmdb-mix.json watch-tmdb-mix-v2.json watch-tmdb-mix-v3.json watch-kamen-rider.json watch-super-sentai.json cover.gif cover-variety.gif cover-douban-tv.gif cover-tmdb-mix.gif cover-tmdb-mix-v2.gif cover-tmdb-mix-v3.gif cover-kamen-rider.gif cover-super-sentai.gif data
           git diff --cached --quiet || git commit -m "更新 TMDB 电视剧综艺及特摄正剧片单"
           git push
 
@@ -60,6 +60,7 @@ jobs:
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-douban-tv.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-tmdb-mix.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-tmdb-mix-v2.json
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-tmdb-mix-v3.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-kamen-rider.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-super-sentai.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover.gif
@@ -67,6 +68,7 @@ jobs:
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-douban-tv.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-tmdb-mix.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-tmdb-mix-v2.gif
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-tmdb-mix-v3.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-kamen-rider.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-super-sentai.gif
 

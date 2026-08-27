@@ -34,7 +34,8 @@ WATCH_PATH = ROOT / "watch.json"
 VARIETY_WATCH_PATH = ROOT / "watch-variety.json"
 JAPAN_WATCH_PATH = ROOT / "watch-japan.json"
 DOUBAN_TV_WATCH_PATH = ROOT / "watch-douban-tv.json"
-TMDB_MIX_WATCH_PATH = ROOT / "watch-tmdb-mix-v2.json"
+TMDB_MIX_WATCH_PATH = ROOT / "watch-tmdb-mix-v3.json"
+TMDB_MIX_V2_WATCH_PATH = ROOT / "watch-tmdb-mix-v2.json"
 TMDB_MIX_LEGACY_WATCH_PATH = ROOT / "watch-tmdb-mix.json"
 KAMEN_WATCH_PATH = ROOT / "watch-kamen-rider.json"
 SENTAI_WATCH_PATH = ROOT / "watch-super-sentai.json"
@@ -42,7 +43,8 @@ COVER_PATH = ROOT / "cover.gif"
 VARIETY_COVER_PATH = ROOT / "cover-variety.gif"
 JAPAN_COVER_PATH = ROOT / "cover-japan.gif"
 DOUBAN_TV_COVER_PATH = ROOT / "cover-douban-tv.gif"
-TMDB_MIX_COVER_PATH = ROOT / "cover-tmdb-mix-v2.gif"
+TMDB_MIX_COVER_PATH = ROOT / "cover-tmdb-mix-v3.gif"
+TMDB_MIX_V2_COVER_PATH = ROOT / "cover-tmdb-mix-v2.gif"
 TMDB_MIX_LEGACY_COVER_PATH = ROOT / "cover-tmdb-mix.gif"
 KAMEN_COVER_PATH = ROOT / "cover-kamen-rider.gif"
 SENTAI_COVER_PATH = ROOT / "cover-super-sentai.gif"
@@ -1824,9 +1826,11 @@ def main():
     animation_items = fetch_tmdb_mainland_animation(headers, now, limit=20)
     movie_items = fetch_tmdb_mainland_movies(headers, now, limit=5)
     mixed_items = tv_items + animation_items + movie_items
-    # v2 文件名用于强制绕过旧 CDN 缓存；旧文件继续同步，兼容已经填入旧地址的用户。
+    # v3 文件名用于强制绕过 jsDelivr 的旧 CDN 缓存；旧文件继续同步，兼容已经填入旧地址的用户。
     if TMDB_MIX_WATCH_PATH.exists():
         tv_output_path = TMDB_MIX_WATCH_PATH
+    elif TMDB_MIX_V2_WATCH_PATH.exists():
+        tv_output_path = TMDB_MIX_V2_WATCH_PATH
     elif TMDB_MIX_LEGACY_WATCH_PATH.exists():
         tv_output_path = TMDB_MIX_LEGACY_WATCH_PATH
     else:
@@ -1844,8 +1848,10 @@ def main():
     make_cover(tv_selected, now, TMDB_MIX_COVER_PATH)
     if tv_feed_should_update:
         write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_WATCH_PATH, TMDB_MIX_COVER_PATH)
+        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_V2_WATCH_PATH, TMDB_MIX_COVER_PATH)
         write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_LEGACY_WATCH_PATH, TMDB_MIX_COVER_PATH)
         write_tmdb_mixed_feed(mixed_items, base, now, DOUBAN_TV_WATCH_PATH, TMDB_MIX_COVER_PATH)
+    shutil.copyfile(TMDB_MIX_COVER_PATH, TMDB_MIX_V2_COVER_PATH)
     shutil.copyfile(TMDB_MIX_COVER_PATH, TMDB_MIX_LEGACY_COVER_PATH)
     shutil.copyfile(TMDB_MIX_COVER_PATH, DOUBAN_TV_COVER_PATH)
 

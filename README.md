@@ -31,7 +31,7 @@
 4. EMOS 动态片单地址：
 
    ```text
-   片单 1（TMDB大陆电视剧、国漫与国内电影）：https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-tmdb-mix-v2.json
+   片单 1（TMDB大陆电视剧、国漫与国内电影）：https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-tmdb-mix-v3.json
    
    片单 2（国内流媒体热播综艺）：https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json
 
@@ -53,7 +53,7 @@ https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json
 片单 1（TMDB大陆电视剧、国漫与国内电影）：
 
 ```text
-https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-tmdb-mix-v2.json
+https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-tmdb-mix-v3.json
 ```
 
 旧综艺封面兼容地址：
@@ -71,7 +71,7 @@ https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif
 片单 1 封面（TMDB大陆电视剧、国漫与国内电影）：
 
 ```text
-https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-tmdb-mix-v2.gif
+https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-tmdb-mix-v3.gif
 ```
 
 片单 3 封面（假面骑士正剧）：
