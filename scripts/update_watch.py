@@ -1027,6 +1027,7 @@ def fetch_tmdb_mainland_tv(
     """
     today = now.date()
     today_text = today.isoformat()
+    recent_start_text = (today - timedelta(days=365)).isoformat()
     # 电视剧有时会因为 TMDB 的分集资料延迟而没有在最近几周更新，
     # 适当放宽检测窗口，但仍要求状态为正在制作/连载。
     recent_text = (today - timedelta(days=180)).isoformat()
@@ -1085,6 +1086,10 @@ def fetch_tmdb_mainland_tv(
         first_air_date = data.get("first_air_date") or item.get("first_air_date") or ""
         if not first_air_date or first_air_date > today_text:
             continue
+        # 避免把《乡村爱情》这类多年以前开始、但被 TMDB 标为持续制作的老系列
+        # 当作“最新上线电视剧”；当前片单只看近一年内上线且仍在更新的剧集。
+        if first_air_date < recent_start_text:
+            continue
         origin_country = data.get("origin_country") or item.get("origin_country") or []
         if "CN" not in origin_country and data.get("original_language") not in {"zh", "cn"}:
             continue
@@ -1108,6 +1113,7 @@ def fetch_tmdb_mainland_tv(
                 "微短剧", "短剧", "竖屏", "快穿", "系统", "总裁", "闪婚", "离婚",
                 "替身", "千金", "萌宝", "神医", "赘婿", "逆袭", "重生", "契约",
                 "霹雳", "布袋戏", "戏曲", "舞台剧", "纪录片", "纪录",
+                "中配", "开门大吉", "X调查",
             )
         ):
             continue
@@ -1329,14 +1335,20 @@ def fetch_tmdb_mainland_movies(headers: dict, now: datetime, limit: int = 5) -> 
             release_date = data.get("release_date") or item.get("release_date") or ""
             if not release_date or release_date > today_text:
                 continue
-            regional_release_dates = [
-                entry.get("release_date", "")[:10]
+            release_date_by_country = {
+                country.get("iso_3166_1"): [
+                    entry.get("release_date", "")[:10]
+                    for entry in (country.get("release_dates") or [])
+                    if entry.get("release_date")
+                ]
                 for country in (data.get("release_dates", {}).get("results") or [])
-                for entry in (country.get("release_dates") or [])
-                if entry.get("release_date")
-            ]
-            if regional_release_dates and min(regional_release_dates) > today_text:
-                continue
+            }
+            cn_release_dates = release_date_by_country.get("CN") or []
+            if cn_release_dates:
+                if min(cn_release_dates) > today_text:
+                    continue
+                # 国内电影按大陆实际发行日期排序，而不是按海外或节展日期排序。
+                release_date = min(cn_release_dates)
             if "CN" not in (data.get("origin_country") or item.get("origin_country") or []):
                 continue
             if data.get("status") != "Released":
