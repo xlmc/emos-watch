@@ -1031,7 +1031,7 @@ def fetch_tmdb_mainland_tv(
             "with_origin_country": "CN",
             "with_genres": "18",
             "without_genres": "16,99,10764,10763,10767,10762",
-            "vote_count.gte": 3,
+            "vote_count.gte": 5,
             "include_null_first_air_dates": "false",
         },
         limit=100,
@@ -1068,6 +1068,8 @@ def fetch_tmdb_mainland_tv(
             str(data.get(key) or "") for key in ("name", "original_name")
         )
         if any(keyword in title_text for keyword in ("赛事", "自行车赛", "文学经典", "寓言", "警长", "巡逻行动", "玩家", "游戏")):
+            continue
+        if int(data.get("vote_count") or 0) >= 5 and float(data.get("vote_average") or 0) < 5.5:
             continue
 
         key = f"tv:{data['id']}"
@@ -1125,7 +1127,7 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
             "with_original_language": "zh",
             "with_genres": "16",
             "without_genres": "99,10764,10767",
-            "vote_count.gte": 1,
+            "vote_count.gte": 5,
             "include_null_first_air_dates": "false",
         },
         limit=limit,
@@ -1136,7 +1138,7 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
         if not item.get("first_air_date"):
             continue
         title_text = " ".join(str(item.get(key) or "") for key in ("name", "original_name"))
-        if any(keyword in title_text for keyword in ("特别篇", "剧场版", "宣传片", "短片", "玩家", "安全警长", "摸金")):
+        if any(keyword in title_text for keyword in ("特别篇", "剧场版", "宣传片", "短片", "玩家", "安全警长", "摸金", "绘本", "游戏", "怪兽大电影")):
             continue
         results.append(tmdb_catalog_item(item, "tv", "国漫"))
     return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
@@ -1205,10 +1207,8 @@ def fetch_tmdb_mainland_movies(headers: dict, now: datetime, limit: int = 5) -> 
                 }
             )
 
-    # 先取当前月和上个月；若长片不足 5 部，再向前扩展半年补足。
-    collect_movies(discover_movies(start_text, 5))
-    if len(results) < limit:
-        collect_movies(discover_movies((now.date() - timedelta(days=180)).isoformat(), 10))
+    # 只取近期上映的长片；不足 5 部时返回实际符合条件的数量，不混入老片或短片。
+    collect_movies(discover_movies(start_text, 10))
     return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
 
 
