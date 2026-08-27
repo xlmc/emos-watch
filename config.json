@@ -1,6 +1,9 @@
 {
   "site_base_url": "https://xlmc.github.io/emos-watch",
-  "douban_limit": 50,
+  "tv_limit": 20,
+  "movie_limit": 10,
+  "animation_limit": 20,
   "cover_width": 1600,
   "cover_height": 900
 }
+
