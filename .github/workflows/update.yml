@@ -1,4 +1,4 @@
-name: 更新热门日番与国内流媒体综艺片单
+name: 更新豆瓣热门电视剧与国内流媒体综艺片单
 
 on:
   workflow_dispatch:
@@ -47,14 +47,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A watch.json watch-japan.json cover.gif cover-japan.gif data
-          git diff --cached --quiet || git commit -m "更新热门日番与国内流媒体综艺片单"
+          git add -A watch.json watch-douban-tv.json cover.gif cover-douban-tv.gif data
+          git diff --cached --quiet || git commit -m "更新豆瓣热门电视剧与国内流媒体综艺片单"
           git push
 
       - name: Refresh jsDelivr cover cache
         run: |
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
-          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-japan.json
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-douban-tv.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover.gif
-          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-japan.gif
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-douban-tv.gif
 

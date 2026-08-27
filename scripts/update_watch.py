@@ -22,12 +22,16 @@ MAPPING_PATH = ROOT / "mapping.json"
 DATA_DIR = ROOT / "data"
 DATA_DIR.mkdir(exist_ok=True)
 CACHE_PATH = DATA_DIR / "mapping-cache.json"
+RELEASE_STATE_PATH = DATA_DIR / "release-state.json"
 SELECTION_PATH = DATA_DIR / "cover-selection.json"
 JAPAN_SELECTION_PATH = DATA_DIR / "cover-japan-selection.json"
+DOUBAN_TV_SELECTION_PATH = DATA_DIR / "cover-douban-tv-selection.json"
 WATCH_PATH = ROOT / "watch.json"
 JAPAN_WATCH_PATH = ROOT / "watch-japan.json"
+DOUBAN_TV_WATCH_PATH = ROOT / "watch-douban-tv.json"
 COVER_PATH = ROOT / "cover.gif"
 JAPAN_COVER_PATH = ROOT / "cover-japan.gif"
+DOUBAN_TV_COVER_PATH = ROOT / "cover-douban-tv.gif"
 
 DOUBAN_TV_URL = "https://m.douban.com/rexxar/api/v2/subject/recent_hot/tv"
 DOUBAN_SEARCH_URL = "https://movie.douban.com/j/search_subjects"
@@ -569,6 +573,109 @@ def douban_release_date(detail: dict, now: datetime) -> str | None:
     return None
 
 
+def douban_first_release_date(detail: dict, now: datetime) -> str | None:
+    """提取豆瓣条目的首个已发生上映/上线日期，用于最新上线排序。"""
+    dates = []
+    values = list(detail.get("pubdates") or [])
+    pubdate = detail.get("pubdate")
+    if isinstance(pubdate, list):
+        values.extend(pubdate)
+    for value in values:
+        match = re.search(
+            r"(20\d{2})[-/.年](\d{1,2})(?:[-/.月](\d{1,2}))?",
+            str(value),
+        )
+        if not match:
+            continue
+        year, month = int(match.group(1)), int(match.group(2))
+        day = int(match.group(3) or 1)
+        try:
+            date = datetime(year, month, day).date()
+        except ValueError:
+            continue
+        if date <= now.date():
+            dates.append(date.isoformat())
+    if dates:
+        return min(dates)
+
+    year = detail.get("year")
+    if str(year).isdigit() and int(year) <= now.year:
+        return f"{int(year):04d}-01-01"
+    return None
+
+
+def fetch_douban_hot_mainland_tv(
+    headers: dict,
+    now: datetime,
+    manual: dict,
+    cache: dict,
+    limit: int = 50,
+) -> list[dict]:
+    """抓取豆瓣热门大陆电视剧，按豆瓣首播/上线日期从新到旧映射为 TMDB TV ID。"""
+    payload = get_json(
+        DOUBAN_TV_URL,
+        params={"start": 0, "limit": max(100, limit + 50), "category": "热门", "type": "tv_domestic"},
+        headers=HEADERS,
+    )
+    raw_items = [
+        item
+        for item in payload.get("items", [])
+        if item.get("type") == "tv" and MAINLAND in item.get("card_subtitle", "")
+    ]
+    subject_ids = list(dict.fromkeys(str(item["id"]) for item in raw_items if item.get("id")))
+    detail_cache = {}
+    fetch_douban_details(subject_ids, detail_cache)
+
+    subjects = []
+    seen = set()
+    for rank, item in enumerate(raw_items, start=1):
+        subject_id = str(item.get("id", ""))
+        if not subject_id or subject_id in seen:
+            continue
+        detail = detail_cache.get(subject_id, {})
+        if not (is_mainland(detail) or MAINLAND in item.get("card_subtitle", "")):
+            continue
+        if is_animation(detail):
+            continue
+        release_date = douban_first_release_date(detail, now)
+        if not release_date:
+            continue
+        seen.add(subject_id)
+        year = detail.get("year") or release_date[:4]
+        subjects.append(
+            {
+                "douban_id": subject_id,
+                "title": detail.get("title") or item.get("title") or "",
+                "year": int(year) if str(year).isdigit() else None,
+                "douban_rank": rank,
+                "category": "电视剧",
+                "tmdb_type": "tv",
+                "douban_url": f"https://movie.douban.com/subject/{subject_id}/",
+                "first_air_date": release_date,
+            }
+        )
+
+    subjects.sort(key=lambda item: (item["first_air_date"], -item["douban_rank"]), reverse=True)
+    resolved = []
+    resolved_tmdb_ids = set()
+    for subject in subjects:
+        match = resolve_tmdb(subject, headers, manual, cache)
+        if not match or not match.get("poster_path") or match["id"] in resolved_tmdb_ids:
+            continue
+        resolved_tmdb_ids.add(match["id"])
+        resolved.append(
+            {
+                **subject,
+                "tmdb_id": match["id"],
+                "tmdb_name": match.get("name", subject["title"]),
+                "poster_path": match["poster_path"],
+            }
+        )
+        if len(resolved) >= limit:
+            break
+    return resolved
+
+
 def fetch_douban_japanese_anime(
     headers: dict,
     now: datetime,
@@ -892,7 +999,16 @@ def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list
         ):
             continue
 
-        last_air = (data.get("last_episode_to_air") or {}).get("air_date") or data.get("last_air_date") or ""
+        last_episode = data.get("last_episode_to_air") or {}
+        episode_type = str(last_episode.get("episode_type") or "").lower()
+        try:
+            episode_number = int(last_episode.get("episode_number") or 0)
+        except (TypeError, ValueError):
+            episode_number = 0
+        main_episode_date = ""
+        if episode_type not in {"special", "clip", "trailer"} and episode_number > 0:
+            main_episode_date = last_episode.get("air_date") or ""
+        last_air = main_episode_date or data.get("last_air_date") or ""
         next_air = (data.get("next_episode_to_air") or {}).get("air_date") or ""
         last_is_recent = bool(last_air and last_air >= recent_date)
         next_is_near = bool(next_air and next_air <= future_date)
@@ -907,6 +1023,7 @@ def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list
                 "first_air_date": data.get("first_air_date") or "",
                 "last_air_date": last_air,
                 "next_air_date": next_air,
+                "sort_date": last_air or next_air or data.get("first_air_date") or "",
                 "popularity": float(data.get("popularity") or item.get("popularity") or 0),
                 "poster_path": data.get("poster_path") or item.get("poster_path"),
             }
@@ -914,7 +1031,8 @@ def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list
         if len(results) >= limit:
             break
 
-    results.sort(key=lambda item: (item["popularity"], item["last_air_date"], item["next_air_date"]), reverse=True)
+    # 只按正片最近一次上线时间排序；热度只用于发现候选，不参与最终排序。
+    results.sort(key=lambda item: (item["sort_date"], item["tmdb_id"]), reverse=True)
     return results[:limit]
 
 
@@ -946,61 +1064,129 @@ def select_daily_cover(candidates: list[dict], now: datetime, selection_path: Pa
     return selected
 
 
+def item_release_date(item: dict, feed_key: str) -> str:
+    if feed_key == "douban_tv":
+        return item.get("first_air_date") or ""
+    return item.get("sort_date") or ""
+
+
+def detect_daily_release(
+    items: list[dict],
+    feed_key: str,
+    output_path: Path,
+    now: datetime,
+    state: dict,
+) -> bool:
+    """仅在发现当天的新首播/正片时允许更新视频列表。"""
+    previous = state.get(feed_key) or {}
+    current = {}
+    today = now.strftime("%Y-%m-%d")
+    has_new_release = not output_path.exists() or not previous
+    for item in items:
+        release_date = item_release_date(item, feed_key)
+        if not release_date:
+            continue
+        key = f"{item['tmdb_type']}:{item['tmdb_id']}"
+        current[key] = release_date
+        if release_date == today and previous.get(key) != today:
+            has_new_release = True
+    state[feed_key] = current
+    return has_new_release
+
+
+def cover_candidates_for_feed(
+    current_items: list[dict],
+    output_path: Path,
+    should_update_feed: bool,
+) -> list[dict]:
+    """无新正片时，封面仍从当前片单已有的视频中抽取。"""
+    if should_update_feed or not output_path.exists():
+        return [item for item in current_items if item.get("poster_path")]
+    current_map = {(item["tmdb_type"], item["tmdb_id"]): item for item in current_items}
+    existing = load_json(output_path, {}).get("videos", [])
+    preserved = [
+        current_map[(item.get("tmdb_type"), item.get("tmdb_id"))]
+        for item in existing
+        if (item.get("tmdb_type"), item.get("tmdb_id")) in current_map
+        and current_map[(item.get("tmdb_type"), item.get("tmdb_id"))].get("poster_path")
+    ]
+    return preserved or [item for item in current_items if item.get("poster_path")]
+
+
 def main():
     config = load_json(CONFIG_PATH, {})
     manual = load_json(MAPPING_PATH, {})
     cache = load_json(CACHE_PATH, {})
+    release_state = load_json(RELEASE_STATE_PATH, {})
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
     headers = tmdb_headers()
     base = config["site_base_url"].rstrip("/")
 
-    japan_items = fetch_douban_japanese_anime(headers, now, manual, cache, limit=50)
-    japan_cover_candidates = [item for item in japan_items if item.get("poster_path")]
-    if len(japan_cover_candidates) < 3:
-        raise RuntimeError(f"今年以来 TMDB/Bangumi/AniList 日番海报不足 3 张，当前仅有 {len(japan_cover_candidates)} 张")
-    japan_selected = select_daily_cover(japan_cover_candidates, now, JAPAN_SELECTION_PATH)
-    make_cover(japan_selected, now, JAPAN_COVER_PATH)
-    japan_watch = {
-        "name": f"今年最新日番（{len(japan_items)}部）",
-        "cover": f"{base}/cover-japan.gif",
-        "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
-        "videos": [
-            {
-                "tmdb_id": item["tmdb_id"],
-                "tmdb_type": item["tmdb_type"],
-                "title": item["title"],
-                "sort": position,
-            }
-            for position, item in enumerate(japan_items, start=1)
-        ],
-    }
-    JAPAN_WATCH_PATH.write_text(json.dumps(japan_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    douban_tv_items = fetch_douban_hot_mainland_tv(headers, now, manual, cache, limit=50)
+    douban_tv_should_update = detect_daily_release(
+        douban_tv_items, "douban_tv", DOUBAN_TV_WATCH_PATH, now, release_state
+    )
+    douban_tv_cover_candidates = cover_candidates_for_feed(
+        douban_tv_items, DOUBAN_TV_WATCH_PATH, douban_tv_should_update
+    )
+    if len(douban_tv_cover_candidates) < 3:
+        raise RuntimeError(f"豆瓣热门大陆电视剧海报不足 3 张，当前仅有 {len(douban_tv_cover_candidates)} 张")
+    douban_tv_selected = select_daily_cover(douban_tv_cover_candidates, now, DOUBAN_TV_SELECTION_PATH)
+    make_cover(douban_tv_selected, now, DOUBAN_TV_COVER_PATH)
+    if douban_tv_should_update:
+        douban_tv_watch = {
+            "name": f"豆瓣热门大陆电视剧（{len(douban_tv_items)}部）",
+            "cover": f"{base}/cover-douban-tv.gif",
+            "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+            "videos": [
+                {
+                    "tmdb_id": item["tmdb_id"],
+                    "tmdb_type": item["tmdb_type"],
+                    "title": item["title"],
+                    "sort": position,
+                }
+                for position, item in enumerate(douban_tv_items, start=1)
+            ],
+        }
+        DOUBAN_TV_WATCH_PATH.write_text(
+            json.dumps(douban_tv_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
 
     variety_items = fetch_chinese_variety(headers, now, limit=50)
-    variety_cover_candidates = [item for item in variety_items if item.get("poster_path")]
+    variety_should_update = detect_daily_release(
+        variety_items, "variety", WATCH_PATH, now, release_state
+    )
+    variety_cover_candidates = cover_candidates_for_feed(
+        variety_items, WATCH_PATH, variety_should_update
+    )
     if len(variety_cover_candidates) < 3:
         raise RuntimeError(f"指定平台的在播综艺海报不足 3 张，当前仅有 {len(variety_cover_candidates)} 张")
     variety_selected = select_daily_cover(variety_cover_candidates, now, SELECTION_PATH)
     make_cover(variety_selected, now, COVER_PATH)
-    variety_watch = {
-        "name": f"国内流媒体热播更新综艺（{len(variety_items)}部）",
-        "cover": f"{base}/cover.gif",
-        "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
-        "videos": [
-            {
-                "tmdb_id": item["tmdb_id"],
-                "tmdb_type": item["tmdb_type"],
-                "title": item["title"],
-                "sort": position,
-            }
-            for position, item in enumerate(variety_items, start=1)
-        ],
-    }
-    WATCH_PATH.write_text(json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if variety_should_update:
+        variety_watch = {
+            "name": f"国内流媒体热播更新综艺（{len(variety_items)}部）",
+            "cover": f"{base}/cover.gif",
+            "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+            "videos": [
+                {
+                    "tmdb_id": item["tmdb_id"],
+                    "tmdb_type": item["tmdb_type"],
+                    "title": item["title"],
+                    "sort": position,
+                }
+                for position, item in enumerate(variety_items, start=1)
+            ],
+        }
+        WATCH_PATH.write_text(json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    RELEASE_STATE_PATH.write_text(
+        json.dumps(release_state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
-        f"已生成日番 {len(japan_items)} 部和国内流媒体热播综艺 {len(variety_items)} 部；"
-        f"今日封面：{', '.join(item['title'] for item in japan_selected)} / "
+        f"已生成豆瓣热门大陆电视剧 {len(douban_tv_items)} 部和国内流媒体热播综艺 {len(variety_items)} 部；"
+        f"视频更新：电视剧={'是' if douban_tv_should_update else '否'}，综艺={'是' if variety_should_update else '否'}；"
+        f"今日封面：{', '.join(item['title'] for item in douban_tv_selected)} / "
         f"{', '.join(item['title'] for item in variety_selected)}"
     )
 

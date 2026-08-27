@@ -1,11 +1,11 @@
 # EMOS 热门片单
 
-这个仓库每天北京时间约 07:50、16:50 更新两个 EMOS 动态片单。
+这个仓库每天北京时间约 07:50、16:50 检查两个 EMOS 动态片单。
 
-- 片单 1：以豆瓣为主源获取今年 1 月 1 日至今天已上线的日本 TV 动画，读取豆瓣上映/上线日期后按最新时间从新到旧排列，最多 50 部，不足就返回已有数量，再映射为 TMDB ID。
-- 片单 2：从 TMDB 筛选中国大陆、综艺类型、优酷/腾讯视频/芒果 TV/爱奇艺网络或流媒体信息，并要求仍在制作、近期播出或即将播出，按热度返回最多 50 部。
+- 片单 1：获取豆瓣热门的中国大陆电视剧，读取豆瓣详情里的首播/上线日期，按日期从新到旧排列，最多 50 部，再映射为 TMDB TV ID。
+- 片单 2：从 TMDB 筛选中国大陆、综艺类型、优酷/腾讯视频/芒果 TV/爱奇艺网络或流媒体信息，并要求仍在制作、近期播出或即将播出；最终只按正片最近一次上线日期从新到旧排列，最多 50 部。
 
-两个片单最终都输出 TMDB ID 和类型，封面只下载 TMDB 海报生成。每天从各自片单随机抽取 3 部，生成 960×528 的液态玻璃水波 GIF；当天两次更新保持同一组，第二天自动换图。封面地址固定不变，Actions 每次生成后会自动刷新 jsDelivr 缓存，因此 EMOS 只需填写一次图片地址。
+两个片单最终都输出 TMDB ID 和类型，封面只下载 TMDB 海报生成。每天从各自片单随机抽取 3 部，生成 960×528 的液态玻璃水波 GIF；当天两次检查保持同一组，第二天自动换图。视频列表只有检测到当天有电视剧首播或综艺正片上线时才更新；当天没有新正片时保留原视频顺序。封面地址固定不变，Actions 每次生成后会自动刷新 jsDelivr 缓存，因此 EMOS 只需填写一次图片地址。
 
 ## 第一次设置
 
@@ -24,12 +24,12 @@
    Folder：/(root)
    ```
 
-3. 到 `Actions` 手动运行“更新热门日番与国内流媒体综艺片单”。第一次成功后，仓库会出现 `watch.json`、`watch-japan.json`、`cover.gif` 和 `cover-japan.gif`。
+3. 到 `Actions` 手动运行“更新豆瓣热门电视剧与国内流媒体综艺片单”。第一次成功后，仓库会出现 `watch-douban-tv.json`、`watch.json`、`cover-douban-tv.gif` 和 `cover.gif`。
 
 4. EMOS 动态片单地址：
 
    ```text
-   片单 1（日番）：https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-japan.json
+   片单 1（豆瓣热门大陆电视剧）：https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-douban-tv.json
    
    片单 2（国内流媒体热播综艺）：https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
    ```
@@ -44,10 +44,10 @@ EMOS 推荐使用 jsDelivr CDN 地址：
 https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
 ```
 
-片单 1（日番）：
+片单 1（豆瓣热门大陆电视剧）：
 
 ```text
-https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-japan.json
+https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-douban-tv.json
 ```
 
 封面地址为：
@@ -56,10 +56,10 @@ https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-japan.json
 https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover.gif
 ```
 
-片单 1 封面：
+片单 1 封面（豆瓣热门大陆电视剧）：
 
 ```text
-https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-japan.gif
+https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-douban-tv.gif
 ```
 
 ## 使用你的域名
@@ -89,5 +89,5 @@ https://watch.zzzj.de5.net/watch.json
 
 ## 数据源说明
 
-片单 1 以豆瓣条目和日期为准，再用 TMDB 搜索映射为 TMDB TV ID，封面只使用 TMDB 海报。片单 2 使用 TMDB 的综艺类型、国内来源、网络/流媒体字段和播出状态；当指定平台当前不足 50 部时，返回实际筛选到的数量，不混入其他平台或已结束节目。
+片单 1 以豆瓣热门大陆电视剧条目和日期为准，再用 TMDB 搜索映射为 TMDB TV ID，封面只使用 TMDB 海报。片单 2 使用 TMDB 的综艺类型、国内来源、网络/流媒体字段和播出状态，并以 `last_episode_to_air` 的正片日期排序；当指定平台当前不足 50 部时，返回实际筛选到的数量，不混入其他平台或已结束节目。
 
