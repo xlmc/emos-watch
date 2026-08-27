@@ -30,8 +30,22 @@
 4. EMOS 动态片单地址：
 
    ```text
-   https://xlmc.github.io/emos-watch/watch.json
+   https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
    ```
+
+## CDN 地址
+
+EMOS 推荐使用 jsDelivr CDN 地址：
+
+```text
+https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
+```
+
+封面地址为：
+
+```text
+https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover.jpg
+```
 
 ## 使用你的域名
 
