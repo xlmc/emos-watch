@@ -1040,7 +1040,6 @@ def fetch_tmdb_mainland_tv(
             "sort_by": "popularity.desc",
             "first_air_date.lte": today_text,
             "with_origin_country": "CN",
-            "with_genres": "18",
             "without_genres": "16,99,10764,10763,10767,10762",
             "include_null_first_air_dates": "false",
         },
@@ -1148,13 +1147,8 @@ def fetch_tmdb_mainland_tv(
         except (TypeError, ValueError):
             vote_count = 0
         popularity = float(data.get("popularity") or item.get("popularity") or 0)
-        # 长剧优先：有片长时至少 20 分钟；没有片长的条目，必须有完整的长季信息。
-        if max_runtime and max_runtime < 20:
-            continue
-        # 允许《邻人可疑》这类正常的短篇网络剧；只通过片长、状态和质量信号
-        # 排除明显的竖屏微短剧、宣传项目和无质量信号条目，长剧仍由质量分优先。
-        if not max_runtime and episode_count < 12:
-            continue
+        # 长剧只通过质量分优先，不按集数/片长硬删；《邻人可疑》这类正常短篇
+        # 网络剧也可以进入，明显的竖屏微短剧仍由上面的关键词过滤。
         # 新剧可能暂时没有很多票，但不能让完全没有质量信号的条目进入主电视剧区。
         vote_average = float(data.get("vote_average") or 0)
         if vote_count < 3 and popularity < 1.5:
@@ -1329,11 +1323,19 @@ def fetch_tmdb_mainland_movies(headers: dict, now: datetime, limit: int = 5) -> 
             seen.add(tmdb_id)
             data = get_json(
                 f"{TMDB_API_BASE}/movie/{tmdb_id}",
-                params={"language": "zh-CN"},
+                params={"language": "zh-CN", "append_to_response": "release_dates"},
                 headers=headers,
             )
             release_date = data.get("release_date") or item.get("release_date") or ""
             if not release_date or release_date > today_text:
+                continue
+            regional_release_dates = [
+                entry.get("release_date", "")[:10]
+                for country in (data.get("release_dates", {}).get("results") or [])
+                for entry in (country.get("release_dates") or [])
+                if entry.get("release_date")
+            ]
+            if regional_release_dates and min(regional_release_dates) > today_text:
                 continue
             if "CN" not in (data.get("origin_country") or item.get("origin_country") or []):
                 continue
