@@ -12,7 +12,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import requests
-from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps
+from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageOps
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,8 +21,9 @@ MAPPING_PATH = ROOT / "mapping.json"
 DATA_DIR = ROOT / "data"
 DATA_DIR.mkdir(exist_ok=True)
 CACHE_PATH = DATA_DIR / "mapping-cache.json"
+SELECTION_PATH = DATA_DIR / "cover-selection.json"
 WATCH_PATH = ROOT / "watch.json"
-COVER_PATH = ROOT / "cover.jpg"
+COVER_PATH = ROOT / "cover.gif"
 
 DOUBAN_TV_URL = "https://m.douban.com/rexxar/api/v2/subject/recent_hot/tv"
 DOUBAN_SEARCH_URL = "https://movie.douban.com/j/search_subjects"
@@ -299,46 +300,176 @@ def resolve_tmdb(subject: dict, headers: dict, manual: dict, cache: dict) -> dic
     return resolved
 
 
-def get_font(size: int):
-    candidates = [
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-    ]
-    for path in candidates:
-        if Path(path).exists():
-            return ImageFont.truetype(path, size)
-    return ImageFont.load_default()
-
-
 def download_poster(poster_path: str) -> Image.Image:
     response = requests.get(f"{TMDB_IMAGE_BASE}{poster_path}", timeout=30)
     response.raise_for_status()
     return Image.open(BytesIO(response.content)).convert("RGB")
 
 
-def make_cover(selected: list[dict], now: datetime):
-    width, height = 1600, 900
-    canvas = Image.new("RGB", (width, height), "#101828")
-    panel_width = width // 3
-    for index, item in enumerate(selected):
-        poster = download_poster(item["poster_path"])
+def rounded_mask(size: tuple[int, int], radius: int) -> Image.Image:
+    mask = Image.new("L", size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, size[0] - 1, size[1] - 1), radius, fill=255)
+    return mask
+
+
+def make_triptych(posters: list[Image.Image], size: tuple[int, int]) -> Image.Image:
+    width, height = size
+    result = Image.new("RGB", size)
+    cuts = [0, width // 3, width * 2 // 3, width]
+    for index, poster in enumerate(posters):
+        panel_width = cuts[index + 1] - cuts[index]
         panel = ImageOps.fit(
             poster,
-            (panel_width + 4, height),
+            (panel_width, height),
             method=Image.Resampling.LANCZOS,
-            centering=(0.5, 0.42),
+            centering=(0.5, 0.38),
         )
-        panel = ImageEnhance.Brightness(panel).enhance(0.72)
-        canvas.paste(panel, (index * panel_width, 0))
+        result.paste(panel, (cuts[index], 0))
+    return result
 
-    overlay = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-    draw.rectangle((0, 0, width, height), fill=(0, 0, 0, 45))
-    draw.rectangle((0, height - 210, width, height), fill=(0, 0, 0, 165))
-    draw.text((60, height - 155), "豆瓣实时热门大陆影视 / 国漫", fill="white", font=get_font(48))
-    draw.text((64, height - 92), now.strftime("%Y-%m-%d"), fill=(220, 230, 255), font=get_font(30))
-    canvas = Image.alpha_composite(canvas.convert("RGBA"), overlay).convert("RGB")
-    canvas.save(COVER_PATH, format="JPEG", quality=92, optimize=True, progressive=True)
+
+def add_glass_layer(canvas: Image.Image, source: Image.Image, angle: float, tint: tuple[int, int, int]):
+    layer_size = (720, 392)
+    glass = ImageOps.fit(source, layer_size, method=Image.Resampling.LANCZOS)
+    glass = glass.filter(ImageFilter.GaussianBlur(18)).convert("RGBA")
+    glass = Image.blend(glass, Image.new("RGBA", layer_size, (*tint, 255)), 0.38)
+    glass.putalpha(rounded_mask(layer_size, 54).point(lambda value: value * 150 // 255))
+
+    rim = Image.new("RGBA", layer_size, (0, 0, 0, 0))
+    rim_draw = ImageDraw.Draw(rim)
+    rim_draw.rounded_rectangle(
+        (3, 3, layer_size[0] - 4, layer_size[1] - 4),
+        52,
+        outline=(*tint, 180),
+        width=4,
+    )
+    rim_draw.line((72, 4, 286, 4), fill=(255, 255, 255, 145), width=3)
+    glass = Image.alpha_composite(glass, rim)
+    glass = glass.rotate(angle, Image.Resampling.BICUBIC, expand=True)
+
+    glow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    glow_draw = ImageDraw.Draw(glow)
+    box = (
+        (canvas.width - glass.width) // 2 - 14,
+        (canvas.height - glass.height) // 2 - 14,
+        (canvas.width + glass.width) // 2 + 14,
+        (canvas.height + glass.height) // 2 + 14,
+    )
+    glow_draw.rounded_rectangle(box, 70, outline=(*tint, 125), width=18)
+    glow = glow.filter(ImageFilter.GaussianBlur(22))
+    canvas.alpha_composite(glow)
+    canvas.alpha_composite(glass, ((canvas.width - glass.width) // 2, (canvas.height - glass.height) // 2))
+
+
+def build_cover_base(posters: list[Image.Image]) -> Image.Image:
+    width, height = 960, 528
+    collage = make_triptych(posters, (width, height))
+    background = ImageEnhance.Color(collage).enhance(0.72)
+    background = ImageEnhance.Brightness(background).enhance(0.42)
+    background = background.filter(ImageFilter.GaussianBlur(24))
+
+    canvas = Image.new("RGBA", (width, height), (5, 7, 11, 255))
+    stage_size = (936, 504)
+    stage = ImageOps.fit(background, stage_size, method=Image.Resampling.LANCZOS).convert("RGBA")
+    stage.putalpha(rounded_mask(stage_size, 38))
+    canvas.alpha_composite(stage, (12, 12))
+
+    shade = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    shade_draw = ImageDraw.Draw(shade)
+    shade_draw.rounded_rectangle((12, 12, 947, 515), 38, fill=(0, 5, 12, 45), outline=(255, 255, 255, 42), width=2)
+    canvas = Image.alpha_composite(canvas, shade)
+
+    add_glass_layer(canvas, collage, -7.5, (114, 87, 210))
+    add_glass_layer(canvas, collage, 6.5, (49, 139, 242))
+
+    card_size = (672, 378)
+    card = make_triptych(posters, card_size).convert("RGBA")
+    card.putalpha(rounded_mask(card_size, 34))
+    card_x = (width - card_size[0]) // 2
+    card_y = (height - card_size[1]) // 2
+
+    shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).rounded_rectangle(
+        (card_x - 8, card_y + 10, card_x + card_size[0] + 8, card_y + card_size[1] + 24),
+        42,
+        fill=(0, 0, 0, 185),
+    )
+    canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(18)))
+    canvas.alpha_composite(card, (card_x, card_y))
+
+    rim = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    rim_draw = ImageDraw.Draw(rim)
+    rim_draw.rounded_rectangle(
+        (card_x, card_y, card_x + card_size[0] - 1, card_y + card_size[1] - 1),
+        34,
+        outline=(159, 215, 255, 155),
+        width=3,
+    )
+    rim_draw.line(
+        (card_x + 48, card_y + 2, card_x + 268, card_y + 2),
+        fill=(255, 255, 255, 185),
+        width=3,
+    )
+    canvas = Image.alpha_composite(canvas, rim)
+    return canvas.convert("RGB")
+
+
+def ripple_frame(base: Image.Image, frame_index: int, frame_count: int) -> Image.Image:
+    width, height = base.size
+    progress = frame_index / frame_count
+    band = -260 + progress * (width + 520)
+    phase = progress * 6.283185307
+    step = 32
+    mesh = []
+
+    def displacement(x: int, y: int) -> float:
+        diagonal_x = x + y * 0.38
+        envelope = pow(2.718281828, -((diagonal_x - band) / 150) ** 2)
+        return 5.5 * envelope * __import__("math").sin(y / 13.0 + phase)
+
+    for top in range(0, height, step):
+        bottom = min(top + step, height)
+        for left in range(0, width, step):
+            right = min(left + step, width)
+            quad = (
+                max(0, min(width - 1, left + displacement(left, top))), top,
+                max(0, min(width - 1, left + displacement(left, bottom))), bottom,
+                max(0, min(width - 1, right + displacement(right, bottom))), bottom,
+                max(0, min(width - 1, right + displacement(right, top))), top,
+            )
+            mesh.append(((left, top, right, bottom), quad))
+
+    warped = base.transform(base.size, Image.Transform.MESH, mesh, Image.Resampling.BICUBIC).convert("RGBA")
+    sheen = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(sheen)
+    x = band - height * 0.38
+    draw.polygon(
+        [(x - 95, 0), (x + 15, 0), (x + 15 + height * 0.38, height), (x - 95 + height * 0.38, height)],
+        fill=(210, 242, 255, 55),
+    )
+    draw.line((x, 0, x + height * 0.38, height), fill=(255, 255, 255, 120), width=4)
+    sheen = sheen.filter(ImageFilter.GaussianBlur(18))
+    return Image.alpha_composite(warped, sheen).convert("RGB")
+
+
+def make_cover(selected: list[dict], now: datetime):
+    posters = [download_poster(item["poster_path"]) for item in selected]
+    base = build_cover_base(posters)
+    frame_count = 18
+    frames = [ripple_frame(base, index, frame_count) for index in range(frame_count)]
+    palette = frames[0].convert("P", palette=Image.Palette.ADAPTIVE, colors=256)
+    gif_frames = [palette]
+    gif_frames.extend(frame.quantize(palette=palette, dither=Image.Dither.FLOYDSTEINBERG) for frame in frames[1:])
+    gif_frames[0].save(
+        COVER_PATH,
+        format="GIF",
+        save_all=True,
+        append_images=gif_frames[1:],
+        duration=200,
+        loop=0,
+        optimize=True,
+        disposal=2,
+    )
 
 
 def resolve_category(subjects: list[dict], target: int, headers: dict, manual: dict, cache: dict):
@@ -398,15 +529,39 @@ def main():
 
     cover_candidates = [item for item in all_resolved if item.get("poster_path")]
     if len(cover_candidates) < 3:
-        raise RuntimeError("TMDB 可用海报少于 3 张，无法生成静态封面")
-    selected = random.SystemRandom().sample(cover_candidates, 3)
+        raise RuntimeError("TMDB 可用海报少于 3 张，无法生成动态封面")
+    # 当天优先复用已记录的三张图；第二天再从当前片单重新随机。
+    candidates = sorted(cover_candidates, key=lambda item: (item["tmdb_type"], item["tmdb_id"]))
+    selection_state = load_json(SELECTION_PATH, {})
+    candidate_map = {(item["tmdb_type"], item["tmdb_id"]): item for item in candidates}
+    saved_keys = [tuple(value) for value in selection_state.get("items", [])]
+    if (
+        selection_state.get("date") == now.strftime("%Y-%m-%d")
+        and len(saved_keys) == 3
+        and all(key in candidate_map for key in saved_keys)
+    ):
+        selected = [candidate_map[key] for key in saved_keys]
+    else:
+        selected = random.SystemRandom().sample(candidates, 3)
+        SELECTION_PATH.write_text(
+            json.dumps(
+                {
+                    "date": now.strftime("%Y-%m-%d"),
+                    "items": [[item["tmdb_type"], item["tmdb_id"]] for item in selected],
+                    "titles": [item["title"] for item in selected],
+                },
+                ensure_ascii=False,
+                indent=2,
+            ) + "\n",
+            encoding="utf-8",
+        )
     make_cover(selected, now)
     CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     base = config["site_base_url"].rstrip("/")
     watch = {
         "name": "豆瓣实时热门大陆电视剧20 + 电影10 + 国漫20",
-        "cover": f"{base}/cover.jpg?v={now.strftime('%Y%m%d%H%M')}",
+        "cover": f"{base}/cover.gif?v={now.strftime('%Y%m%d')}",
         "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
         "videos": [
             {
@@ -419,7 +574,7 @@ def main():
         ],
     }
     WATCH_PATH.write_text(json.dumps(watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"已生成 {len(all_resolved)} 部；封面随机选择：{', '.join(item['title'] for item in selected)}")
+    print(f"已生成 {len(all_resolved)} 部；今日 GIF 封面：{', '.join(item['title'] for item in selected)}")
 
 
 if __name__ == "__main__":

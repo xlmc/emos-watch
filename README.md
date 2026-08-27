@@ -6,7 +6,7 @@
 - 10 部大陆热门电影
 - 20 部大陆热门国漫（大陆动画不足 20 部时，按当前热门顺序用日番补位）
 
-脚本使用豆瓣的实时排序选择条目，再用 TMDB 匹配对应的 `tmdb_id`。电视剧和电影始终只保留中国大陆；国漫优先中国大陆，数量不足时才加入日本动画补位。`watch.json` 只提供 TMDB ID 和类型，不公开 TMDB Token。每次更新还会从片单中随机抽取 3 部，合成新的静态 `cover.jpg`。
+脚本使用豆瓣的实时排序选择条目，再用 TMDB 匹配对应的 `tmdb_id`。电视剧和电影始终只保留中国大陆；国漫优先中国大陆，数量不足时才加入日本动画补位。`watch.json` 只提供 TMDB ID 和类型，不公开 TMDB Token。每天按北京时间从片单中随机抽取 3 部，生成 960×528 的液态玻璃水波动图 `cover.gif`；当天两次更新保持同一组，第二天自动换图。
 
 ## 第一次设置
 
@@ -25,7 +25,7 @@
    Folder：/(root)
    ```
 
-3. 到 `Actions` 手动运行“更新豆瓣热门大陆影视与国漫片单”。第一次成功后，仓库会出现 `watch.json` 和 `cover.jpg`。
+3. 到 `Actions` 手动运行“更新豆瓣热门大陆影视与国漫片单”。第一次成功后，仓库会出现 `watch.json` 和 `cover.gif`。
 
 4. EMOS 动态片单地址：
 
@@ -44,7 +44,7 @@ https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
 封面地址为：
 
 ```text
-https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover.jpg
+https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover.gif
 ```
 
 ## 使用你的域名
