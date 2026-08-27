@@ -365,10 +365,12 @@ def build_cover_base(posters: list[Image.Image]) -> Image.Image:
     width, height = 960, 528
     collage = make_triptych(posters, (width, height))
     background = ImageEnhance.Color(collage).enhance(0.72)
-    background = ImageEnhance.Brightness(background).enhance(0.42)
+    background = ImageEnhance.Brightness(background).enhance(0.72)
     background = background.filter(ImageFilter.GaussianBlur(24))
 
-    canvas = Image.new("RGBA", (width, height), (5, 7, 11, 255))
+    # 让模糊海报铺满整个画布；只加轻微深蓝遮罩，不使用纯黑外框。
+    canvas = background.convert("RGBA")
+    canvas = Image.alpha_composite(canvas, Image.new("RGBA", (width, height), (7, 20, 43, 28)))
     stage_size = (936, 504)
     stage = ImageOps.fit(background, stage_size, method=Image.Resampling.LANCZOS).convert("RGBA")
     stage.putalpha(rounded_mask(stage_size, 38))
