@@ -1016,17 +1016,17 @@ def fetch_tmdb_mainland_tv(
     state: dict,
     limit: int = 20,
 ) -> list[dict]:
-    """抓取当前月和上个月上线的大陆电视剧，按上线时间倒序。"""
+    """抓取 TMDB 当前仍在更新的大陆长篇电视剧，按首播时间倒序。"""
     today = now.date()
     today_text = today.isoformat()
-    start_text = previous_month_start(today)
+    recent_text = (today - timedelta(days=60)).isoformat()
+    future_text = (today + timedelta(days=30)).isoformat()
     discovered = fetch_tmdb_discover(
         "tv",
         headers,
         {
             "language": "zh-CN",
             "sort_by": "first_air_date.desc",
-            "first_air_date.gte": start_text,
             "first_air_date.lte": today_text,
             "with_origin_country": "CN",
             "with_genres": "18",
@@ -1048,7 +1048,7 @@ def fetch_tmdb_mainland_tv(
             headers=headers,
         )
         first_air_date = data.get("first_air_date") or item.get("first_air_date") or ""
-        if not (start_text <= first_air_date <= today_text):
+        if not first_air_date or first_air_date > today_text:
             continue
         origin_country = data.get("origin_country") or item.get("origin_country") or []
         if "CN" not in origin_country and data.get("original_language") not in {"zh", "cn"}:
@@ -1078,6 +1078,21 @@ def fetch_tmdb_mainland_tv(
             finale_date = finale_state.get(key, "")
         finale_day = parse_iso_date(finale_date)
         if finale_day and (today - finale_day).days >= 3:
+            continue
+        last_air_date = last_episode.get("air_date") or data.get("last_air_date") or ""
+        next_air_date = (data.get("next_episode_to_air") or {}).get("air_date") or ""
+        is_currently_updating = (
+            data.get("status") in {"Returning Series", "In Production", "Pilot"}
+            and (
+                (bool(last_air_date) and last_air_date >= recent_text)
+                or (bool(next_air_date) and next_air_date <= future_text)
+            )
+        )
+        is_finale_grace_period = bool(finale_day and (today - finale_day).days < 3)
+        if not is_currently_updating and not is_finale_grace_period:
+            continue
+        run_times = [int(value) for value in (data.get("episode_run_time") or []) if str(value).isdigit()]
+        if run_times and max(run_times) < 20:
             continue
 
         results.append(
