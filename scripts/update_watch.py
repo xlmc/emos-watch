@@ -4,6 +4,7 @@ import json
 import os
 import random
 import re
+import shutil
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -24,12 +25,15 @@ DATA_DIR.mkdir(exist_ok=True)
 CACHE_PATH = DATA_DIR / "mapping-cache.json"
 RELEASE_STATE_PATH = DATA_DIR / "release-state.json"
 SELECTION_PATH = DATA_DIR / "cover-selection.json"
+VARIETY_SELECTION_PATH = DATA_DIR / "cover-variety-selection.json"
 JAPAN_SELECTION_PATH = DATA_DIR / "cover-japan-selection.json"
 DOUBAN_TV_SELECTION_PATH = DATA_DIR / "cover-douban-tv-selection.json"
 WATCH_PATH = ROOT / "watch.json"
+VARIETY_WATCH_PATH = ROOT / "watch-variety.json"
 JAPAN_WATCH_PATH = ROOT / "watch-japan.json"
 DOUBAN_TV_WATCH_PATH = ROOT / "watch-douban-tv.json"
 COVER_PATH = ROOT / "cover.gif"
+VARIETY_COVER_PATH = ROOT / "cover-variety.gif"
 JAPAN_COVER_PATH = ROOT / "cover-japan.gif"
 DOUBAN_TV_COVER_PATH = ROOT / "cover-douban-tv.gif"
 
@@ -1161,12 +1165,14 @@ def main():
     )
     if len(variety_cover_candidates) < 3:
         raise RuntimeError(f"指定平台的在播综艺海报不足 3 张，当前仅有 {len(variety_cover_candidates)} 张")
-    variety_selected = select_daily_cover(variety_cover_candidates, now, SELECTION_PATH)
-    make_cover(variety_selected, now, COVER_PATH)
+    variety_selected = select_daily_cover(variety_cover_candidates, now, VARIETY_SELECTION_PATH)
+    make_cover(variety_selected, now, VARIETY_COVER_PATH)
+    # 保留旧地址，避免已经填入 cover.gif 的用户丢图；两个文件内容保持一致。
+    shutil.copyfile(VARIETY_COVER_PATH, COVER_PATH)
     if variety_should_update:
         variety_watch = {
             "name": f"国内流媒体热播更新综艺（{len(variety_items)}部）",
-            "cover": f"{base}/cover.gif",
+            "cover": f"{base}/cover-variety.gif",
             "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
             "videos": [
                 {
@@ -1179,6 +1185,17 @@ def main():
             ],
         }
         WATCH_PATH.write_text(json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        VARIETY_WATCH_PATH.write_text(
+            json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+    elif not VARIETY_WATCH_PATH.exists() and WATCH_PATH.exists():
+        # 首次切换到独立地址时只创建别名，不改变视频顺序和更新时间。
+        legacy_variety_watch = load_json(WATCH_PATH, {})
+        if legacy_variety_watch:
+            legacy_variety_watch["cover"] = f"{base}/cover-variety.gif"
+            VARIETY_WATCH_PATH.write_text(
+                json.dumps(legacy_variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            )
     RELEASE_STATE_PATH.write_text(
         json.dumps(release_state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )

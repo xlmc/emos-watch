@@ -24,14 +24,14 @@
    Folder：/(root)
    ```
 
-3. 到 `Actions` 手动运行“更新豆瓣热门电视剧与国内流媒体综艺片单”。第一次成功后，仓库会出现 `watch-douban-tv.json`、`watch.json`、`cover-douban-tv.gif` 和 `cover.gif`。
+3. 到 `Actions` 手动运行“更新豆瓣热门电视剧与国内流媒体综艺片单”。第一次成功后，仓库会出现 `watch-douban-tv.json`、`watch-variety.json`、`cover-douban-tv.gif` 和 `cover-variety.gif`。`watch.json`、`cover.gif` 作为旧地址兼容保留。
 
 4. EMOS 动态片单地址：
 
    ```text
    片单 1（豆瓣热门大陆电视剧）：https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-douban-tv.json
    
-   片单 2（国内流媒体热播综艺）：https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
+   片单 2（国内流媒体热播综艺）：https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json
    ```
 
 ## CDN 地址
@@ -41,7 +41,7 @@ EMOS 推荐使用 jsDelivr CDN 地址：
 片单 2（国内流媒体热播综艺）：
 
 ```text
-https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
+https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json
 ```
 
 片单 1（豆瓣热门大陆电视剧）：
@@ -54,6 +54,12 @@ https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-douban-tv.json
 
 ```text
 https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover.gif
+```
+
+综艺封面新地址：
+
+```text
+https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif
 ```
 
 片单 1 封面（豆瓣热门大陆电视剧）：
