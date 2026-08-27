@@ -1187,13 +1187,20 @@ def fetch_tmdb_mainland_tv(
 
 
 def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20) -> list[dict]:
-    """抓取 TMDB 最新大陆动画 TV，按首播时间倒序。"""
+    """抓取 TMDB 当前年度最新大陆动画 TV，按首播时间倒序。
+
+    只按动画类型和首播日期会把已经结束多年的老番也带进来。
+    片单要求的是当前最新国漫，因此这里限定为本年度首播；不足时宁可少于
+    20 部，也不使用过时作品凑数。
+    """
+    year_start = f"{now.year}-01-01"
     items = fetch_tmdb_discover(
         "tv",
         headers,
         {
             "language": "zh-CN",
             "sort_by": "first_air_date.desc",
+            "first_air_date.gte": year_start,
             "first_air_date.lte": now.strftime("%Y-%m-%d"),
             "with_origin_country": "CN",
             "with_original_language": "zh",
@@ -1210,6 +1217,19 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
     for item in items:
         if not item.get("first_air_date"):
             continue
+        data = get_json(
+            f"{TMDB_API_BASE}/tv/{item['id']}",
+            params={"language": "zh-CN"},
+            headers=headers,
+        )
+        first_air_date = data.get("first_air_date") or item.get("first_air_date") or ""
+        if not first_air_date or not first_air_date.startswith(f"{now.year}-"):
+            continue
+        origin_country = data.get("origin_country") or item.get("origin_country") or []
+        if "CN" not in origin_country and data.get("original_language") not in {"zh", "cn"}:
+            continue
+        if data.get("original_language") not in {"zh", "cn"}:
+            continue
         title_text = " ".join(str(item.get(key) or "") for key in ("name", "original_name"))
         if any(
             keyword in title_text
@@ -1219,7 +1239,7 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
             )
         ):
             continue
-        results.append(tmdb_catalog_item(item, "tv", "国漫"))
+        results.append(tmdb_catalog_item({**item, **data, "first_air_date": first_air_date}, "tv", "国漫"))
     return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
 
 
