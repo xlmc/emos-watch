@@ -1045,6 +1045,31 @@ def fetch_tmdb_mainland_tv(
         limit=100,
         max_pages=10,
     )
+    # TMDB discover 对大陆新剧的收录并不完整。用豆瓣当前大陆电视剧热榜补充检索词，
+    # 但后续仍然只接受 TMDB 详情通过校验的条目，输出也只使用 TMDB ID。
+    discovered_ids = {int(item["id"]) for item in discovered}
+    try:
+        for subject in fetch_tv_subjects(80):
+            search_params = {
+                "query": subject["title"],
+                "language": "zh-CN",
+                "include_adult": "false",
+                "page": 1,
+            }
+            if subject.get("year"):
+                search_params["first_air_date_year"] = subject["year"]
+            search_results = get_json(
+                f"{TMDB_API_BASE}/search/tv",
+                params=search_params,
+                headers=headers,
+            ).get("results", [])
+            result = choose_tmdb_result(subject, search_results)
+            if result and int(result["id"]) not in discovered_ids:
+                discovered.append(result)
+                discovered_ids.add(int(result["id"]))
+    except Exception as exc:
+        # 豆瓣只是补召回，临时不可用时不影响 TMDB 主流程。
+        print(f"豆瓣电视剧补召回失败，继续使用 TMDB discover：{exc}")
     finale_state = state.get("tv_finale_dates_v1")
     if not isinstance(finale_state, dict):
         finale_state = {}
