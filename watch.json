@@ -1,0 +1,307 @@
+{
+  "name": "豆瓣实时热门大陆电视剧20 + 电影10 + 国漫20",
+  "cover": "https://xlmc.github.io/emos-watch/cover.jpg?v=202608280029",
+  "updated_at": "2026-08-28 00:29:50",
+  "videos": [
+    {
+      "tmdb_id": 287496,
+      "tmdb_type": "tv",
+      "title": "花开锦绣",
+      "sort": 1
+    },
+    {
+      "tmdb_id": 291856,
+      "tmdb_type": "tv",
+      "title": "重器",
+      "sort": 2
+    },
+    {
+      "tmdb_id": 299952,
+      "tmdb_type": "tv",
+      "title": "早春晴朗",
+      "sort": 3
+    },
+    {
+      "tmdb_id": 271016,
+      "tmdb_type": "tv",
+      "title": "九门",
+      "sort": 4
+    },
+    {
+      "tmdb_id": 295558,
+      "tmdb_type": "tv",
+      "title": "雀骨",
+      "sort": 5
+    },
+    {
+      "tmdb_id": 294487,
+      "tmdb_type": "tv",
+      "title": "金色",
+      "sort": 6
+    },
+    {
+      "tmdb_id": 285250,
+      "tmdb_type": "tv",
+      "title": "蝉",
+      "sort": 7
+    },
+    {
+      "tmdb_id": 272938,
+      "tmdb_type": "tv",
+      "title": "师兄太稳健",
+      "sort": 8
+    },
+    {
+      "tmdb_id": 317331,
+      "tmdb_type": "tv",
+      "title": "邻人可疑",
+      "sort": 9
+    },
+    {
+      "tmdb_id": 273114,
+      "tmdb_type": "tv",
+      "title": "悬案",
+      "sort": 10
+    },
+    {
+      "tmdb_id": 289139,
+      "tmdb_type": "tv",
+      "title": "这一秒过火",
+      "sort": 11
+    },
+    {
+      "tmdb_id": 280133,
+      "tmdb_type": "tv",
+      "title": "藏锋",
+      "sort": 12
+    },
+    {
+      "tmdb_id": 289761,
+      "tmdb_type": "tv",
+      "title": "醒来",
+      "sort": 13
+    },
+    {
+      "tmdb_id": 278605,
+      "tmdb_type": "tv",
+      "title": "南部档案",
+      "sort": 14
+    },
+    {
+      "tmdb_id": 331830,
+      "tmdb_type": "tv",
+      "title": "我们的少年时代2",
+      "sort": 15
+    },
+    {
+      "tmdb_id": 286506,
+      "tmdb_type": "tv",
+      "title": "百花杀",
+      "sort": 16
+    },
+    {
+      "tmdb_id": 291392,
+      "tmdb_type": "tv",
+      "title": "野狗骨头",
+      "sort": 17
+    },
+    {
+      "tmdb_id": 289116,
+      "tmdb_type": "tv",
+      "title": "天才，女友",
+      "sort": 18
+    },
+    {
+      "tmdb_id": 327916,
+      "tmdb_type": "tv",
+      "title": "凛冬下的罪恶",
+      "sort": 19
+    },
+    {
+      "tmdb_id": 285143,
+      "tmdb_type": "tv",
+      "title": "灿如繁星",
+      "sort": 20
+    },
+    {
+      "tmdb_id": 1280738,
+      "tmdb_type": "movie",
+      "title": "火遮眼",
+      "sort": 21
+    },
+    {
+      "tmdb_id": 1658653,
+      "tmdb_type": "movie",
+      "title": "消失的人",
+      "sort": 22
+    },
+    {
+      "tmdb_id": 1499071,
+      "tmdb_type": "movie",
+      "title": "寒战1994",
+      "sort": 23
+    },
+    {
+      "tmdb_id": 1488778,
+      "tmdb_type": "movie",
+      "title": "今晚正好",
+      "sort": 24
+    },
+    {
+      "tmdb_id": 1602727,
+      "tmdb_type": "movie",
+      "title": "夜王",
+      "sort": 25
+    },
+    {
+      "tmdb_id": 1443374,
+      "tmdb_type": "movie",
+      "title": "森中有林",
+      "sort": 26
+    },
+    {
+      "tmdb_id": 1305781,
+      "tmdb_type": "movie",
+      "title": "镖人：风起大漠",
+      "sort": 27
+    },
+    {
+      "tmdb_id": 1492501,
+      "tmdb_type": "movie",
+      "title": "10间敢死队",
+      "sort": 28
+    },
+    {
+      "tmdb_id": 1447971,
+      "tmdb_type": "movie",
+      "title": "惊蛰无声",
+      "sort": 29
+    },
+    {
+      "tmdb_id": 1546855,
+      "tmdb_type": "movie",
+      "title": "我，许可",
+      "sort": 30
+    },
+    {
+      "tmdb_id": 280564,
+      "tmdb_type": "tv",
+      "title": "记忆管理局",
+      "sort": 31
+    },
+    {
+      "tmdb_id": 332444,
+      "tmdb_type": "tv",
+      "title": "诛仙 第四季",
+      "sort": 32
+    },
+    {
+      "tmdb_id": 303287,
+      "tmdb_type": "tv",
+      "title": "一斩苍穹",
+      "sort": 33
+    },
+    {
+      "tmdb_id": 329026,
+      "tmdb_type": "tv",
+      "title": "李熊猫",
+      "sort": 34
+    },
+    {
+      "tmdb_id": 330609,
+      "tmdb_type": "tv",
+      "title": "财神窦占龙",
+      "sort": 35
+    },
+    {
+      "tmdb_id": 296286,
+      "tmdb_type": "tv",
+      "title": "躲在超市后门抽烟的两人",
+      "sort": 36
+    },
+    {
+      "tmdb_id": 312949,
+      "tmdb_type": "tv",
+      "title": "尼古喵喵",
+      "sort": 37
+    },
+    {
+      "tmdb_id": 288971,
+      "tmdb_type": "tv",
+      "title": "穹庐下的魔女",
+      "sort": 38
+    },
+    {
+      "tmdb_id": 94664,
+      "tmdb_type": "tv",
+      "title": "无职转生Ⅲ 到了异世界就拿出真本事",
+      "sort": 39
+    },
+    {
+      "tmdb_id": 295071,
+      "tmdb_type": "tv",
+      "title": "再见菈菈",
+      "sort": 40
+    },
+    {
+      "tmdb_id": 285574,
+      "tmdb_type": "tv",
+      "title": "与你相恋到生命尽头",
+      "sort": 41
+    },
+    {
+      "tmdb_id": 255358,
+      "tmdb_type": "tv",
+      "title": "新攻壳机动队",
+      "sort": 42
+    },
+    {
+      "tmdb_id": 286345,
+      "tmdb_type": "tv",
+      "title": "虽然我不是完美恶女～雏宫蝶鼠替换传～",
+      "sort": 43
+    },
+    {
+      "tmdb_id": 300112,
+      "tmdb_type": "tv",
+      "title": "BanG Dream! YUME∞MITA",
+      "sort": 44
+    },
+    {
+      "tmdb_id": 308403,
+      "tmdb_type": "tv",
+      "title": "炒翻天",
+      "sort": 45
+    },
+    {
+      "tmdb_id": 284029,
+      "tmdb_type": "tv",
+      "title": "猫与龙",
+      "sort": 46
+    },
+    {
+      "tmdb_id": 153217,
+      "tmdb_type": "tv",
+      "title": "二十世纪电气目录",
+      "sort": 47
+    },
+    {
+      "tmdb_id": 117120,
+      "tmdb_type": "tv",
+      "title": "感谢对战 ～大小姐才不玩格斗游戏～",
+      "sort": 48
+    },
+    {
+      "tmdb_id": 270603,
+      "tmdb_type": "tv",
+      "title": "被追放的转生重骑士用游戏知识开无双",
+      "sort": 49
+    },
+    {
+      "tmdb_id": 287028,
+      "tmdb_type": "tv",
+      "title": "描绘直至生命尽头",
+      "sort": 50
+    }
+  ]
+}
