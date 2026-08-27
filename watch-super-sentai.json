@@ -1,7 +1,7 @@
 {
-  "name": "东映超级战队正剧（1975年至今）（48部）",
+  "name": "东映超级战队正剧（1975年至今）（49部）",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-super-sentai.gif",
-  "updated_at": "2026-08-28 03:51:11",
+  "updated_at": "2026-08-28 03:54:49",
   "videos": [
     {
       "tmdb_id": 275648,
@@ -136,160 +136,166 @@
       "sort": 22
     },
     {
+      "tmdb_id": 5281,
+      "tmdb_type": "tv",
+      "title": "爆龙战队暴连者",
+      "sort": 23
+    },
+    {
       "tmdb_id": 2876,
       "tmdb_type": "tv",
       "title": "忍风战队破里剑者",
-      "sort": 23
+      "sort": 24
     },
     {
       "tmdb_id": 5357,
       "tmdb_type": "tv",
       "title": "百兽战队牙吠连者",
-      "sort": 24
+      "sort": 25
     },
     {
       "tmdb_id": 1983,
       "tmdb_type": "tv",
       "title": "未来战队时间连者",
-      "sort": 25
+      "sort": 26
     },
     {
       "tmdb_id": 95499,
       "tmdb_type": "tv",
       "title": "救急战队GoGoV",
-      "sort": 26
+      "sort": 27
     },
     {
       "tmdb_id": 410,
       "tmdb_type": "tv",
       "title": "星兽战队银河人",
-      "sort": 27
+      "sort": 28
     },
     {
       "tmdb_id": 3723,
       "tmdb_type": "tv",
       "title": "电磁战队百万连者",
-      "sort": 28
+      "sort": 29
     },
     {
       "tmdb_id": 3069,
       "tmdb_type": "tv",
       "title": "激走战队车连者",
-      "sort": 29
+      "sort": 30
     },
     {
       "tmdb_id": 5224,
       "tmdb_type": "tv",
       "title": "超力战队王连者",
-      "sort": 30
+      "sort": 31
     },
     {
       "tmdb_id": 1394,
       "tmdb_type": "tv",
       "title": "忍者战队隐连者",
-      "sort": 31
+      "sort": 32
     },
     {
       "tmdb_id": 3001,
       "tmdb_type": "tv",
       "title": "五星战队大连者",
-      "sort": 32
+      "sort": 33
     },
     {
       "tmdb_id": 12114,
       "tmdb_type": "tv",
       "title": "恐龙战队兽连者",
-      "sort": 33
+      "sort": 34
     },
     {
       "tmdb_id": 90024,
       "tmdb_type": "tv",
       "title": "鸟人战队喷射人",
-      "sort": 34
+      "sort": 35
     },
     {
       "tmdb_id": 3124,
       "tmdb_type": "tv",
       "title": "地球战队五人组",
-      "sort": 35
+      "sort": 36
     },
     {
       "tmdb_id": 3622,
       "tmdb_type": "tv",
       "title": "高速战队涡轮连者",
-      "sort": 36
+      "sort": 37
     },
     {
       "tmdb_id": 5665,
       "tmdb_type": "tv",
       "title": "超兽战队生命人",
-      "sort": 37
+      "sort": 38
     },
     {
       "tmdb_id": 53129,
       "tmdb_type": "tv",
       "title": "光战队覆面人",
-      "sort": 38
+      "sort": 39
     },
     {
       "tmdb_id": 70787,
       "tmdb_type": "tv",
       "title": "超新星闪光人",
-      "sort": 39
+      "sort": 40
     },
     {
       "tmdb_id": 6298,
       "tmdb_type": "tv",
       "title": "电击战队变化人",
-      "sort": 40
+      "sort": 41
     },
     {
       "tmdb_id": 1154,
       "tmdb_type": "tv",
       "title": "超电子生化人",
-      "sort": 41
+      "sort": 42
     },
     {
       "tmdb_id": 5337,
       "tmdb_type": "tv",
       "title": "科学战队炸药人",
-      "sort": 42
+      "sort": 43
     },
     {
       "tmdb_id": 3711,
       "tmdb_type": "tv",
       "title": "大战队风镜Ⅴ",
-      "sort": 43
+      "sort": 44
     },
     {
       "tmdb_id": 2847,
       "tmdb_type": "tv",
       "title": "太阳战队太阳火神",
-      "sort": 44
+      "sort": 45
     },
     {
       "tmdb_id": 4699,
       "tmdb_type": "tv",
       "title": "电子战队电磁人",
-      "sort": 45
+      "sort": 46
     },
     {
       "tmdb_id": 99256,
       "tmdb_type": "tv",
       "title": "战斗狂热J",
-      "sort": 46
+      "sort": 47
     },
     {
       "tmdb_id": 6297,
       "tmdb_type": "tv",
       "title": "JAKQ电击队",
-      "sort": 47
+      "sort": 48
     },
     {
       "tmdb_id": 3287,
       "tmdb_type": "tv",
       "title": "秘密战队五连者",
-      "sort": 48
+      "sort": 49
     }
   ]
 }
