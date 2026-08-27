@@ -7,12 +7,12 @@ on:
     - cron: "50 8 * * *"
   push:
     branches: [main]
-      paths:
+    paths:
       - "config.json"
       - "mapping.json"
       - "requirements.txt"
       - "scripts/**"
-        - ".github/workflows/update.yml"
+      - ".github/workflows/update.yml"
 
 concurrency:
   group: emos-watch-update
