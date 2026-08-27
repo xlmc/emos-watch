@@ -1061,11 +1061,6 @@ def fetch_tmdb_mainland_tv(
         )
         if genre_ids.intersection({16, 10764, 10763, 10767, 10762}):
             continue
-        if int(data.get("vote_count") or 0) < 3:
-            continue
-        run_times = [int(value) for value in (data.get("episode_run_time") or []) if str(value).isdigit()]
-        if run_times and max(run_times) < 20:
-            continue
         title_text = " ".join(
             str(data.get(key) or "") for key in ("name", "original_name")
         )
@@ -1109,10 +1104,8 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
             "sort_by": "first_air_date.desc",
             "first_air_date.lte": now.strftime("%Y-%m-%d"),
             "with_origin_country": "CN",
-            "with_original_language": "zh",
             "with_genres": "16",
             "without_genres": "99,10764,10767",
-            "vote_count.gte": 1,
             "include_null_first_air_dates": "false",
         },
         limit=limit,
