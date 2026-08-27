@@ -1,5 +1,5 @@
 {
-  "site_base_url": "https://xlmc.github.io/emos-watch",
+  "site_base_url": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main",
   "tv_limit": 20,
   "movie_limit": 10,
   "animation_limit": 20,
