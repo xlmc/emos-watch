@@ -1,151 +1,157 @@
 {
-  "name": "TMDB大陆电视剧、国漫与国内电影（24部）",
+  "name": "TMDB大陆电视剧、国漫与国内电影（25部）",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-douban-tv.gif",
-  "updated_at": "2026-08-28 05:13:18",
+  "updated_at": "2026-08-28 05:17:00",
   "videos": [
     {
-      "tmdb_id": 287496,
+      "tmdb_id": 282136,
       "tmdb_type": "tv",
-      "title": "花开锦绣",
+      "title": "将夜",
       "sort": 1
     },
     {
-      "tmdb_id": 331660,
+      "tmdb_id": 298026,
       "tmdb_type": "tv",
-      "title": "封天契",
+      "title": "放开那个女巫",
       "sort": 2
     },
     {
-      "tmdb_id": 280564,
+      "tmdb_id": 283119,
       "tmdb_type": "tv",
-      "title": "记忆管理局",
+      "title": "深空彼岸",
       "sort": 3
     },
     {
-      "tmdb_id": 329026,
+      "tmdb_id": 281233,
       "tmdb_type": "tv",
-      "title": "李熊猫",
+      "title": "光阴之外",
       "sort": 4
     },
     {
-      "tmdb_id": 303287,
+      "tmdb_id": 239320,
       "tmdb_type": "tv",
-      "title": "一斩苍穹",
+      "title": "曾经有勇士",
       "sort": 5
     },
     {
-      "tmdb_id": 330581,
+      "tmdb_id": 262453,
       "tmdb_type": "tv",
-      "title": "田舍的娱乐活动",
+      "title": "魔法公主的小烦恼",
       "sort": 6
     },
     {
-      "tmdb_id": 329125,
+      "tmdb_id": 284760,
       "tmdb_type": "tv",
-      "title": "万古至尊：李云霄传",
+      "title": "云深不知梦",
       "sort": 7
     },
     {
-      "tmdb_id": 329040,
+      "tmdb_id": 232230,
       "tmdb_type": "tv",
-      "title": "擇日飛昇",
+      "title": "诡秘之主",
       "sort": 8
     },
     {
-      "tmdb_id": 323839,
+      "tmdb_id": 292624,
       "tmdb_type": "tv",
-      "title": "东大高武学院",
+      "title": "神国之上",
       "sort": 9
     },
     {
-      "tmdb_id": 326893,
+      "tmdb_id": 280078,
       "tmdb_type": "tv",
-      "title": "喜羊羊与灰太狼之破界山海诀",
+      "title": "鲲吞天下之掌门归来",
       "sort": 10
     },
     {
-      "tmdb_id": 326844,
+      "tmdb_id": 272059,
       "tmdb_type": "tv",
-      "title": "百日成王",
+      "title": "凸变英雄X",
       "sort": 11
     },
     {
-      "tmdb_id": 326935,
+      "tmdb_id": 279182,
       "tmdb_type": "tv",
-      "title": "斩神 第2季",
+      "title": "超能立方",
       "sort": 12
     },
     {
-      "tmdb_id": 325080,
+      "tmdb_id": 273600,
       "tmdb_type": "tv",
-      "title": "城隍录",
+      "title": "长生界",
       "sort": 13
     },
     {
-      "tmdb_id": 325040,
+      "tmdb_id": 275377,
       "tmdb_type": "tv",
-      "title": "万人之上",
+      "title": "徒弟个个是大佬",
       "sort": 14
     },
     {
-      "tmdb_id": 321862,
+      "tmdb_id": 236534,
       "tmdb_type": "tv",
-      "title": "儿童英文动态绘本",
+      "title": "牧神记",
       "sort": 15
     },
     {
-      "tmdb_id": 321843,
+      "tmdb_id": 271249,
       "tmdb_type": "tv",
-      "title": "儿童中文动态绘本",
+      "title": "大道朝天",
       "sort": 16
     },
     {
-      "tmdb_id": 283805,
+      "tmdb_id": 273190,
       "tmdb_type": "tv",
-      "title": "盘龙",
+      "title": "哑舍",
       "sort": 17
     },
     {
-      "tmdb_id": 322224,
+      "tmdb_id": 265234,
       "tmdb_type": "tv",
-      "title": "狗情敌",
+      "title": "六样情——《黑神话：悟空》章节动画原版合集",
       "sort": 18
     },
     {
-      "tmdb_id": 320598,
+      "tmdb_id": 259537,
       "tmdb_type": "tv",
-      "title": "开拍啦！怪兽大电影",
+      "title": "剑来",
       "sort": 19
+    },
+    {
+      "tmdb_id": 259231,
+      "tmdb_type": "tv",
+      "title": "斩神之凡尘神域",
+      "sort": 20
     },
     {
       "tmdb_id": 1391021,
       "tmdb_type": "movie",
       "title": "欢迎来龙餐馆",
-      "sort": 20
+      "sort": 21
     },
     {
       "tmdb_id": 1628071,
       "tmdb_type": "movie",
       "title": "宗师叶问2",
-      "sort": 21
+      "sort": 22
     },
     {
       "tmdb_id": 1491920,
       "tmdb_type": "movie",
       "title": "功夫女足",
-      "sort": 22
+      "sort": 23
     },
     {
       "tmdb_id": 1728566,
       "tmdb_type": "movie",
       "title": "致命潮汐",
-      "sort": 23
+      "sort": 24
     },
     {
       "tmdb_id": 1424435,
       "tmdb_type": "movie",
       "title": "万米危机",
-      "sort": 24
+      "sort": 25
     }
   ]
 }
