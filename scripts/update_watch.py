@@ -1021,7 +1021,7 @@ SUPER_SENTAI_SERIES = (
     (2000, "Mirai Sentai Timeranger"),
     (2001, "Hyakujuu Sentai Gaoranger"),
     (2002, "Ninpuu Sentai Hurricaneger"),
-    (2003, "Bakuryuu Sentai Abaranger"),
+    (2003, "Bakuryuu Sentai Abaranger", "爆竜戦隊アバレンジャー", "爆龙战队暴连者"),
     (2004, "Tokusou Sentai Dekaranger"),
     (2005, "Mahou Sentai Magiranger"),
     (2006, "GoGo Sentai Boukenger", "Gogo Sentai Boukenger"),
