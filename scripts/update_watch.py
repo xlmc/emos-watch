@@ -1149,6 +1149,9 @@ def fetch_tmdb_mainland_tv(
         # 长剧优先：有片长时至少 20 分钟；没有片长的条目，必须有完整的长季信息。
         if max_runtime and max_runtime < 20:
             continue
+        # 已有集数信息时，少于 12 集通常是网络故事片、短篇或特别项目，不纳入长剧片单。
+        if episode_count and episode_count < 12:
+            continue
         if not max_runtime and episode_count < 12:
             continue
         # 新剧可能暂时没有很多票，但不能让完全没有质量信号的条目进入主电视剧区。
