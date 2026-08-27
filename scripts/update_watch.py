@@ -88,9 +88,9 @@ def fetch_tv_subjects(limit: int) -> list[dict]:
     return subjects
 
 
-def fetch_search_subjects(tag: str, page_limit: int = 100) -> list[dict]:
+def fetch_search_subjects(tag: str, page_limit: int = 50) -> list[dict]:
     subjects = []
-    for page_start in (0, 100):
+    for page_start in range(0, 100, page_limit):
         payload = get_json(
             DOUBAN_SEARCH_URL,
             params={
@@ -137,6 +137,8 @@ def fetch_movie_subjects(limit: int, detail_cache: dict) -> list[dict]:
             subject = item_to_subject(item, "电影", "movie", rank)
             subject["year"] = detail.get("year")
             subjects.append(subject)
+            if len(subjects) >= limit + 10:
+                break
     return subjects
 
 
@@ -164,6 +166,9 @@ def fetch_animation_subjects(limit: int, detail_cache: dict) -> list[dict]:
                 japanese_subjects.append(subject)
             seen.add(subject_id)
 
+    if len(mainland_subjects) + len(japanese_subjects) >= limit:
+        return mainland_subjects + japanese_subjects
+
     for rank, item in enumerate(fetch_search_subjects("动画"), start=1):
         subject_id = str(item["id"])
         if subject_id in seen:
@@ -177,6 +182,8 @@ def fetch_animation_subjects(limit: int, detail_cache: dict) -> list[dict]:
             else:
                 japanese_subjects.append(subject)
             seen.add(subject_id)
+            if len(mainland_subjects) + len(japanese_subjects) >= limit + 10:
+                break
 
     # Mainland animation comes first. Japanese animation is only a fallback
     # when the mainland candidates cannot fill the requested 20 positions.
