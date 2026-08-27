@@ -1187,14 +1187,14 @@ def fetch_tmdb_mainland_tv(
 
 
 def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20) -> list[dict]:
-    """抓取 TMDB 当前年度最新大陆动画 TV，按首播时间倒序。
+    """抓取正在更新优先、再按最新上线时间排列的大陆动画 TV。
 
-    只按动画类型和首播日期会把已经结束多年的老番也带进来。
-    片单要求的是当前最新国漫，因此这里限定为本年度首播；不足时宁可少于
-    20 部，也不使用过时作品凑数。
+    只按动画类型和首播日期会把已经结束多年的老番也带进来；这里同时抓取
+    本年度新番和 TMDB 标记为近期仍在更新的条目。正在更新的排在最前面，
+    其后才是本年度最新上线的条目，不使用多年以前的老番凑数。
     """
     year_start = f"{now.year}-01-01"
-    items = fetch_tmdb_discover(
+    current_year_items = fetch_tmdb_discover(
         "tv",
         headers,
         {
@@ -1210,9 +1210,37 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
             "include_null_first_air_dates": "false",
         },
         # discover 结果中可能包含特别篇/合集，先多取候选再过滤，避免国漫无故少于 20 部。
-        limit=max(limit * 3, 60),
+        limit=max(limit * 4, 80),
         max_pages=10,
     )
+    active_items = fetch_tmdb_discover(
+        "tv",
+        headers,
+        {
+            "language": "zh-CN",
+            "sort_by": "popularity.desc",
+            "with_origin_country": "CN",
+            "with_original_language": "zh",
+            "with_genres": "16",
+            "without_genres": "99,10764,10767",
+            "vote_count.gte": 3,
+            "include_null_first_air_dates": "false",
+        },
+        limit=max(limit * 4, 80),
+        max_pages=10,
+    )
+    items = []
+    seen = set()
+    for item in current_year_items + active_items:
+        tmdb_id = int(item["id"])
+        if tmdb_id in seen:
+            continue
+        seen.add(tmdb_id)
+        items.append(item)
+
+    today = now.date()
+    recent_episode_cutoff = (today - timedelta(days=120)).isoformat()
+    future_episode_limit = (today + timedelta(days=30)).isoformat()
     results = []
     for item in items:
         if not item.get("first_air_date"):
@@ -1223,7 +1251,7 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
             headers=headers,
         )
         first_air_date = data.get("first_air_date") or item.get("first_air_date") or ""
-        if not first_air_date or not first_air_date.startswith(f"{now.year}-"):
+        if not first_air_date:
             continue
         origin_country = data.get("origin_country") or item.get("origin_country") or []
         if "CN" not in origin_country and data.get("original_language") not in {"zh", "cn"}:
@@ -1239,8 +1267,37 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
             )
         ):
             continue
-        results.append(tmdb_catalog_item({**item, **data, "first_air_date": first_air_date}, "tv", "国漫"))
-    return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
+        last_air_date = (data.get("last_episode_to_air") or {}).get("air_date") or data.get("last_air_date") or ""
+        next_air_date = (data.get("next_episode_to_air") or {}).get("air_date") or ""
+        is_currently_updating = (
+            data.get("status") in {"Returning Series", "In Production", "Pilot"}
+            and (
+                (bool(last_air_date) and last_air_date >= recent_episode_cutoff)
+                or (bool(next_air_date) and next_air_date <= future_episode_limit)
+                or bool(data.get("in_production"))
+            )
+        )
+        is_current_year = first_air_date.startswith(f"{now.year}-")
+        if not is_currently_updating and not is_current_year:
+            continue
+        catalog_item = tmdb_catalog_item(
+            {**item, **data, "first_air_date": first_air_date},
+            "tv",
+            "国漫",
+        )
+        catalog_item["_currently_updating"] = is_currently_updating
+        catalog_item["_activity_date"] = last_air_date or next_air_date or first_air_date
+        results.append(catalog_item)
+    return sorted(
+        results,
+        key=lambda value: (
+            value["_currently_updating"],
+            value["_activity_date"] if value["_currently_updating"] else value["first_air_date"],
+            value["first_air_date"],
+            value["tmdb_id"],
+        ),
+        reverse=True,
+    )[:limit]
 
 
 def fetch_tmdb_mainland_movies(headers: dict, now: datetime, limit: int = 5) -> list[dict]:
