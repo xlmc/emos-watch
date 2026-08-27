@@ -18,6 +18,8 @@ concurrency:
   group: emos-watch-update
   cancel-in-progress: true
 
+# 生成文件由任务自动提交到 main。
+
 permissions:
   contents: write
 
