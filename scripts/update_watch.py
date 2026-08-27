@@ -1025,7 +1025,9 @@ def fetch_tmdb_mainland_tv(
     """
     today = now.date()
     today_text = today.isoformat()
-    recent_text = (today - timedelta(days=60)).isoformat()
+    # 电视剧有时会因为 TMDB 的分集资料延迟而没有在最近几周更新，
+    # 适当放宽检测窗口，但仍要求状态为正在制作/连载。
+    recent_text = (today - timedelta(days=180)).isoformat()
     future_text = (today + timedelta(days=30)).isoformat()
     discovered = fetch_tmdb_discover(
         "tv",
@@ -1078,7 +1080,7 @@ def fetch_tmdb_mainland_tv(
             for keyword in (
                 "赛事", "自行车赛", "文学经典", "寓言", "警长", "巡逻行动", "玩家", "游戏",
                 "微短剧", "短剧", "竖屏", "快穿", "系统", "总裁", "闪婚", "离婚",
-                "替身", "千金", "萌宝", "神医", "王妃", "王爷", "夫人", "少爷",
+                "替身", "千金", "萌宝", "神医", "赘婿", "逆袭", "重生", "契约",
                 "霹雳", "布袋戏", "戏曲", "舞台剧", "纪录片", "纪录",
             )
         ):
@@ -1119,16 +1121,16 @@ def fetch_tmdb_mainland_tv(
         except (TypeError, ValueError):
             vote_count = 0
         popularity = float(data.get("popularity") or item.get("popularity") or 0)
-        # 长剧优先：有片长时至少 30 分钟；没有片长的条目，必须有完整的长季信息。
-        if max_runtime and max_runtime < 30:
+        # 长剧优先：有片长时至少 20 分钟；没有片长的条目，必须有完整的长季信息。
+        if max_runtime and max_runtime < 20:
             continue
-        if not max_runtime and episode_count < 24:
+        if not max_runtime and episode_count < 12:
             continue
-        # 新剧可能暂时没有很多票，但不能让没有质量信号的条目进入主电视剧区。
+        # 新剧可能暂时没有很多票，但不能让完全没有质量信号的条目进入主电视剧区。
         vote_average = float(data.get("vote_average") or 0)
-        if vote_count < 10 and (popularity < 5 or vote_average < 6):
+        if vote_count < 3 and popularity < 1.5:
             continue
-        if vote_count >= 10 and vote_average and vote_average < 5.5:
+        if vote_count >= 10 and vote_average and vote_average < 5.0:
             continue
 
         quality_score = (
@@ -1171,7 +1173,8 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
             "vote_count.gte": 5,
             "include_null_first_air_dates": "false",
         },
-        limit=limit,
+        # discover 结果中可能包含特别篇/合集，先多取候选再过滤，避免国漫无故少于 20 部。
+        limit=max(limit * 3, 60),
         max_pages=10,
     )
     results = []
