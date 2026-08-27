@@ -1,7 +1,7 @@
 {
-  "name": "TMDB大陆电视剧、国漫与国内电影（35部）",
+  "name": "TMDB大陆电视剧、国漫与国内电影（34部）",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-tmdb-mix-v3.gif",
-  "updated_at": "2026-08-28 07:47:38",
+  "updated_at": "2026-08-28 07:49:43",
   "videos": [
     {
       "tmdb_id": 299952,
@@ -190,28 +190,22 @@
       "sort": 31
     },
     {
-      "tmdb_id": 1628071,
-      "tmdb_type": "movie",
-      "title": "宗师叶问2",
-      "sort": 32
-    },
-    {
       "tmdb_id": 1491920,
       "tmdb_type": "movie",
       "title": "功夫女足",
-      "sort": 33
+      "sort": 32
     },
     {
       "tmdb_id": 1728566,
       "tmdb_type": "movie",
       "title": "致命潮汐",
-      "sort": 34
+      "sort": 33
     },
     {
       "tmdb_id": 1424435,
       "tmdb_type": "movie",
       "title": "万米危机",
-      "sort": 35
+      "sort": 34
     }
   ]
 }
