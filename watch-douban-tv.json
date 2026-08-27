@@ -1,0 +1,259 @@
+{
+  "name": "豆瓣热门大陆电视剧（42部）",
+  "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-douban-tv.gif",
+  "updated_at": "2026-08-28 02:22:16",
+  "videos": [
+    {
+      "tmdb_id": 299952,
+      "tmdb_type": "tv",
+      "title": "早春晴朗",
+      "sort": 1
+    },
+    {
+      "tmdb_id": 289761,
+      "tmdb_type": "tv",
+      "title": "醒来",
+      "sort": 2
+    },
+    {
+      "tmdb_id": 294487,
+      "tmdb_type": "tv",
+      "title": "金色",
+      "sort": 3
+    },
+    {
+      "tmdb_id": 285250,
+      "tmdb_type": "tv",
+      "title": "蝉",
+      "sort": 4
+    },
+    {
+      "tmdb_id": 317331,
+      "tmdb_type": "tv",
+      "title": "邻人可疑",
+      "sort": 5
+    },
+    {
+      "tmdb_id": 272938,
+      "tmdb_type": "tv",
+      "title": "师兄太稳健",
+      "sort": 6
+    },
+    {
+      "tmdb_id": 280133,
+      "tmdb_type": "tv",
+      "title": "藏锋",
+      "sort": 7
+    },
+    {
+      "tmdb_id": 331830,
+      "tmdb_type": "tv",
+      "title": "我们的少年时代2",
+      "sort": 8
+    },
+    {
+      "tmdb_id": 291856,
+      "tmdb_type": "tv",
+      "title": "重器",
+      "sort": 9
+    },
+    {
+      "tmdb_id": 287496,
+      "tmdb_type": "tv",
+      "title": "花开锦绣",
+      "sort": 10
+    },
+    {
+      "tmdb_id": 294635,
+      "tmdb_type": "tv",
+      "title": "我的鸵鸟先生",
+      "sort": 11
+    },
+    {
+      "tmdb_id": 327916,
+      "tmdb_type": "tv",
+      "title": "凛冬下的罪恶",
+      "sort": 12
+    },
+    {
+      "tmdb_id": 273119,
+      "tmdb_type": "tv",
+      "title": "人鱼",
+      "sort": 13
+    },
+    {
+      "tmdb_id": 318903,
+      "tmdb_type": "tv",
+      "title": "盲盒",
+      "sort": 14
+    },
+    {
+      "tmdb_id": 289116,
+      "tmdb_type": "tv",
+      "title": "天才，女友",
+      "sort": 15
+    },
+    {
+      "tmdb_id": 330465,
+      "tmdb_type": "tv",
+      "title": "莫得闲",
+      "sort": 16
+    },
+    {
+      "tmdb_id": 271016,
+      "tmdb_type": "tv",
+      "title": "九门",
+      "sort": 17
+    },
+    {
+      "tmdb_id": 330447,
+      "tmdb_type": "tv",
+      "title": "制胜",
+      "sort": 18
+    },
+    {
+      "tmdb_id": 295599,
+      "tmdb_type": "tv",
+      "title": "御廷谣",
+      "sort": 19
+    },
+    {
+      "tmdb_id": 283780,
+      "tmdb_type": "tv",
+      "title": "兵自风中来",
+      "sort": 20
+    },
+    {
+      "tmdb_id": 289139,
+      "tmdb_type": "tv",
+      "title": "这一秒过火",
+      "sort": 21
+    },
+    {
+      "tmdb_id": 296003,
+      "tmdb_type": "tv",
+      "title": "小芳",
+      "sort": 22
+    },
+    {
+      "tmdb_id": 295558,
+      "tmdb_type": "tv",
+      "title": "雀骨",
+      "sort": 23
+    },
+    {
+      "tmdb_id": 286506,
+      "tmdb_type": "tv",
+      "title": "百花杀",
+      "sort": 24
+    },
+    {
+      "tmdb_id": 291392,
+      "tmdb_type": "tv",
+      "title": "野狗骨头",
+      "sort": 25
+    },
+    {
+      "tmdb_id": 285143,
+      "tmdb_type": "tv",
+      "title": "灿如繁星",
+      "sort": 26
+    },
+    {
+      "tmdb_id": 301345,
+      "tmdb_type": "tv",
+      "title": "京城奇探",
+      "sort": 27
+    },
+    {
+      "tmdb_id": 273114,
+      "tmdb_type": "tv",
+      "title": "悬案",
+      "sort": 28
+    },
+    {
+      "tmdb_id": 319703,
+      "tmdb_type": "tv",
+      "title": "画梦录",
+      "sort": 29
+    },
+    {
+      "tmdb_id": 251600,
+      "tmdb_type": "tv",
+      "title": "千香",
+      "sort": 30
+    },
+    {
+      "tmdb_id": 291947,
+      "tmdb_type": "tv",
+      "title": "昨夜将至",
+      "sort": 31
+    },
+    {
+      "tmdb_id": 239901,
+      "tmdb_type": "tv",
+      "title": "云秀行",
+      "sort": 32
+    },
+    {
+      "tmdb_id": 233076,
+      "tmdb_type": "tv",
+      "title": "问心2",
+      "sort": 33
+    },
+    {
+      "tmdb_id": 288603,
+      "tmdb_type": "tv",
+      "title": "炽夏",
+      "sort": 34
+    },
+    {
+      "tmdb_id": 230311,
+      "tmdb_type": "tv",
+      "title": "爱情有烟火",
+      "sort": 35
+    },
+    {
+      "tmdb_id": 278605,
+      "tmdb_type": "tv",
+      "title": "南部档案",
+      "sort": 36
+    },
+    {
+      "tmdb_id": 292696,
+      "tmdb_type": "tv",
+      "title": "莫离",
+      "sort": 37
+    },
+    {
+      "tmdb_id": 282497,
+      "tmdb_type": "tv",
+      "title": "迷墙",
+      "sort": 38
+    },
+    {
+      "tmdb_id": 289271,
+      "tmdb_type": "tv",
+      "title": "翘楚",
+      "sort": 39
+    },
+    {
+      "tmdb_id": 287641,
+      "tmdb_type": "tv",
+      "title": "耀眼",
+      "sort": 40
+    },
+    {
+      "tmdb_id": 289209,
+      "tmdb_type": "tv",
+      "title": "大唐迷雾",
+      "sort": 41
+    },
+    {
+      "tmdb_id": 321802,
+      "tmdb_type": "tv",
+      "title": "盛唐奇案",
+      "sort": 42
+    }
+  ]
+}
