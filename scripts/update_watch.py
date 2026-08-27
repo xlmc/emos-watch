@@ -1050,6 +1050,7 @@ def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list
                 "first_air_date": data.get("first_air_date") or "",
                 "season_air_date": season_air_date,
                 "season_number": int(latest_season.get("season_number") or 0),
+                "latest_episode_date": main_episode_date,
                 "last_air_date": last_air,
                 "next_air_date": next_air,
                 "sort_date": last_air or next_air or data.get("first_air_date") or "",
@@ -1058,8 +1059,16 @@ def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list
             }
         )
 
-    # 最终只按当前年度最新普通季的上线日期排序；热度只用于发现候选。
-    results.sort(key=lambda item: (item["season_air_date"], item["tmdb_id"]), reverse=True)
+    # 当天有正片更新的综艺置顶，其余再按当前年度最新普通季上线日期排序。
+    today_text = today.isoformat()
+    results.sort(
+        key=lambda item: (
+            item["latest_episode_date"] == today_text,
+            item["season_air_date"],
+            item["tmdb_id"],
+        ),
+        reverse=True,
+    )
     return results[:limit]
 
 
@@ -1097,36 +1106,36 @@ def detect_new_variety_today(
     now: datetime,
     state: dict,
 ) -> bool:
-    """只有当天出现新综艺节目首播/上线时，才允许重排综艺片单。"""
-    state_key = "variety_new_show_v1"
+    """只有当天出现新季上线或正片更新时，才允许重排综艺片单。"""
+    state_key = "variety_update_v2"
     previous = state.get(state_key)
-    existing = load_json(output_path, {}).get("videos", []) if output_path.exists() else []
-    existing_keys = {
-        (item.get("tmdb_type"), item.get("tmdb_id"))
-        for item in existing
-    }
     today = now.strftime("%Y-%m-%d")
 
-    # 首次启用这条规则时，以当前片单作为基线，不因历史节目被重复判定为“新上线”。
+    # 首次启用时不沿用旧状态，确保当天确实更新过的正片能触发一次排序。
     if previous is None:
-        previous = {
-            f"{item['tmdb_type']}:{item['tmdb_id']}": item.get("season_air_date") or ""
-            for item in items
-            if (item.get("tmdb_type"), item.get("tmdb_id")) in existing_keys
-        }
+        previous = {}
 
     current = {}
-    has_new_show = False
+    has_new_update = False
     for item in items:
-        release_date = item.get("season_air_date") or ""
-        if not release_date:
+        season_date = item.get("season_air_date") or ""
+        episode_date = item.get("latest_episode_date") or ""
+        if not season_date and not episode_date:
             continue
         key = f"{item['tmdb_type']}:{item['tmdb_id']}"
-        current[key] = release_date
-        if release_date == today and previous.get(key) != today:
-            has_new_show = True
+        current[key] = {
+            "season_air_date": season_date,
+            "latest_episode_date": episode_date,
+        }
+        old = previous.get(key) if isinstance(previous.get(key), dict) else {}
+        if (
+            season_date == today and old.get("season_air_date") != today
+        ) or (
+            episode_date == today and old.get("latest_episode_date") != today
+        ):
+            has_new_update = True
     state[state_key] = current
-    return has_new_show
+    return has_new_update
 
 
 def main():
