@@ -50,7 +50,7 @@ https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json
 https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-douban-tv.json
 ```
 
-封面地址为：
+旧综艺封面兼容地址：
 
 ```text
 https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover.gif
@@ -88,7 +88,7 @@ https://watch.zzzj.de5.net
 最后 EMOS 片单 2 地址改成：
 
 ```text
-https://watch.zzzj.de5.net/watch.json
+https://watch.zzzj.de5.net/watch-variety.json
 ```
 
 不要把 GitHub PAT、TMDB Token 写入仓库。GitHub Actions 使用仓库自带的 `GITHUB_TOKEN` 提交每日生成文件。
