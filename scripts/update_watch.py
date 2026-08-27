@@ -1079,6 +1079,7 @@ def fetch_tmdb_mainland_tv(
                 "赛事", "自行车赛", "文学经典", "寓言", "警长", "巡逻行动", "玩家", "游戏",
                 "微短剧", "短剧", "竖屏", "快穿", "系统", "总裁", "闪婚", "离婚",
                 "替身", "千金", "萌宝", "神医", "王妃", "王爷", "夫人", "少爷",
+                "霹雳", "布袋戏", "戏曲", "舞台剧", "纪录片", "纪录",
             )
         ):
             continue
@@ -1118,10 +1119,16 @@ def fetch_tmdb_mainland_tv(
         except (TypeError, ValueError):
             vote_count = 0
         popularity = float(data.get("popularity") or item.get("popularity") or 0)
-        # 长剧优先：有片长时至少 20 分钟；没有片长的条目，必须有足够集数或投票数据。
-        if max_runtime and max_runtime < 20:
+        # 长剧优先：有片长时至少 30 分钟；没有片长的条目，必须有完整的长季信息。
+        if max_runtime and max_runtime < 30:
             continue
-        if not max_runtime and episode_count < 12 and vote_count < 20:
+        if not max_runtime and episode_count < 24:
+            continue
+        # 新剧可能暂时没有很多票，但不能让没有质量信号的条目进入主电视剧区。
+        vote_average = float(data.get("vote_average") or 0)
+        if vote_count < 10 and (popularity < 5 or vote_average < 6):
+            continue
+        if vote_count >= 10 and vote_average and vote_average < 5.5:
             continue
 
         quality_score = (
@@ -1172,7 +1179,13 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
         if not item.get("first_air_date"):
             continue
         title_text = " ".join(str(item.get(key) or "") for key in ("name", "original_name"))
-        if any(keyword in title_text for keyword in ("特别篇", "剧场版", "宣传片", "短片", "玩家", "安全警长", "摸金", "绘本", "游戏", "怪兽大电影")):
+        if any(
+            keyword in title_text
+            for keyword in (
+                "特别篇", "剧场版", "宣传片", "宣传", "短片", "玩家", "安全警长",
+                "摸金", "绘本", "游戏", "怪兽大电影", "黑神话", "章节动画", "原版合集", "合集",
+            )
+        ):
             continue
         results.append(tmdb_catalog_item(item, "tv", "国漫"))
     return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
