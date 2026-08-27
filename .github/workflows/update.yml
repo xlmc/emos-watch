@@ -1,4 +1,4 @@
-name: 更新豆瓣热门电视剧、综艺、假面骑士与超级战队片单
+name: 更新 TMDB 电视剧、综艺、假面骑士与超级战队片单
 
 on:
   workflow_dispatch:
@@ -48,7 +48,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A watch.json watch-variety.json watch-douban-tv.json watch-kamen-rider.json watch-super-sentai.json cover.gif cover-variety.gif cover-douban-tv.gif cover-kamen-rider.gif cover-super-sentai.gif data
-          git diff --cached --quiet || git commit -m "更新豆瓣电视剧综艺及特摄正剧片单"
+          git diff --cached --quiet || git commit -m "更新 TMDB 电视剧综艺及特摄正剧片单"
           git push
 
       - name: Refresh jsDelivr cover cache

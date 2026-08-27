@@ -957,6 +957,213 @@ def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> list[
     return sorted(merged.values(), key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)[:limit]
 
 
+def previous_month_start(today) -> str:
+    first_day = today.replace(day=1)
+    return (first_day - timedelta(days=1)).replace(day=1).isoformat()
+
+
+def fetch_tmdb_discover(
+    path: str,
+    headers: dict,
+    params: dict,
+    limit: int,
+    max_pages: int = 10,
+) -> list[dict]:
+    """按 TMDB Discover 条件抓取并去重，结果保持 API 的日期排序。"""
+    items = []
+    seen = set()
+    for page in range(1, max_pages + 1):
+        payload = get_json(
+            f"{TMDB_API_BASE}/discover/{path}",
+            params={**params, "page": page},
+            headers=headers,
+        )
+        for item in payload.get("results", []):
+            if not item.get("id") or int(item["id"]) in seen:
+                continue
+            seen.add(int(item["id"]))
+            items.append(item)
+            if len(items) >= limit:
+                return items
+        if page >= int(payload.get("total_pages", page)):
+            break
+    return items
+
+
+def tmdb_catalog_item(item: dict, tmdb_type: str, category: str) -> dict:
+    date_key = "first_air_date" if tmdb_type == "tv" else "release_date"
+    title_key = "name" if tmdb_type == "tv" else "title"
+    return {
+        "tmdb_id": int(item["id"]),
+        "tmdb_type": tmdb_type,
+        "title": item.get(title_key) or item.get("original_name" if tmdb_type == "tv" else "original_title") or f"TMDB {item['id']}",
+        "first_air_date": item.get(date_key) or "",
+        "poster_path": item.get("poster_path"),
+        "category": category,
+    }
+
+
+def parse_iso_date(value: str):
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return None
+
+
+def fetch_tmdb_mainland_tv(
+    headers: dict,
+    now: datetime,
+    state: dict,
+    limit: int = 20,
+) -> list[dict]:
+    """抓取当前月和上个月上线的大陆电视剧，按上线时间倒序。"""
+    today = now.date()
+    today_text = today.isoformat()
+    start_text = previous_month_start(today)
+    discovered = fetch_tmdb_discover(
+        "tv",
+        headers,
+        {
+            "language": "zh-CN",
+            "sort_by": "first_air_date.desc",
+            "first_air_date.gte": start_text,
+            "first_air_date.lte": today_text,
+            "with_origin_country": "CN",
+            "without_genres": "16,10764,10763,10767,10762",
+            "include_null_first_air_dates": "false",
+        },
+        limit=100,
+        max_pages=10,
+    )
+    finale_state = state.get("tv_finale_dates_v1")
+    if not isinstance(finale_state, dict):
+        finale_state = {}
+
+    results = []
+    for item in discovered:
+        data = get_json(
+            f"{TMDB_API_BASE}/tv/{item['id']}",
+            params={"language": "zh-CN"},
+            headers=headers,
+        )
+        first_air_date = data.get("first_air_date") or item.get("first_air_date") or ""
+        if not (start_text <= first_air_date <= today_text):
+            continue
+        origin_country = data.get("origin_country") or item.get("origin_country") or []
+        if "CN" not in origin_country and data.get("original_language") not in {"zh", "cn"}:
+            continue
+        genre_ids = {int(value) for value in (item.get("genre_ids") or []) if str(value).isdigit()}
+        genre_ids.update(
+            int(genre.get("id"))
+            for genre in (data.get("genres") or [])
+            if str(genre.get("id", "")).isdigit()
+        )
+        if genre_ids.intersection({16, 10764, 10763, 10767, 10762}):
+            continue
+
+        key = f"tv:{data['id']}"
+        last_episode = data.get("last_episode_to_air") or {}
+        finale_date = ""
+        if data.get("status") == "Ended":
+            finale_date = last_episode.get("air_date") or data.get("last_air_date") or ""
+        if finale_date:
+            finale_state[key] = finale_date
+        else:
+            finale_date = finale_state.get(key, "")
+        finale_day = parse_iso_date(finale_date)
+        if finale_day and (today - finale_day).days >= 3:
+            continue
+
+        results.append(
+            {
+                **tmdb_catalog_item(data, "tv", "电视剧"),
+                "first_air_date": first_air_date,
+                "finale_date": finale_date,
+            }
+        )
+        if len(results) >= limit:
+            break
+
+    state["tv_finale_dates_v1"] = finale_state
+    return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
+
+
+def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20) -> list[dict]:
+    """抓取 TMDB 最新大陆动画 TV，按首播时间倒序。"""
+    items = fetch_tmdb_discover(
+        "tv",
+        headers,
+        {
+            "language": "zh-CN",
+            "sort_by": "first_air_date.desc",
+            "first_air_date.lte": now.strftime("%Y-%m-%d"),
+            "with_origin_country": "CN",
+            "with_genres": "16",
+            "without_genres": "10764,10767",
+            "include_null_first_air_dates": "false",
+        },
+        limit=limit,
+        max_pages=10,
+    )
+    results = [tmdb_catalog_item(item, "tv", "国漫") for item in items if item.get("first_air_date")]
+    return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
+
+
+def fetch_tmdb_mainland_movies(headers: dict, now: datetime, limit: int = 5) -> list[dict]:
+    """抓取 TMDB 最新大陆非动画电影，按上映时间倒序。"""
+    items = fetch_tmdb_discover(
+        "movie",
+        headers,
+        {
+            "language": "zh-CN",
+            "sort_by": "primary_release_date.desc",
+            "primary_release_date.lte": now.strftime("%Y-%m-%d"),
+            "with_origin_country": "CN",
+            "without_genres": "16",
+            "include_adult": "false",
+        },
+        limit=limit,
+        max_pages=5,
+    )
+    results = [tmdb_catalog_item(item, "movie", "电影") for item in items if item.get("release_date")]
+    return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
+
+
+def mixed_feed_changed(items: list[dict], output_path: Path) -> bool:
+    """只要新上线、顺序变化或三天后移除大结局剧集，就刷新混合片单。"""
+    previous = load_json(output_path, {})
+    previous_keys = [
+        f"{video.get('tmdb_type')}:{video.get('tmdb_id')}"
+        for video in previous.get("videos", [])
+    ]
+    current_keys = [f"{item['tmdb_type']}:{item['tmdb_id']}" for item in items]
+    return not output_path.exists() or previous_keys != current_keys
+
+
+def write_tmdb_mixed_feed(
+    items: list[dict],
+    base: str,
+    now: datetime,
+    output_path: Path,
+    cover_path: Path,
+):
+    feed = {
+        "name": f"TMDB大陆电视剧、国漫与国内电影（{len(items)}部）",
+        "cover": f"{base}/{cover_path.name}",
+        "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "videos": [
+            {
+                "tmdb_id": item["tmdb_id"],
+                "tmdb_type": item["tmdb_type"],
+                "title": item["title"],
+                "sort": position,
+            }
+            for position, item in enumerate(items, start=1)
+        ],
+    }
+    output_path.write_text(json.dumps(feed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 VARIETY_PLATFORM_KEYWORDS = (
     "优酷", "youku", "腾讯", "tencent", "芒果", "mango", "爱奇艺", "iqiyi", "iQIYI"
 )
@@ -1365,6 +1572,19 @@ def main():
     headers = tmdb_headers()
     base = config["site_base_url"].rstrip("/")
 
+    tv_items = fetch_tmdb_mainland_tv(headers, now, release_state, limit=20)
+    animation_items = fetch_tmdb_mainland_animation(headers, now, limit=20)
+    movie_items = fetch_tmdb_mainland_movies(headers, now, limit=5)
+    mixed_items = tv_items + animation_items + movie_items
+    tv_feed_should_update = mixed_feed_changed(mixed_items, DOUBAN_TV_WATCH_PATH)
+    tv_cover_candidates = [item for item in mixed_items if item.get("poster_path")]
+    if len(tv_cover_candidates) < 3:
+        raise RuntimeError(f"TMDB 混合片单可用海报不足 3 张，当前仅有 {len(tv_cover_candidates)} 张")
+    tv_selected = select_daily_cover(tv_cover_candidates, now, DOUBAN_TV_SELECTION_PATH)
+    make_cover(tv_selected, now, DOUBAN_TV_COVER_PATH)
+    if tv_feed_should_update:
+        write_tmdb_mixed_feed(mixed_items, base, now, DOUBAN_TV_WATCH_PATH, DOUBAN_TV_COVER_PATH)
+
     kamen_items = fetch_franchise_series(KAMEN_RIDER_SERIES, headers, now)
     kamen_selected = write_franchise_feed(
         kamen_items,
@@ -1398,6 +1618,8 @@ def main():
         )
         CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(
+            f"{'已更新' if tv_feed_should_update else '电视剧无新上线，保持视频顺序'} TMDB 混合片单 "
+            f"（电视剧 {len(tv_items)}、国漫 {len(animation_items)}、电影 {len(movie_items)}）；"
             f"已更新假面骑士正剧 {len(kamen_items)} 部、超级战队正剧 {len(sentai_items)} 部；"
             "综艺无当日新上线，保持综艺片单和封面不变；电视剧片单不处理。"
         )
@@ -1431,6 +1653,8 @@ def main():
     )
     CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
+        f"{'已更新' if tv_feed_should_update else '电视剧无新上线，保持视频顺序'} TMDB 混合片单 "
+        f"（电视剧 {len(tv_items)}、国漫 {len(animation_items)}、电影 {len(movie_items)}）；"
         f"已更新假面骑士正剧 {len(kamen_items)} 部、超级战队正剧 {len(sentai_items)} 部；"
         f"已更新国内流媒体热播综艺 {len(variety_items)} 部；"
         f"综艺今日封面：{', '.join(item['title'] for item in variety_selected)}；电视剧片单不处理。"
