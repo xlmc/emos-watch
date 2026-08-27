@@ -1054,7 +1054,22 @@ def choose_franchise_result(entry: tuple, results: list[dict]) -> dict | None:
     year = int(entry[0])
     aliases = [normalize_title(value) for value in entry[1:] if value]
 
+    def is_non_main_title(result: dict) -> bool:
+        raw_title = " ".join(
+            str(result.get(key) or "") for key in ("name", "original_name")
+        ).lower()
+        normalized = normalize_title(raw_title)
+        # TMDB 常把正剧的短篇、定格动画、谈话篇等排在正剧前面；这些不是主线 TV 正剧。
+        excluded = (
+            "stopmotion", "crossrail", "saythetalking", "talks", "nintality",
+            "challenges", "special", "movie", "film", "side story", "spinoff",
+            "spinoff", "miniseries", "short series", "shortfilm",
+        )
+        return ":" in raw_title or any(token in normalized for token in excluded)
+
     def score(result: dict) -> tuple[int, float]:
+        if is_non_main_title(result):
+            return -1000, 0
         names = [
             normalize_title(result.get("name") or ""),
             normalize_title(result.get("original_name") or ""),
