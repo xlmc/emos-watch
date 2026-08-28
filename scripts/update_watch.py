@@ -1611,14 +1611,17 @@ def write_franchise_feed(
     watch_path: Path,
     cover_path: Path,
     selection_path: Path,
+    feed_name: str = "",
 ):
     cover_candidates = [item for item in items if item.get("poster_path")]
     if len(cover_candidates) < 3:
         raise RuntimeError(f"{name} 可用 TMDB 海报不足 3 张，当前仅有 {len(cover_candidates)} 张")
     selected = select_daily_cover(cover_candidates, now, selection_path)
     make_cover(selected, now, cover_path)
+    saved_name = str(load_json(watch_path, {}).get("name") or "").strip()
+    final_name = str(feed_name or "").strip() or saved_name or f"{name}（{len(items)}部）"
     feed = {
-        "name": f"{name}（{len(items)}部）",
+        "name": final_name,
         "cover": f"{base}/{cover_path.name}",
         "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
         "videos": [
@@ -1835,6 +1838,7 @@ def main():
         KAMEN_WATCH_PATH,
         KAMEN_COVER_PATH,
         KAMEN_SELECTION_PATH,
+        str(config.get("kamen_rider_name") or "").strip(),
     )
     sentai_items = fetch_franchise_series(SUPER_SENTAI_SERIES, headers, now)
     sentai_selected = write_franchise_feed(
@@ -1845,6 +1849,7 @@ def main():
         SENTAI_WATCH_PATH,
         SENTAI_COVER_PATH,
         SENTAI_SELECTION_PATH,
+        str(config.get("super_sentai_name") or "").strip(),
     )
 
     variety_items = fetch_chinese_variety(headers, now, limit=50)
@@ -1870,7 +1875,11 @@ def main():
     # 保留旧地址，避免已经填入 cover.gif 的用户丢图；两个文件内容保持一致。
     shutil.copyfile(VARIETY_COVER_PATH, COVER_PATH)
     variety_watch = {
-        "name": f"国内流媒体热播更新综艺（{len(variety_items)}部）",
+        "name": (
+            str(config.get("variety_name") or "").strip()
+            or str(load_json(VARIETY_WATCH_PATH, {}).get("name") or "").strip()
+            or f"国内流媒体热播更新综艺（{len(variety_items)}部）"
+        ),
         "cover": f"{base}/cover-variety.gif",
         "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
         "videos": [
