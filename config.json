@@ -1,6 +1,5 @@
 {
   "site_base_url": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main",
-  "tmdb_mix_name": "",
   "tv_limit": 20,
   "movie_limit": 10,
   "animation_limit": 20,

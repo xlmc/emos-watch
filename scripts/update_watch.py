@@ -1826,46 +1826,6 @@ def main():
     headers = tmdb_headers()
     base = config["site_base_url"].rstrip("/")
 
-    tv_items = fetch_tmdb_mainland_tv(headers, now, release_state, limit=20)
-    animation_items = fetch_tmdb_mainland_animation(headers, now, limit=20)
-    movie_items = fetch_tmdb_mainland_movies(headers, now, limit=5)
-    mixed_items = tv_items + animation_items + movie_items
-    # v4 文件名用于强制绕过 jsDelivr 的旧 CDN 缓存；旧文件继续同步，兼容已经填入旧地址的用户。
-    if TMDB_MIX_WATCH_PATH.exists():
-        tv_output_path = TMDB_MIX_WATCH_PATH
-    elif TMDB_MIX_V3_WATCH_PATH.exists():
-        tv_output_path = TMDB_MIX_V3_WATCH_PATH
-    elif TMDB_MIX_V2_WATCH_PATH.exists():
-        tv_output_path = TMDB_MIX_V2_WATCH_PATH
-    elif TMDB_MIX_LEGACY_WATCH_PATH.exists():
-        tv_output_path = TMDB_MIX_LEGACY_WATCH_PATH
-    else:
-        tv_output_path = DOUBAN_TV_WATCH_PATH
-    expected_tv_cover = f"{base}/{TMDB_MIX_COVER_PATH.name}"
-    existing_tv_feed = load_json(tv_output_path, {})
-    configured_tv_name = str(config.get("tmdb_mix_name") or "").strip()
-    saved_tv_name = str(existing_tv_feed.get("name") or "").strip()
-    tv_feed_name = configured_tv_name or saved_tv_name or "TMDB大陆电视剧、国漫与国内电影"
-    tv_feed_should_update = (
-        mixed_feed_changed(mixed_items, tv_output_path)
-        or existing_tv_feed.get("cover") != expected_tv_cover
-    )
-    tv_cover_candidates = [item for item in mixed_items if item.get("poster_path")]
-    if len(tv_cover_candidates) < 3:
-        raise RuntimeError(f"TMDB 混合片单可用海报不足 3 张，当前仅有 {len(tv_cover_candidates)} 张")
-    tv_selected = select_daily_cover(tv_cover_candidates, now, DOUBAN_TV_SELECTION_PATH)
-    make_cover(tv_selected, now, TMDB_MIX_COVER_PATH)
-    if tv_feed_should_update:
-        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_WATCH_PATH, TMDB_MIX_COVER_PATH, tv_feed_name)
-        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_V3_WATCH_PATH, TMDB_MIX_COVER_PATH, tv_feed_name)
-        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_V2_WATCH_PATH, TMDB_MIX_COVER_PATH, tv_feed_name)
-        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_LEGACY_WATCH_PATH, TMDB_MIX_COVER_PATH, tv_feed_name)
-        write_tmdb_mixed_feed(mixed_items, base, now, DOUBAN_TV_WATCH_PATH, TMDB_MIX_COVER_PATH, tv_feed_name)
-    shutil.copyfile(TMDB_MIX_COVER_PATH, TMDB_MIX_V2_COVER_PATH)
-    shutil.copyfile(TMDB_MIX_COVER_PATH, TMDB_MIX_V3_COVER_PATH)
-    shutil.copyfile(TMDB_MIX_COVER_PATH, TMDB_MIX_LEGACY_COVER_PATH)
-    shutil.copyfile(TMDB_MIX_COVER_PATH, DOUBAN_TV_COVER_PATH)
-
     kamen_items = fetch_franchise_series(KAMEN_RIDER_SERIES, headers, now)
     kamen_selected = write_franchise_feed(
         kamen_items,
@@ -1899,10 +1859,8 @@ def main():
         )
         CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(
-            f"{'已更新' if tv_feed_should_update else '电视剧无新上线，保持视频顺序'} TMDB 混合片单 "
-            f"（电视剧 {len(tv_items)}、国漫 {len(animation_items)}、电影 {len(movie_items)}）；"
             f"已更新假面骑士正剧 {len(kamen_items)} 部、超级战队正剧 {len(sentai_items)} 部；"
-            "综艺无当日新上线，保持综艺片单和封面不变；电视剧片单不处理。"
+            "综艺无当日新上线，保持综艺片单和封面不变。"
         )
         return
     if len(variety_cover_candidates) < 3:
@@ -1934,11 +1892,9 @@ def main():
     )
     CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
-        f"{'已更新' if tv_feed_should_update else '电视剧无新上线，保持视频顺序'} TMDB 混合片单 "
-        f"（电视剧 {len(tv_items)}、国漫 {len(animation_items)}、电影 {len(movie_items)}）；"
         f"已更新假面骑士正剧 {len(kamen_items)} 部、超级战队正剧 {len(sentai_items)} 部；"
         f"已更新国内流媒体热播综艺 {len(variety_items)} 部；"
-        f"综艺今日封面：{', '.join(item['title'] for item in variety_selected)}；电视剧片单不处理。"
+        f"综艺今日封面：{', '.join(item['title'] for item in variety_selected)}。"
     )
 
 
