@@ -20,9 +20,18 @@
    Folder：/(root)
    ```
 
-2. 到 `Actions` 手动运行“更新综艺、假面骑士与超级战队片单”。T0DB 为公开读取接口，不需要配置 TMDB Token。第一次成功后，仓库会出现综艺、假面骑士和超级战队的 JSON/GIF 文件。`watch.json`、`cover.gif` 作为旧综艺地址兼容保留。
+2. 在仓库 `Settings → Secrets and variables → Actions` 新建 Secret：
 
-3. EMOS 动态片单地址：
+   ```text
+   名称：TODB_API_TOKEN
+   值：T0DB Postman 集合中 api_token 的实际值
+   ```
+
+   T0DB 对 GitHub Actions 出口请求会返回 403，因此需要这个 Bearer token；不要把 token 写入仓库文件。
+
+3. 到 `Actions` 手动运行“更新综艺、假面骑士与超级战队片单”。第一次成功后，仓库会出现综艺、假面骑士和超级战队的 JSON/GIF 文件。`watch.json`、`cover.gif` 作为旧综艺地址兼容保留。
+
+4. EMOS 动态片单地址：
 
    ```text
    片单 1（国内流媒体热播综艺）：https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json

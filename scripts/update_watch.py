@@ -114,7 +114,19 @@ def get_json(url: str, *, params: dict | None = None, headers: dict | None = Non
 
 def get_todb(path: str, params: dict | None = None):
     """读取 T0DB 公开资料接口。T0DB 的 video_id 仅用于查询，输出仍转为 TMDB ID。"""
-    return get_json(f"{TODB_API_BASE}{path}", params=params, headers=TODB_HEADERS)
+    headers = dict(TODB_HEADERS)
+    token = os.environ.get("TODB_API_TOKEN", "").strip()
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    try:
+        return get_json(f"{TODB_API_BASE}{path}", params=params, headers=headers)
+    except requests.HTTPError as exc:
+        if exc.response is not None and exc.response.status_code == 403:
+            raise RuntimeError(
+                "T0DB 返回 403。请在 GitHub Actions Secret 中配置 TODB_API_TOKEN "
+                "（对应 Postman 集合里的 api_token），不要把 token 写入代码。"
+            ) from exc
+        raise
 
 
 def todb_external_tmdb_id(video_id: int, tmdb_type: str = "tv") -> int | None:
