@@ -56,6 +56,8 @@ https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json
 https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-tmdb-mix-v4.json
 ```
 
+片单名称：在 `config.json` 的 `tmdb_mix_name` 中填写自定义名称。留空时会保留现有名称，首次生成才使用默认名称；后续自动抓取不会再覆盖名称。
+
 旧综艺封面兼容地址：
 
 ```text

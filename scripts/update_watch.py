@@ -1399,9 +1399,10 @@ def write_tmdb_mixed_feed(
     now: datetime,
     output_path: Path,
     cover_path: Path,
+    feed_name: str,
 ):
     feed = {
-        "name": f"TMDB大陆电视剧、国漫与国内电影（{len(items)}部）",
+        "name": feed_name,
         "cover": f"{base}/{cover_path.name}",
         "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
         "videos": [
@@ -1842,6 +1843,9 @@ def main():
         tv_output_path = DOUBAN_TV_WATCH_PATH
     expected_tv_cover = f"{base}/{TMDB_MIX_COVER_PATH.name}"
     existing_tv_feed = load_json(tv_output_path, {})
+    configured_tv_name = str(config.get("tmdb_mix_name") or "").strip()
+    saved_tv_name = str(existing_tv_feed.get("name") or "").strip()
+    tv_feed_name = configured_tv_name or saved_tv_name or "TMDB大陆电视剧、国漫与国内电影"
     tv_feed_should_update = (
         mixed_feed_changed(mixed_items, tv_output_path)
         or existing_tv_feed.get("cover") != expected_tv_cover
@@ -1852,11 +1856,11 @@ def main():
     tv_selected = select_daily_cover(tv_cover_candidates, now, DOUBAN_TV_SELECTION_PATH)
     make_cover(tv_selected, now, TMDB_MIX_COVER_PATH)
     if tv_feed_should_update:
-        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_WATCH_PATH, TMDB_MIX_COVER_PATH)
-        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_V3_WATCH_PATH, TMDB_MIX_COVER_PATH)
-        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_V2_WATCH_PATH, TMDB_MIX_COVER_PATH)
-        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_LEGACY_WATCH_PATH, TMDB_MIX_COVER_PATH)
-        write_tmdb_mixed_feed(mixed_items, base, now, DOUBAN_TV_WATCH_PATH, TMDB_MIX_COVER_PATH)
+        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_WATCH_PATH, TMDB_MIX_COVER_PATH, tv_feed_name)
+        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_V3_WATCH_PATH, TMDB_MIX_COVER_PATH, tv_feed_name)
+        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_V2_WATCH_PATH, TMDB_MIX_COVER_PATH, tv_feed_name)
+        write_tmdb_mixed_feed(mixed_items, base, now, TMDB_MIX_LEGACY_WATCH_PATH, TMDB_MIX_COVER_PATH, tv_feed_name)
+        write_tmdb_mixed_feed(mixed_items, base, now, DOUBAN_TV_WATCH_PATH, TMDB_MIX_COVER_PATH, tv_feed_name)
     shutil.copyfile(TMDB_MIX_COVER_PATH, TMDB_MIX_V2_COVER_PATH)
     shutil.copyfile(TMDB_MIX_COVER_PATH, TMDB_MIX_V3_COVER_PATH)
     shutil.copyfile(TMDB_MIX_COVER_PATH, TMDB_MIX_LEGACY_COVER_PATH)
