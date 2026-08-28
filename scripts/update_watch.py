@@ -25,10 +25,12 @@ CACHE_PATH = DATA_DIR / "mapping-cache.json"
 RELEASE_STATE_PATH = DATA_DIR / "release-state.json"
 SELECTION_PATH = DATA_DIR / "cover-selection.json"
 VARIETY_SELECTION_PATH = DATA_DIR / "cover-variety-selection.json"
+JAPAN_SELECTION_PATH = DATA_DIR / "cover-japan-selection.json"
 KAMEN_SELECTION_PATH = DATA_DIR / "cover-kamen-rider-selection.json"
 SENTAI_SELECTION_PATH = DATA_DIR / "cover-super-sentai-selection.json"
 WATCH_PATH = ROOT / "watch.json"
 VARIETY_WATCH_PATH = ROOT / "watch-variety.json"
+JAPAN_WATCH_PATH = ROOT / "watch-japan.json"
 TMDB_MIX_WATCH_PATH = ROOT / "watch-tmdb-mix-v4.json"
 TMDB_MIX_V3_WATCH_PATH = ROOT / "watch-tmdb-mix-v3.json"
 TMDB_MIX_V2_WATCH_PATH = ROOT / "watch-tmdb-mix-v2.json"
@@ -37,6 +39,7 @@ KAMEN_WATCH_PATH = ROOT / "watch-kamen-rider.json"
 SENTAI_WATCH_PATH = ROOT / "watch-super-sentai.json"
 COVER_PATH = ROOT / "cover.gif"
 VARIETY_COVER_PATH = ROOT / "cover-variety.gif"
+JAPAN_COVER_PATH = ROOT / "cover-japan.gif"
 TMDB_MIX_COVER_PATH = ROOT / "cover-tmdb-mix-v4.gif"
 TMDB_MIX_V3_COVER_PATH = ROOT / "cover-tmdb-mix-v3.gif"
 TMDB_MIX_V2_COVER_PATH = ROOT / "cover-tmdb-mix-v2.gif"
@@ -961,6 +964,7 @@ def write_tmdb_mixed_feed(
 # T0DB 的中国大陆来源 + 综艺/真人秀/音乐/脱口秀类型筛选。EMOS 输出仍使用
 # T0DB 关联的 TMDB ID，以符合片单格式。
 TODB_VARIETY_GENRE_IDS = {16, 20, 21}
+TODB_ANIME_GENRE_IDS = {6}
 TODB_VARIETY_EXCLUDED_EPISODE_TERMS = (
     "特别篇", "番外", "花絮", "加更", "抢先看", "纯享", "训练室", "企划",
     "直播", "彩蛋", "预告", "预览", "幕后", "bonus", "special", "trailer", "preview",
@@ -1217,6 +1221,73 @@ def todb_items(payload) -> list[dict]:
         return payload.get("items") or payload.get("data") or []
     return []
 
+def fetch_todb_japanese_anime(now: datetime, limit: int = 50) -> list[dict]:
+    """从 T0DB 获取今年已上线的日本 TV 动画，按首播日期倒序。"""
+    today_text = now.date().isoformat()
+    year_start = f"{now.year}-01-01"
+    discovered = {}
+
+    for page in range(1, 6):
+        payload = get_todb(
+            "/video/list",
+            {
+                "video_type": "tv",
+                "year": now.year,
+                "sort_by": "date_air",
+                "sort_order": "desc",
+                "page": page,
+                "page_size": 100,
+            },
+        )
+        page_items = todb_items(payload)
+        for item in page_items:
+            video_id = item.get("video_id")
+            date_air = item.get("date_air") or ""
+            countries = {str(value).upper() for value in (item.get("origin_countrys") or [])}
+            if (
+                video_id
+                and year_start <= date_air <= today_text
+                and "JP" in countries
+            ):
+                discovered[int(video_id)] = item
+        if len(page_items) < 100:
+            break
+
+    candidates = sorted(
+        discovered.values(), key=lambda value: value.get("date_air") or "", reverse=True
+    )[:150]
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        details = list(executor.map(lambda value: get_todb(f"/video/{int(value['video_id'])}"), candidates))
+
+    results = []
+    seen_tmdb = set()
+    for item, detail in zip(candidates, details):
+        countries = {str(value).upper() for value in (detail.get("origin_countrys") or item.get("origin_countrys") or [])}
+        genre_ids = {int(value) for value in (detail.get("genre_ids") or []) if str(value).isdigit()}
+        date_air = detail.get("date_air") or item.get("date_air") or ""
+        if "JP" not in countries or not genre_ids.intersection(TODB_ANIME_GENRE_IDS):
+            continue
+        tmdb_id = todb_external_tmdb_id(int(item["video_id"]), "tv")
+        if not tmdb_id or tmdb_id in seen_tmdb:
+            continue
+        poster_path = detail.get("image_poster") or item.get("image_poster")
+        seen_tmdb.add(tmdb_id)
+        results.append(
+            {
+                "tmdb_id": tmdb_id,
+                "tmdb_type": "tv",
+                "title": detail.get("video_title") or item.get("video_title") or f"T0DB {item['video_id']}",
+                "first_air_date": date_air,
+                "poster_path": poster_path,
+                "poster_url": f"{TODB_IMAGE_BASE}/w500/{poster_path}" if poster_path else None,
+            }
+        )
+        if len(results) >= limit:
+            break
+
+    results.sort(key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)
+    return results[:limit]
+
 def todb_is_regular_variety_episode(episode: dict) -> bool:
     try:
         episode_number = int(episode.get("episode_number") or 0)
@@ -1427,6 +1498,29 @@ def main():
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
     base = config["site_base_url"].rstrip("/")
 
+    japan_items = fetch_todb_japanese_anime(now, limit=50)
+    japan_cover_candidates = [item for item in japan_items if item.get("poster_path")]
+    if len(japan_cover_candidates) < 3:
+        raise RuntimeError(f"T0DB 当前日番海报不足 3 张，当前仅有 {len(japan_cover_candidates)} 张")
+    japan_selected = select_daily_cover(japan_cover_candidates, now, JAPAN_SELECTION_PATH)
+    make_cover(japan_selected, now, JAPAN_COVER_PATH)
+    japan_previous_name = str(load_json(JAPAN_WATCH_PATH, {}).get("name") or "").strip()
+    japan_watch = {
+        "name": str(config.get("japan_name") or "").strip() or japan_previous_name or "厕纸",
+        "cover": f"{base}/cover-japan.gif",
+        "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "videos": [
+            {
+                "tmdb_id": item["tmdb_id"],
+                "tmdb_type": item["tmdb_type"],
+                "title": item["title"],
+                "sort": position,
+            }
+            for position, item in enumerate(japan_items, start=1)
+        ],
+    }
+    JAPAN_WATCH_PATH.write_text(json.dumps(japan_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
     kamen_items = fetch_franchise_series(KAMEN_RIDER_SERIES, {}, now)
     kamen_selected = write_franchise_feed(
         kamen_items,
@@ -1462,7 +1556,7 @@ def main():
         )
         CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(
-            f"已更新假面骑士正剧 {len(kamen_items)} 部、超级战队正剧 {len(sentai_items)} 部；"
+            f"已更新日番 {len(japan_items)} 部、假面骑士正剧 {len(kamen_items)} 部、超级战队正剧 {len(sentai_items)} 部；"
             "综艺无当日新上线，保持综艺片单和封面不变。"
         )
         return
@@ -1499,7 +1593,7 @@ def main():
     )
     CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
-        f"已更新假面骑士正剧 {len(kamen_items)} 部、超级战队正剧 {len(sentai_items)} 部；"
+        f"已更新日番 {len(japan_items)} 部、假面骑士正剧 {len(kamen_items)} 部、超级战队正剧 {len(sentai_items)} 部；"
         f"已更新国内流媒体热播综艺 {len(variety_items)} 部；"
         f"综艺今日封面：{', '.join(item['title'] for item in variety_selected)}。"
     )

@@ -49,7 +49,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A watch.json watch-variety.json watch-kamen-rider.json watch-super-sentai.json cover.gif cover-variety.gif cover-kamen-rider.gif cover-super-sentai.gif data
+          git add -A watch.json watch-variety.json watch-japan.json watch-kamen-rider.json watch-super-sentai.json cover.gif cover-variety.gif cover-japan.gif cover-kamen-rider.gif cover-super-sentai.gif data
           git diff --cached --quiet || git commit -m "更新综艺及特摄正剧片单"
           git push
 
@@ -57,10 +57,12 @@ jobs:
         run: |
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-japan.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-kamen-rider.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-super-sentai.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-japan.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-kamen-rider.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-super-sentai.gif
 
