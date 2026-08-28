@@ -16,7 +16,6 @@ from zoneinfo import ZoneInfo
 import requests
 from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageOps
 
-
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "config.json"
 MAPPING_PATH = ROOT / "mapping.json"
@@ -26,14 +25,10 @@ CACHE_PATH = DATA_DIR / "mapping-cache.json"
 RELEASE_STATE_PATH = DATA_DIR / "release-state.json"
 SELECTION_PATH = DATA_DIR / "cover-selection.json"
 VARIETY_SELECTION_PATH = DATA_DIR / "cover-variety-selection.json"
-JAPAN_SELECTION_PATH = DATA_DIR / "cover-japan-selection.json"
-DOUBAN_TV_SELECTION_PATH = DATA_DIR / "cover-douban-tv-selection.json"
 KAMEN_SELECTION_PATH = DATA_DIR / "cover-kamen-rider-selection.json"
 SENTAI_SELECTION_PATH = DATA_DIR / "cover-super-sentai-selection.json"
 WATCH_PATH = ROOT / "watch.json"
 VARIETY_WATCH_PATH = ROOT / "watch-variety.json"
-JAPAN_WATCH_PATH = ROOT / "watch-japan.json"
-DOUBAN_TV_WATCH_PATH = ROOT / "watch-douban-tv.json"
 TMDB_MIX_WATCH_PATH = ROOT / "watch-tmdb-mix-v4.json"
 TMDB_MIX_V3_WATCH_PATH = ROOT / "watch-tmdb-mix-v3.json"
 TMDB_MIX_V2_WATCH_PATH = ROOT / "watch-tmdb-mix-v2.json"
@@ -42,8 +37,6 @@ KAMEN_WATCH_PATH = ROOT / "watch-kamen-rider.json"
 SENTAI_WATCH_PATH = ROOT / "watch-super-sentai.json"
 COVER_PATH = ROOT / "cover.gif"
 VARIETY_COVER_PATH = ROOT / "cover-variety.gif"
-JAPAN_COVER_PATH = ROOT / "cover-japan.gif"
-DOUBAN_TV_COVER_PATH = ROOT / "cover-douban-tv.gif"
 TMDB_MIX_COVER_PATH = ROOT / "cover-tmdb-mix-v4.gif"
 TMDB_MIX_V3_COVER_PATH = ROOT / "cover-tmdb-mix-v3.gif"
 TMDB_MIX_V2_COVER_PATH = ROOT / "cover-tmdb-mix-v2.gif"
@@ -51,9 +44,6 @@ TMDB_MIX_LEGACY_COVER_PATH = ROOT / "cover-tmdb-mix.gif"
 KAMEN_COVER_PATH = ROOT / "cover-kamen-rider.gif"
 SENTAI_COVER_PATH = ROOT / "cover-super-sentai.gif"
 
-DOUBAN_TV_URL = "https://m.douban.com/rexxar/api/v2/subject/recent_hot/tv"
-DOUBAN_SEARCH_URL = "https://movie.douban.com/j/search_subjects"
-DOUBAN_DETAIL_URL = "https://m.douban.com/rexxar/api/v2/subject/{subject_id}"
 TMDB_API_BASE = "https://api.themoviedb.org/3"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w780"
 TODB_API_BASE = "https://theotherdb.org/api"
@@ -62,36 +52,23 @@ BGM_API_BASE = "https://api.bgm.tv/v0"
 ANILIST_API_URL = "https://graphql.anilist.co"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
-    "Referer": "https://m.douban.com/tv/",
 }
 TODB_HEADERS = {
     "User-Agent": HEADERS["User-Agent"],
     "Referer": "https://theotherdb.org/",
     "Origin": "https://theotherdb.org",
 }
-MAINLAND = "中国大陆"
-
 
 def load_json(path: Path, default):
     if not path.exists():
         return default
     return json.loads(path.read_text(encoding="utf-8"))
 
-
 def normalize_title(value: str) -> str:
     value = value.lower().replace("（", "(").replace("）", ")")
     value = re.sub(r"第[一二三四五六七八九十百0-9]+季", "", value)
     value = re.sub(r"season\s*[0-9]+", "", value, flags=re.I)
     return re.sub(r"[^\w\u4e00-\u9fff]", "", value)
-
-
-def get_year(subject: dict) -> int | None:
-    year = subject.get("year")
-    if str(year).isdigit():
-        return int(year)
-    match = re.search(r"(\d{4})", subject.get("card_subtitle", ""))
-    return int(match.group(1)) if match else None
-
 
 def get_json(url: str, *, params: dict | None = None, headers: dict | None = None) -> dict:
     last_error = None
@@ -111,7 +88,6 @@ def get_json(url: str, *, params: dict | None = None, headers: dict | None = Non
             raise
     raise last_error
 
-
 def get_todb(path: str, params: dict | None = None):
     """读取 T0DB 公开资料接口。T0DB 的 video_id 仅用于查询，输出仍转为 TMDB ID。"""
     headers = dict(TODB_HEADERS)
@@ -128,7 +104,6 @@ def get_todb(path: str, params: dict | None = None):
             ) from exc
         raise
 
-
 def todb_external_tmdb_id(video_id: int, tmdb_type: str = "tv") -> int | None:
     platform = f"tmdb_id_{tmdb_type}"
     for external in get_todb(
@@ -138,7 +113,6 @@ def todb_external_tmdb_id(video_id: int, tmdb_type: str = "tv") -> int | None:
         if external.get("platform") == platform and str(external.get("value", "")).isdigit():
             return int(external["value"])
     return None
-
 
 def post_json(
     url: str,
@@ -164,166 +138,11 @@ def post_json(
             raise
     raise last_error
 
-
-def item_to_subject(item: dict, category: str, tmdb_type: str, rank: int) -> dict:
-    return {
-        "douban_id": str(item["id"]),
-        "title": item["title"],
-        "year": get_year(item),
-        "douban_rank": rank,
-        "category": category,
-        "tmdb_type": tmdb_type,
-        "douban_url": f"https://movie.douban.com/subject/{item['id']}/",
-    }
-
-
-def fetch_tv_subjects(limit: int) -> list[dict]:
-    payload = get_json(
-        DOUBAN_TV_URL,
-        params={"start": 0, "limit": max(50, limit + 30), "category": "热门", "type": "tv_domestic"},
-        headers=HEADERS,
-    )
-    subjects = []
-    for rank, item in enumerate(payload.get("items", []), start=1):
-        subtitle = item.get("card_subtitle", "")
-        if item.get("type") == "tv" and MAINLAND in subtitle:
-            subjects.append(item_to_subject(item, "电视剧", "tv", rank))
-    return subjects
-
-
-def fetch_search_subjects(tag: str, page_limit: int = 50) -> list[dict]:
-    subjects = []
-    for page_start in range(0, 100, page_limit):
-        payload = get_json(
-            DOUBAN_SEARCH_URL,
-            params={
-                "type": "movie",
-                "tag": tag,
-                "sort": "recommend",
-                "page_limit": page_limit,
-                "page_start": page_start,
-            },
-            headers=HEADERS,
-        )
-        page = payload.get("subjects", [])
-        subjects.extend(page)
-        if len(page) < page_limit:
-            break
-    return subjects
-
-
-def fetch_douban_detail(subject_id: str, detail_cache: dict) -> dict:
-    if subject_id not in detail_cache:
-        detail_cache[subject_id] = get_json(
-            DOUBAN_DETAIL_URL.format(subject_id=subject_id), headers=HEADERS
-        )
-    return detail_cache[subject_id]
-
-
-def fetch_douban_details(subject_ids: list[str], detail_cache: dict):
-    pending = list(dict.fromkeys(subject_id for subject_id in subject_ids if subject_id not in detail_cache))
-    if not pending:
-        return
-    # 豆瓣详情接口对并发和短时间重复请求较敏感，降低并发并配合 get_json 重试。
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        details = list(executor.map(lambda subject_id: get_json(
-            DOUBAN_DETAIL_URL.format(subject_id=subject_id), headers=HEADERS
-        ), pending))
-    detail_cache.update(dict(zip(pending, details)))
-
-
-def is_mainland(detail: dict) -> bool:
-    return MAINLAND in (detail.get("countries") or [])
-
-
-def is_japanese(detail: dict) -> bool:
-    return "日本" in (detail.get("countries") or [])
-
-
-def is_animation(detail: dict) -> bool:
-    return "动画" in (detail.get("genres") or [])
-
-
-def fetch_movie_subjects(limit: int, detail_cache: dict) -> list[dict]:
-    subjects = []
-    items = fetch_search_subjects("热门")
-    fetch_douban_details([str(item["id"]) for item in items], detail_cache)
-    for rank, item in enumerate(items, start=1):
-        detail = detail_cache[str(item["id"])]
-        if is_mainland(detail) and not is_animation(detail):
-            subject = item_to_subject(item, "电影", "movie", rank)
-            subject["year"] = detail.get("year")
-            subjects.append(subject)
-            if len(subjects) >= limit + 10:
-                break
-    return subjects
-
-
-def fetch_animation_subjects(limit: int, detail_cache: dict) -> list[dict]:
-    mainland_subjects = []
-    japanese_subjects = []
-    seen = set()
-
-    # The current mainland animation-TV ranking often has fewer than 20 items,
-    # so supplement it with the current popular animation movie ranking.
-    tv_payload = get_json(
-        DOUBAN_TV_URL,
-        params={"start": 0, "limit": 100, "category": "热门", "type": "tv_animation"},
-        headers=HEADERS,
-    )
-    fetch_douban_details([str(item["id"]) for item in tv_payload.get("items", [])], detail_cache)
-    for rank, item in enumerate(tv_payload.get("items", []), start=1):
-        subject_id = str(item["id"])
-        detail = detail_cache[subject_id]
-        if subject_id not in seen and is_animation(detail) and (is_mainland(detail) or is_japanese(detail)):
-            subject = item_to_subject(item, "国漫", "tv", rank)
-            subject["year"] = detail.get("year")
-            if is_mainland(detail):
-                mainland_subjects.append(subject)
-            else:
-                japanese_subjects.append(subject)
-            seen.add(subject_id)
-
-    if len(mainland_subjects) + len(japanese_subjects) >= limit:
-        return mainland_subjects + japanese_subjects
-
-    animation_items = fetch_search_subjects("动画")
-    fetch_douban_details([str(item["id"]) for item in animation_items], detail_cache)
-    for rank, item in enumerate(animation_items, start=1):
-        subject_id = str(item["id"])
-        if subject_id in seen:
-            continue
-        detail = detail_cache[subject_id]
-        if is_animation(detail) and (is_mainland(detail) or is_japanese(detail)):
-            subject = item_to_subject(item, "国漫", "movie", rank)
-            subject["year"] = detail.get("year")
-            if is_mainland(detail):
-                mainland_subjects.append(subject)
-            else:
-                japanese_subjects.append(subject)
-            seen.add(subject_id)
-            if len(mainland_subjects) + len(japanese_subjects) >= limit + 10:
-                break
-
-    # Mainland animation comes first. Japanese animation is only a fallback
-    # when the mainland candidates cannot fill the requested 20 positions.
-    return mainland_subjects + japanese_subjects
-
-
-def tmdb_headers() -> dict:
-    token = os.environ.get("TMDB_ACCESS_TOKEN", "").strip()
-    if not token:
-        raise RuntimeError("缺少 GitHub Actions Secret: TMDB_ACCESS_TOKEN")
-    return {"Authorization": f"Bearer {token}", "Accept": "application/json"}
-
-
 def tmdb_title(result: dict, tmdb_type: str) -> str:
     return result.get("name" if tmdb_type == "tv" else "title", "")
 
-
 def tmdb_date(result: dict, tmdb_type: str) -> str:
     return result.get("first_air_date" if tmdb_type == "tv" else "release_date", "")
-
 
 def choose_tmdb_result(subject: dict, results: list[dict]) -> dict | None:
     if not results:
@@ -349,59 +168,6 @@ def choose_tmdb_result(subject: dict, results: list[dict]) -> dict | None:
 
     return max(results, key=score)
 
-
-def manual_tmdb_id(value) -> int:
-    if isinstance(value, dict):
-        value = value.get("tmdb_id")
-    return int(value)
-
-
-def resolve_tmdb(subject: dict, headers: dict, manual: dict, cache: dict) -> dict | None:
-    douban_id = subject["douban_id"]
-    tmdb_type = subject["tmdb_type"]
-    cache_key = f"{tmdb_type}:{douban_id}"
-    detail_url = f"{TMDB_API_BASE}/{tmdb_type}"
-
-    if douban_id in manual:
-        tmdb_id = manual_tmdb_id(manual[douban_id])
-        data = get_json(f"{detail_url}/{tmdb_id}", params={"language": "zh-CN"}, headers=headers)
-        return {
-            "id": int(data["id"]),
-            "name": tmdb_title(data, tmdb_type) or subject["title"],
-            "poster_path": data.get("poster_path"),
-        }
-    if cache_key in cache:
-        return cache[cache_key]
-
-    search_path = "search/tv" if tmdb_type == "tv" else "search/movie"
-    params = {"query": subject["title"], "language": "zh-CN", "include_adult": "false", "page": 1}
-    year_key = "first_air_date_year" if tmdb_type == "tv" else "year"
-    if subject.get("year"):
-        params[year_key] = subject["year"]
-    result = choose_tmdb_result(
-        subject,
-        get_json(f"{TMDB_API_BASE}/{search_path}", params=params, headers=headers).get("results", []),
-    )
-
-    if not result and year_key in params:
-        params.pop(year_key)
-        result = choose_tmdb_result(
-            subject,
-            get_json(f"{TMDB_API_BASE}/{search_path}", params=params, headers=headers).get("results", []),
-        )
-    if not result:
-        return None
-
-    data = get_json(f"{detail_url}/{result['id']}", params={"language": "zh-CN"}, headers=headers)
-    resolved = {
-        "id": int(data["id"]),
-        "name": tmdb_title(data, tmdb_type) or subject["title"],
-        "poster_path": data.get("poster_path"),
-    }
-    cache[cache_key] = resolved
-    return resolved
-
-
 def download_poster(poster_path: str, image_url: str | None = None) -> Image.Image:
     url = image_url or f"{TMDB_IMAGE_BASE}{poster_path}"
     for attempt in range(4):
@@ -418,12 +184,10 @@ def download_poster(poster_path: str, image_url: str | None = None) -> Image.Ima
             time.sleep(2 ** attempt)
     raise RuntimeError(f"TMDB 海报下载失败：{url}")
 
-
 def rounded_mask(size: tuple[int, int], radius: int) -> Image.Image:
     mask = Image.new("L", size, 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, size[0] - 1, size[1] - 1), radius, fill=255)
     return mask
-
 
 def make_triptych(posters: list[Image.Image], size: tuple[int, int]) -> Image.Image:
     width, height = size
@@ -439,7 +203,6 @@ def make_triptych(posters: list[Image.Image], size: tuple[int, int]) -> Image.Im
         )
         result.paste(panel, (cuts[index], 0))
     return result
-
 
 def add_glass_layer(canvas: Image.Image, source: Image.Image, angle: float, tint: tuple[int, int, int]):
     layer_size = (720, 392)
@@ -472,7 +235,6 @@ def add_glass_layer(canvas: Image.Image, source: Image.Image, angle: float, tint
     glow = glow.filter(ImageFilter.GaussianBlur(22))
     canvas.alpha_composite(glow)
     canvas.alpha_composite(glass, ((canvas.width - glass.width) // 2, (canvas.height - glass.height) // 2))
-
 
 def build_cover_base(posters: list[Image.Image]) -> Image.Image:
     width, height = 960, 528
@@ -528,7 +290,6 @@ def build_cover_base(posters: list[Image.Image]) -> Image.Image:
     canvas = Image.alpha_composite(canvas, rim)
     return canvas.convert("RGB")
 
-
 def ripple_frame(base: Image.Image, frame_index: int, frame_count: int) -> Image.Image:
     width, height = base.size
     progress = frame_index / frame_count
@@ -566,7 +327,6 @@ def ripple_frame(base: Image.Image, frame_index: int, frame_count: int) -> Image
     sheen = sheen.filter(ImageFilter.GaussianBlur(18))
     return Image.alpha_composite(warped, sheen).convert("RGB")
 
-
 def make_cover(selected: list[dict], now: datetime, output_path: Path):
     posters = [download_poster(item["poster_path"], item.get("poster_url")) for item in selected]
     base = build_cover_base(posters)
@@ -585,221 +345,6 @@ def make_cover(selected: list[dict], now: datetime, output_path: Path):
         optimize=True,
         disposal=2,
     )
-
-
-def resolve_category(subjects: list[dict], target: int, headers: dict, manual: dict, cache: dict):
-    resolved = []
-    unresolved = []
-    for subject in subjects:
-        match = resolve_tmdb(subject, headers, manual, cache)
-        if not match:
-            unresolved.append(subject)
-            continue
-        resolved.append(
-            {
-                **subject,
-                "tmdb_id": match["id"],
-                "tmdb_name": match.get("name", subject["title"]),
-                "poster_path": match.get("poster_path"),
-            }
-        )
-        if len(resolved) >= target:
-            break
-    return resolved, unresolved
-
-
-def douban_release_date(detail: dict, now: datetime) -> str | None:
-    """提取豆瓣条目的首个今年已发生的上映/上线日期。"""
-    dates = []
-    for value in (detail.get("pubdates") or []) + (detail.get("pubdate") or [] if isinstance(detail.get("pubdate"), list) else []):
-        match = re.search(r"(20\d{2})[-/.年](\d{1,2})[-/.月](\d{1,2})", str(value))
-        if not match:
-            continue
-        date = f"{int(match.group(1)):04d}-{int(match.group(2)):02d}-{int(match.group(3)):02d}"
-        if f"{now.year}-01-01" <= date <= now.strftime("%Y-%m-%d"):
-            dates.append(date)
-    if dates:
-        return min(dates)
-    year = detail.get("year")
-    if str(year) == str(now.year):
-        return f"{now.year}-01-01"
-    return None
-
-
-def douban_first_release_date(detail: dict, now: datetime) -> str | None:
-    """提取豆瓣条目的首个已发生上映/上线日期，用于最新上线排序。"""
-    dates = []
-    values = list(detail.get("pubdates") or [])
-    pubdate = detail.get("pubdate")
-    if isinstance(pubdate, list):
-        values.extend(pubdate)
-    for value in values:
-        match = re.search(
-            r"(20\d{2})[-/.年](\d{1,2})(?:[-/.月](\d{1,2}))?",
-            str(value),
-        )
-        if not match:
-            continue
-        year, month = int(match.group(1)), int(match.group(2))
-        day = int(match.group(3) or 1)
-        try:
-            date = datetime(year, month, day).date()
-        except ValueError:
-            continue
-        if date <= now.date():
-            dates.append(date.isoformat())
-    if dates:
-        return min(dates)
-
-    year = detail.get("year")
-    if str(year).isdigit() and int(year) <= now.year:
-        return f"{int(year):04d}-01-01"
-    return None
-
-
-def fetch_douban_hot_mainland_tv(
-    headers: dict,
-    now: datetime,
-    manual: dict,
-    cache: dict,
-    limit: int = 50,
-) -> list[dict]:
-    """抓取豆瓣热门大陆电视剧，按豆瓣首播/上线日期从新到旧映射为 TMDB TV ID。"""
-    payload = get_json(
-        DOUBAN_TV_URL,
-        params={"start": 0, "limit": max(100, limit + 50), "category": "热门", "type": "tv_domestic"},
-        headers=HEADERS,
-    )
-    raw_items = [
-        item
-        for item in payload.get("items", [])
-        if item.get("type") == "tv" and MAINLAND in item.get("card_subtitle", "")
-    ]
-    subject_ids = list(dict.fromkeys(str(item["id"]) for item in raw_items if item.get("id")))
-    detail_cache = {}
-    fetch_douban_details(subject_ids, detail_cache)
-
-    subjects = []
-    seen = set()
-    for rank, item in enumerate(raw_items, start=1):
-        subject_id = str(item.get("id", ""))
-        if not subject_id or subject_id in seen:
-            continue
-        detail = detail_cache.get(subject_id, {})
-        if not (is_mainland(detail) or MAINLAND in item.get("card_subtitle", "")):
-            continue
-        if is_animation(detail):
-            continue
-        release_date = douban_first_release_date(detail, now)
-        if not release_date:
-            continue
-        seen.add(subject_id)
-        year = detail.get("year") or release_date[:4]
-        subjects.append(
-            {
-                "douban_id": subject_id,
-                "title": detail.get("title") or item.get("title") or "",
-                "year": int(year) if str(year).isdigit() else None,
-                "douban_rank": rank,
-                "category": "电视剧",
-                "tmdb_type": "tv",
-                "douban_url": f"https://movie.douban.com/subject/{subject_id}/",
-                "first_air_date": release_date,
-            }
-        )
-
-    subjects.sort(key=lambda item: (item["first_air_date"], -item["douban_rank"]), reverse=True)
-    resolved = []
-    resolved_tmdb_ids = set()
-    for subject in subjects:
-        match = resolve_tmdb(subject, headers, manual, cache)
-        if not match or not match.get("poster_path") or match["id"] in resolved_tmdb_ids:
-            continue
-        resolved_tmdb_ids.add(match["id"])
-        resolved.append(
-            {
-                **subject,
-                "tmdb_id": match["id"],
-                "tmdb_name": match.get("name", subject["title"]),
-                "poster_path": match["poster_path"],
-            }
-        )
-        if len(resolved) >= limit:
-            break
-    return resolved
-
-
-def fetch_douban_japanese_anime(
-    headers: dict,
-    now: datetime,
-    manual: dict,
-    cache: dict,
-    limit: int = 50,
-) -> list[dict]:
-    """以豆瓣为主源抓取今年日本动画，再映射为 EMOS 所需的 TMDB TV ID。"""
-    raw_items = []
-    tv_payload = get_json(
-        DOUBAN_TV_URL,
-        params={"start": 0, "limit": 100, "category": "热门", "type": "tv_animation"},
-        headers=HEADERS,
-    )
-    raw_items.extend(item for item in tv_payload.get("items", []) if item.get("type") == "tv")
-
-    # 豆瓣新番榜数量不足时，用动画搜索结果补充，再由详情中的国家和类型筛选。
-    for tag in ("日本动画", "动画"):
-        raw_items.extend(fetch_search_subjects(tag))
-
-    subject_ids = list(dict.fromkeys(str(item["id"]) for item in raw_items if item.get("id")))
-    detail_cache = {}
-    fetch_douban_details(subject_ids, detail_cache)
-    subjects = []
-    seen = set()
-    for item in raw_items:
-        subject_id = str(item.get("id", ""))
-        if not subject_id or subject_id in seen:
-            continue
-        detail = detail_cache.get(subject_id, {})
-        if not is_animation(detail) or not is_japanese(detail):
-            continue
-        # 搜索接口可能返回动画电影；片单 1 保持“日番”口径，只收 TV 条目。
-        if item.get("type") not in (None, "tv") and detail.get("type") not in (None, "tv"):
-            continue
-        release_date = douban_release_date(detail, now)
-        if not release_date:
-            continue
-        seen.add(subject_id)
-        subjects.append(
-            {
-                "douban_id": subject_id,
-                "title": detail.get("title") or item.get("title") or "",
-                "year": now.year,
-                "category": "日番",
-                "tmdb_type": "tv",
-                "douban_url": f"https://movie.douban.com/subject/{subject_id}/",
-                "first_air_date": release_date,
-            }
-        )
-
-    subjects.sort(key=lambda item: (item["first_air_date"], item["douban_id"]), reverse=True)
-    resolved = []
-    resolved_tmdb_ids = set()
-    for subject in subjects:
-        match = resolve_tmdb(subject, headers, manual, cache)
-        if not match or not match.get("poster_path") or match["id"] in resolved_tmdb_ids:
-            continue
-        resolved_tmdb_ids.add(match["id"])
-        resolved.append(
-            {
-                **subject,
-                "tmdb_id": match["id"],
-                "tmdb_name": match.get("name", subject["title"]),
-                "poster_path": match["poster_path"],
-            }
-        )
-        if len(resolved) >= limit:
-            break
-    return resolved
-
 
 def fetch_tmdb_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> list[dict]:
     """从 TMDB 获取今年以来已上线的日本动画电视剧，按首播日期倒序。"""
@@ -847,7 +392,6 @@ def fetch_tmdb_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> 
     results.sort(key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)
     return results[:limit]
 
-
 def fetch_bangumi_anime(now: datetime, limit: int = 100) -> list[dict]:
     """从 Bangumi 获取今年日本 TV 动画，日期稍后与 TMDB/AniList 合并。"""
     items = []
@@ -887,7 +431,6 @@ def fetch_bangumi_anime(now: datetime, limit: int = 100) -> list[dict]:
         return []
     return sorted(items, key=lambda item: item["first_air_date"], reverse=True)[:limit]
 
-
 ANILIST_QUERY = """
 query ($page: Int, $perPage: Int, $from: FuzzyDateInt, $until: FuzzyDateInt) {
   Page(page: $page, perPage: $perPage) {
@@ -907,7 +450,6 @@ query ($page: Int, $perPage: Int, $from: FuzzyDateInt, $until: FuzzyDateInt) {
   }
 }
 """
-
 
 def fetch_anilist_anime(now: datetime, limit: int = 100) -> list[dict]:
     """从 AniList 获取今年日本 TV/短番/ONA，日期稍后与其他源合并。"""
@@ -946,7 +488,6 @@ def fetch_anilist_anime(now: datetime, limit: int = 100) -> list[dict]:
         return []
     return sorted(items, key=lambda item: item["first_air_date"], reverse=True)[:limit]
 
-
 def resolve_external_tv_to_tmdb(item: dict, headers: dict) -> dict | None:
     year = int(item["first_air_date"][:4])
     subject = {"title": item["title"], "year": year, "tmdb_type": "tv"}
@@ -976,7 +517,6 @@ def resolve_external_tv_to_tmdb(item: dict, headers: dict) -> dict | None:
         }
     return None
 
-
 def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> list[dict]:
     """联合 TMDB、Bangumi、AniList，按首播时间倒序合并并统一为 TMDB ID。"""
     tmdb_items = fetch_tmdb_japanese_anime(headers, now, limit)
@@ -999,11 +539,9 @@ def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> list[
 
     return sorted(merged.values(), key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)[:limit]
 
-
 def previous_month_start(today) -> str:
     first_day = today.replace(day=1)
     return (first_day - timedelta(days=1)).replace(day=1).isoformat()
-
 
 def fetch_tmdb_discover(
     path: str,
@@ -1032,7 +570,6 @@ def fetch_tmdb_discover(
             break
     return items
 
-
 def tmdb_catalog_item(item: dict, tmdb_type: str, category: str) -> dict:
     date_key = "first_air_date" if tmdb_type == "tv" else "release_date"
     title_key = "name" if tmdb_type == "tv" else "title"
@@ -1045,13 +582,11 @@ def tmdb_catalog_item(item: dict, tmdb_type: str, category: str) -> dict:
         "category": category,
     }
 
-
 def parse_iso_date(value: str):
     try:
         return datetime.strptime(value, "%Y-%m-%d").date()
     except (TypeError, ValueError):
         return None
-
 
 def fetch_tmdb_mainland_tv(
     headers: dict,
@@ -1086,31 +621,6 @@ def fetch_tmdb_mainland_tv(
         limit=100,
         max_pages=10,
     )
-    # TMDB discover 对大陆新剧的收录并不完整。用豆瓣当前大陆电视剧热榜补充检索词，
-    # 但后续仍然只接受 TMDB 详情通过校验的条目，输出也只使用 TMDB ID。
-    discovered_ids = {int(item["id"]) for item in discovered}
-    try:
-        for subject in fetch_tv_subjects(80):
-            search_params = {
-                "query": subject["title"],
-                "language": "zh-CN",
-                "include_adult": "false",
-                "page": 1,
-            }
-            if subject.get("year"):
-                search_params["first_air_date_year"] = subject["year"]
-            search_results = get_json(
-                f"{TMDB_API_BASE}/search/tv",
-                params=search_params,
-                headers=headers,
-            ).get("results", [])
-            result = choose_tmdb_result(subject, search_results)
-            if result and int(result["id"]) not in discovered_ids:
-                discovered.append(result)
-                discovered_ids.add(int(result["id"]))
-    except Exception as exc:
-        # 豆瓣只是补召回，临时不可用时不影响 TMDB 主流程。
-        print(f"豆瓣电视剧补召回失败，继续使用 TMDB discover：{exc}")
     finale_state = state.get("tv_finale_dates_v1")
     if not isinstance(finale_state, dict):
         finale_state = {}
@@ -1224,7 +734,6 @@ def fetch_tmdb_mainland_tv(
     selected = candidates[: max(limit * 2, limit)]
     return sorted(selected, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
 
-
 def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20) -> list[dict]:
     """抓取正在更新、并按最新上线时间排列的大陆动画 TV。
 
@@ -1333,7 +842,6 @@ def fetch_tmdb_mainland_animation(headers: dict, now: datetime, limit: int = 20)
         reverse=True,
     )[:limit]
 
-
 def fetch_tmdb_mainland_movies(headers: dict, now: datetime, limit: int = 5) -> list[dict]:
     """抓取 TMDB 最新大陆非动画电影，按上映时间倒序。"""
     today_text = now.strftime("%Y-%m-%d")
@@ -1416,7 +924,6 @@ def fetch_tmdb_mainland_movies(headers: dict, now: datetime, limit: int = 5) -> 
     collect_movies(discover_movies(start_text, 10))
     return sorted(results, key=lambda value: (value["first_air_date"], value["tmdb_id"]), reverse=True)[:limit]
 
-
 def mixed_feed_changed(items: list[dict], output_path: Path) -> bool:
     """只要新上线、顺序变化或三天后移除大结局剧集，就刷新混合片单。"""
     previous = load_json(output_path, {})
@@ -1426,7 +933,6 @@ def mixed_feed_changed(items: list[dict], output_path: Path) -> bool:
     ]
     current_keys = [f"{item['tmdb_type']}:{item['tmdb_id']}" for item in items]
     return not output_path.exists() or previous_keys != current_keys
-
 
 def write_tmdb_mixed_feed(
     items: list[dict],
@@ -1452,7 +958,6 @@ def write_tmdb_mixed_feed(
     }
     output_path.write_text(json.dumps(feed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-
 # T0DB 的公开资料接口没有公开国内流媒体平台字段，因此综艺片单改用
 # T0DB 的中国大陆来源 + 综艺/真人秀/音乐/脱口秀类型筛选。EMOS 输出仍使用
 # T0DB 关联的 TMDB ID，以符合片单格式。
@@ -1461,7 +966,6 @@ TODB_VARIETY_EXCLUDED_EPISODE_TERMS = (
     "特别篇", "番外", "花絮", "加更", "抢先看", "纯享", "训练室", "企划",
     "直播", "彩蛋", "预告", "预览", "幕后", "bonus", "special", "trailer", "preview",
 )
-
 
 # 只维护系列正剧的白名单。通过白名单搜索 TMDB TV，故不会把电影、特别篇、剧场版或
 # 同系列衍生剧混入片单；年份同时用于确认 TMDB 返回的是对应一季正剧。
@@ -1547,7 +1051,6 @@ SUPER_SENTAI_SERIES = (
     (2025, "No.1 Sentai Gozyuger", "No. 1 Sentai Gozyuger"),
 )
 
-
 def choose_franchise_result(entry: tuple, results: list[dict]) -> dict | None:
     """从指定年份的 TMDB TV 搜索结果中选出白名单正剧。"""
     if not results:
@@ -1589,10 +1092,8 @@ def choose_franchise_result(entry: tuple, results: list[dict]) -> dict | None:
     best = max(results, key=score)
     return best if score(best)[0] >= 80 else None
 
-
 def franchise_entry(entry: tuple) -> dict:
     return {"year": int(entry[0]), "aliases": list(entry[1:])}
-
 
 def fetch_franchise_series(entries: tuple[tuple, ...], headers: dict, now: datetime) -> list[dict]:
     """按固定正剧白名单从 T0DB 搜索系列，并转换为 EMOS 所需的 TMDB ID。"""
@@ -1659,7 +1160,6 @@ def fetch_franchise_series(entries: tuple[tuple, ...], headers: dict, now: datet
     resolved.sort(key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)
     return resolved
 
-
 def write_franchise_feed(
     items: list[dict],
     name: str,
@@ -1694,7 +1194,6 @@ def write_franchise_feed(
     watch_path.write_text(json.dumps(feed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return selected
 
-
 def latest_regular_season(data: dict, today) -> dict | None:
     """取得截至今天已上线的最新普通季，排除 specials（第 0 季）。"""
     seasons = []
@@ -1711,7 +1210,6 @@ def latest_regular_season(data: dict, today) -> dict | None:
         return None
     return max(seasons, key=lambda value: (value[0], value[1]))[2]
 
-
 def todb_items(payload) -> list[dict]:
     """兼容 T0DB 列表接口直接返回数组或 {items: []} 的响应。"""
     if isinstance(payload, list):
@@ -1719,7 +1217,6 @@ def todb_items(payload) -> list[dict]:
     if isinstance(payload, dict):
         return payload.get("items") or payload.get("data") or []
     return []
-
 
 def todb_is_regular_variety_episode(episode: dict) -> bool:
     try:
@@ -1730,7 +1227,6 @@ def todb_is_regular_variety_episode(episode: dict) -> bool:
         return False
     title = str(episode.get("episode_title") or "").lower()
     return not any(term.lower() in title for term in TODB_VARIETY_EXCLUDED_EPISODE_TERMS)
-
 
 def fetch_todb_variety(now: datetime, limit: int = 50) -> list[dict]:
     """从 T0DB 获取当前年度中国大陆在播综艺，并转换成 EMOS 片单项目。"""
@@ -1860,7 +1356,6 @@ def fetch_todb_variety(now: datetime, limit: int = 50) -> list[dict]:
     )
     return results[:limit]
 
-
 def select_daily_cover(candidates: list[dict], now: datetime, selection_path: Path) -> list[dict]:
     candidates = sorted(candidates, key=lambda item: (item["tmdb_type"], item["tmdb_id"]))
     candidate_map = {(item["tmdb_type"], item["tmdb_id"]): item for item in candidates}
@@ -1887,7 +1382,6 @@ def select_daily_cover(candidates: list[dict], now: datetime, selection_path: Pa
         encoding="utf-8",
     )
     return selected
-
 
 def detect_new_variety_today(
     items: list[dict],
@@ -1925,7 +1419,6 @@ def detect_new_variety_today(
             has_new_update = True
     state[state_key] = current
     return has_new_update
-
 
 def main():
     config = load_json(CONFIG_PATH, {})
@@ -2011,7 +1504,6 @@ def main():
         f"已更新国内流媒体热播综艺 {len(variety_items)} 部；"
         f"综艺今日封面：{', '.join(item['title'] for item in variety_selected)}。"
     )
-
 
 if __name__ == "__main__":
     try:
