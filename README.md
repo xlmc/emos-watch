@@ -4,22 +4,15 @@
 
 片单名称可在 `config.json` 的 `variety_name`、`kamen_rider_name`、`super_sentai_name` 中分别设置。配置项留空时保留仓库已有名称，首次生成才使用默认名称；后续自动更新不会覆盖自定义名称。
 
-- 片单 1：从 TMDB 筛选中国大陆、综艺类型、优酷/腾讯视频/芒果 TV/爱奇艺网络或流媒体信息，并要求仍在制作、近期播出或即将播出；只取当前年度已上线的最新普通季，当天有正片更新的优先，其他按该季上线日期从新到旧排列，最多 50 部。
+- 片单 1：从 T0DB 筛选中国大陆、综艺/真人秀/音乐/脱口秀类型；只取当前年度已上线的最新普通季，排除未来节目和特别篇，仍在播或近 120 天有正片更新的节目优先，当天有正片更新的置顶，最多 50 部。
 - 片单 2：假面骑士 2000 年至今的正剧 TV 系列，按首播时间从新到旧。
 - 片单 3：东映超级战队从 1975 年《秘密战队五连者》至今的正剧 TV 系列，按首播时间从新到旧。
 
-所有片单最终都输出 TMDB ID 和类型，封面只下载 TMDB 海报生成。综艺片单按当前年度最新普通季排序，当天有正片更新的优先，只有检测到当天有新季上线或正片更新时才重排综艺片单。假面骑士和超级战队使用正剧白名单，只查询 TMDB TV 系列并排除电影、剧场版、特别篇和衍生剧。
+所有片单最终都输出 T0DB 关联的 TMDB ID 和类型，封面使用 T0DB 图片服务生成。综艺片单按当前年度最新普通季排序，当天有正片更新的优先，只有检测到当天有新季上线或正片更新时才重排综艺片单。假面骑士和超级战队使用正剧白名单，从 T0DB 查询并排除电影、剧场版、特别篇和衍生剧。
 
 ## 第一次设置
 
-1. 在仓库 `Settings → Secrets and variables → Actions` 新建 Secret：
-
-   ```text
-   名称：TMDB_ACCESS_TOKEN
-   值：TMDB API Read Access Token
-   ```
-
-2. 在 `Settings → Pages` 设置：
+1. 在 `Settings → Pages` 设置：
 
    ```text
    Source：Deploy from a branch
@@ -27,9 +20,9 @@
    Folder：/(root)
    ```
 
-3. 到 `Actions` 手动运行“更新综艺、假面骑士与超级战队片单”。第一次成功后，仓库会出现综艺、假面骑士和超级战队的 JSON/GIF 文件。`watch.json`、`cover.gif` 作为旧综艺地址兼容保留。
+2. 到 `Actions` 手动运行“更新综艺、假面骑士与超级战队片单”。T0DB 为公开读取接口，不需要配置 TMDB Token。第一次成功后，仓库会出现综艺、假面骑士和超级战队的 JSON/GIF 文件。`watch.json`、`cover.gif` 作为旧综艺地址兼容保留。
 
-4. EMOS 动态片单地址：
+3. EMOS 动态片单地址：
 
    ```text
    片单 1（国内流媒体热播综艺）：https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json
@@ -48,8 +41,6 @@ EMOS 推荐使用 jsDelivr CDN 地址：
 ```text
 https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json
 ```
-
-片单名称：在 `config.json` 的 `tmdb_mix_name` 中填写自定义名称。留空时会保留现有名称，首次生成才使用默认名称；后续自动抓取不会再覆盖名称。
 
 旧综艺封面兼容地址：
 
@@ -109,5 +100,5 @@ https://watch.zzzj.de5.net/watch-super-sentai.json
 
 ## 数据源说明
 
-片单 1 使用 TMDB 的综艺类型、国内来源、网络/流媒体字段和播出状态，读取 `seasons` 中当前年度最新普通季的 `air_date`，再用最新普通正片的 `air_date` 将当天更新节目置顶；当天有新季上线或正片更新才会触发更新。当指定平台当前不足 50 部时，返回实际筛选到的数量，不混入其他平台或已结束节目。片单 2 和片单 3 使用固定的正剧系列白名单逐条查 TMDB `/search/tv`，按 `first_air_date` 从新到旧输出；这样只保留假面骑士主剧和东映超级战队正剧，不录入电影、特别篇、剧场版或衍生作品。
+片单 1 使用 T0DB 的 `/api/video/list`、`/api/video/{id}`、`/api/video/{id}/season/{season}/episode/all` 和 `/api/external/list`，筛选中国大陆、综艺类型及当前年度最新普通季，再用最新正片日期将当天更新节目置顶。T0DB 公开接口没有流媒体平台字段，因此不再伪造优酷、腾讯、芒果或爱奇艺平台筛选。当候选不足 50 部时，返回实际筛选到的数量，不混入未来节目或无法关联 TMDB ID 的项目。片单 2 和片单 3 使用固定的正剧系列白名单从 T0DB 查询，按首播时间从新到旧输出；这样只保留假面骑士主剧和东映超级战队正剧，不录入电影、特别篇、剧场版或衍生作品。
 

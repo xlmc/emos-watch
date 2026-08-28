@@ -56,6 +56,8 @@ DOUBAN_SEARCH_URL = "https://movie.douban.com/j/search_subjects"
 DOUBAN_DETAIL_URL = "https://m.douban.com/rexxar/api/v2/subject/{subject_id}"
 TMDB_API_BASE = "https://api.themoviedb.org/3"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w780"
+TODB_API_BASE = "https://theotherdb.org/api"
+TODB_IMAGE_BASE = "https://image.theotherdb.org"
 BGM_API_BASE = "https://api.bgm.tv/v0"
 ANILIST_API_URL = "https://graphql.anilist.co"
 HEADERS = {
@@ -103,6 +105,22 @@ def get_json(url: str, *, params: dict | None = None, headers: dict | None = Non
                 continue
             raise
     raise last_error
+
+
+def get_todb(path: str, params: dict | None = None):
+    """读取 T0DB 公开资料接口。T0DB 的 video_id 仅用于查询，输出仍转为 TMDB ID。"""
+    return get_json(f"{TODB_API_BASE}{path}", params=params, headers=HEADERS)
+
+
+def todb_external_tmdb_id(video_id: int, tmdb_type: str = "tv") -> int | None:
+    platform = f"tmdb_id_{tmdb_type}"
+    for external in get_todb(
+        "/external/list",
+        {"relation_type": "video_list", "relation_id": video_id},
+    ) or []:
+        if external.get("platform") == platform and str(external.get("value", "")).isdigit():
+            return int(external["value"])
+    return None
 
 
 def post_json(
@@ -367,8 +385,8 @@ def resolve_tmdb(subject: dict, headers: dict, manual: dict, cache: dict) -> dic
     return resolved
 
 
-def download_poster(poster_path: str) -> Image.Image:
-    url = f"{TMDB_IMAGE_BASE}{poster_path}"
+def download_poster(poster_path: str, image_url: str | None = None) -> Image.Image:
+    url = image_url or f"{TMDB_IMAGE_BASE}{poster_path}"
     for attempt in range(4):
         try:
             response = requests.get(url, timeout=30)
@@ -533,7 +551,7 @@ def ripple_frame(base: Image.Image, frame_index: int, frame_count: int) -> Image
 
 
 def make_cover(selected: list[dict], now: datetime, output_path: Path):
-    posters = [download_poster(item["poster_path"]) for item in selected]
+    posters = [download_poster(item["poster_path"], item.get("poster_url")) for item in selected]
     base = build_cover_base(posters)
     frame_count = 18
     frames = [ripple_frame(base, index, frame_count) for index in range(frame_count)]
@@ -1418,8 +1436,13 @@ def write_tmdb_mixed_feed(
     output_path.write_text(json.dumps(feed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-VARIETY_PLATFORM_KEYWORDS = (
-    "优酷", "youku", "腾讯", "tencent", "芒果", "mango", "爱奇艺", "iqiyi", "iQIYI"
+# T0DB 的公开资料接口没有公开国内流媒体平台字段，因此综艺片单改用
+# T0DB 的中国大陆来源 + 综艺/真人秀/音乐/脱口秀类型筛选。EMOS 输出仍使用
+# T0DB 关联的 TMDB ID，以符合片单格式。
+TODB_VARIETY_GENRE_IDS = {16, 20, 21}
+TODB_VARIETY_EXCLUDED_EPISODE_TERMS = (
+    "特别篇", "番外", "花絮", "加更", "抢先看", "纯享", "训练室", "企划",
+    "直播", "彩蛋", "预告", "预览", "幕后", "bonus", "special", "trailer", "preview",
 )
 
 
@@ -1555,7 +1578,7 @@ def franchise_entry(entry: tuple) -> dict:
 
 
 def fetch_franchise_series(entries: tuple[tuple, ...], headers: dict, now: datetime) -> list[dict]:
-    """按固定正剧白名单从 TMDB 搜索系列，返回首播日期倒序的 TV 条目。"""
+    """按固定正剧白名单从 T0DB 搜索系列，并转换为 EMOS 所需的 TMDB ID。"""
     today = now.strftime("%Y-%m-%d")
     resolved = []
     seen = set()
@@ -1565,28 +1588,44 @@ def fetch_franchise_series(entries: tuple[tuple, ...], headers: dict, now: datet
             continue
         result = None
         for query in entry["aliases"]:
-            payload = get_json(
-                f"{TMDB_API_BASE}/search/tv",
-                params={
-                    "query": query,
-                    "language": "zh-CN",
-                    "include_adult": "false",
-                    "first_air_date_year": entry["year"],
+            payload = get_todb(
+                "/video/list",
+                {
+                    "title": query,
+                    "video_type": "tv",
+                    "sort_by": "date_air",
+                    "sort_order": "desc",
                     "page": 1,
+                    "page_size": 100,
                 },
-                headers=headers,
             )
-            result = choose_franchise_result(raw_entry, payload.get("results", []))
+            todb_results = []
+            for item in payload.get("items", []):
+                if item.get("video_type") != "tv":
+                    continue
+                todb_results.append(
+                    {
+                        "id": item.get("video_id"),
+                        "name": item.get("video_title"),
+                        "original_name": item.get("origin_title"),
+                        "first_air_date": item.get("date_air") or "",
+                        "poster_path": item.get("image_poster"),
+                    }
+                )
+            result = choose_franchise_result(raw_entry, todb_results)
             if result:
                 break
         if not result:
-            print(f"警告：TMDB 未匹配到正剧：{entry['year']} {entry['aliases'][0]}")
+            print(f"警告：T0DB 未匹配到正剧：{entry['year']} {entry['aliases'][0]}")
             continue
         first_air_date = result.get("first_air_date") or ""
         if not first_air_date or first_air_date > today or first_air_date[:4] != str(entry["year"]):
-            print(f"警告：TMDB 日期不符，跳过正剧：{entry['year']} {entry['aliases'][0]} -> {first_air_date}")
+            print(f"警告：T0DB 日期不符，跳过正剧：{entry['year']} {entry['aliases'][0]} -> {first_air_date}")
             continue
-        tmdb_id = int(result["id"])
+        tmdb_id = todb_external_tmdb_id(int(result["id"]), "tv")
+        if not tmdb_id:
+            print(f"警告：T0DB 缺少 TMDB ID，跳过正剧：{entry['year']} {entry['aliases'][0]}")
+            continue
         if tmdb_id in seen:
             continue
         seen.add(tmdb_id)
@@ -1597,6 +1636,7 @@ def fetch_franchise_series(entries: tuple[tuple, ...], headers: dict, now: datet
                 "title": result.get("name") or result.get("original_name") or entry["aliases"][0],
                 "first_air_date": first_air_date,
                 "poster_path": result.get("poster_path"),
+                "poster_url": f"{TODB_IMAGE_BASE}/w500/{result['poster_path']}" if result.get("poster_path") else None,
             }
         )
     resolved.sort(key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)
@@ -1615,7 +1655,7 @@ def write_franchise_feed(
 ):
     cover_candidates = [item for item in items if item.get("poster_path")]
     if len(cover_candidates) < 3:
-        raise RuntimeError(f"{name} 可用 TMDB 海报不足 3 张，当前仅有 {len(cover_candidates)} 张")
+        raise RuntimeError(f"{name} 可用海报不足 3 张，当前仅有 {len(cover_candidates)} 张")
     selected = select_daily_cover(cover_candidates, now, selection_path)
     make_cover(selected, now, cover_path)
     saved_name = str(load_json(watch_path, {}).get("name") or "").strip()
@@ -1655,98 +1695,148 @@ def latest_regular_season(data: dict, today) -> dict | None:
     return max(seasons, key=lambda value: (value[0], value[1]))[2]
 
 
-def fetch_chinese_variety(headers: dict, now: datetime, limit: int = 50) -> list[dict]:
-    """从 TMDB 筛选国内综艺：指定平台、仍在制作/连载且近期或即将播出。"""
+def todb_items(payload) -> list[dict]:
+    """兼容 T0DB 列表接口直接返回数组或 {items: []} 的响应。"""
+    if isinstance(payload, list):
+        return payload
+    if isinstance(payload, dict):
+        return payload.get("items") or payload.get("data") or []
+    return []
+
+
+def todb_is_regular_variety_episode(episode: dict) -> bool:
+    try:
+        episode_number = int(episode.get("episode_number") or 0)
+    except (TypeError, ValueError):
+        episode_number = 0
+    if episode_number <= 0 or not episode.get("date_air"):
+        return False
+    title = str(episode.get("episode_title") or "").lower()
+    return not any(term.lower() in title for term in TODB_VARIETY_EXCLUDED_EPISODE_TERMS)
+
+
+def fetch_todb_variety(now: datetime, limit: int = 50) -> list[dict]:
+    """从 T0DB 获取当前年度中国大陆在播综艺，并转换成 EMOS 片单项目。"""
     today = now.date()
-    recent_date = (today - timedelta(days=120)).isoformat()
-    future_date = (today + timedelta(days=30)).isoformat()
+    today_text = today.isoformat()
+    year_start = f"{now.year}-01-01"
+    recent_text = (today - timedelta(days=120)).isoformat()
+    future_text = (today + timedelta(days=30)).isoformat()
     discovered = {}
 
-    for page in range(1, 11):
-        payload = get_json(
-            f"{TMDB_API_BASE}/discover/tv",
-            params={
-                "language": "zh-CN",
-                "sort_by": "popularity.desc",
-                "air_date.gte": recent_date,
-                "air_date.lte": future_date,
-                "with_origin_country": "CN",
-                "with_genres": "10764",
-                "include_null_first_air_dates": "false",
+    # 列表接口按首播日期倒序；未来日期必须排除，避免未上映节目进入片单。
+    # 只扫描最新的三页，避免逐个补查大量旧候选导致定时任务超时。
+    for page in range(1, 4):
+        payload = get_todb(
+            "/video/list",
+            {
+                "video_type": "tv",
+                "year": now.year,
+                "sort_by": "date_air",
+                "sort_order": "desc",
                 "page": page,
+                "page_size": 100,
             },
-            headers=headers,
         )
-        for item in payload.get("results", []):
-            discovered[int(item["id"])] = item
-        if page >= int(payload.get("total_pages", page)):
+        page_items = todb_items(payload)
+        for item in page_items:
+            video_id = item.get("video_id")
+            date_air = item.get("date_air") or ""
+            countries = {str(value).upper() for value in (item.get("origin_countrys") or [])}
+            if (
+                video_id
+                and date_air
+                and year_start <= date_air <= today_text
+                and "CN" in countries
+            ):
+                discovered[int(video_id)] = item
+        if len(page_items) < 100:
             break
 
     results = []
-    for item in sorted(discovered.values(), key=lambda value: float(value.get("popularity") or 0), reverse=True):
-        data = get_json(
-            f"{TMDB_API_BASE}/tv/{item['id']}",
-            params={"language": "zh-CN", "append_to_response": "watch/providers"},
-            headers=headers,
-        )
-        latest_season = latest_regular_season(data, today)
-        if not latest_season:
-            continue
-        season_air_date = latest_season.get("air_date") or ""
-        if not season_air_date.startswith(str(now.year)):
-            continue
-        network_names = [network.get("name", "") for network in data.get("networks", [])]
-        provider_names = []
-        cn_providers = (data.get("watch/providers") or {}).get("results", {}).get("CN", {})
-        for group in ("flatrate", "free", "ads", "rent", "buy"):
-            provider_names.extend(provider.get("provider_name", "") for provider in cn_providers.get(group, []))
-        platform_names = network_names + provider_names
-        if not any(
-            keyword.lower() in name.lower()
-            for name in platform_names
-            for keyword in VARIETY_PLATFORM_KEYWORDS
-        ):
+    seen_tmdb = set()
+    candidate_items = sorted(
+        discovered.values(), key=lambda value: value.get("date_air") or "", reverse=True
+    )[:80]
+    # T0DB 的详情请求是公开 GET；并发只用于读取详情，后续季/集筛选仍按结果顺序处理。
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        details = list(executor.map(lambda value: get_todb(f"/video/{int(value['video_id'])}"), candidate_items))
+
+    for item, detail in zip(candidate_items, details):
+        video_id = int(item["video_id"])
+        countries = {str(value).upper() for value in (detail.get("origin_countrys") or item.get("origin_countrys") or [])}
+        genre_ids = {int(value) for value in (detail.get("genre_ids") or []) if str(value).isdigit()}
+        if "CN" not in countries or not genre_ids.intersection(TODB_VARIETY_GENRE_IDS):
             continue
 
-        last_episode = data.get("last_episode_to_air") or {}
-        episode_type = str(last_episode.get("episode_type") or "").lower()
-        try:
-            episode_number = int(last_episode.get("episode_number") or 0)
-        except (TypeError, ValueError):
-            episode_number = 0
-        main_episode_date = ""
-        if episode_type not in {"special", "clip", "trailer"} and episode_number > 0:
-            main_episode_date = last_episode.get("air_date") or ""
-        last_air = main_episode_date or data.get("last_air_date") or ""
-        next_air = (data.get("next_episode_to_air") or {}).get("air_date") or ""
-        last_is_recent = bool(last_air and last_air >= recent_date)
-        next_is_near = bool(next_air and next_air <= future_date)
-        active_status = data.get("status") in {"Returning Series", "In Production", "Pilot"}
-        if not active_status or not (last_is_recent or next_is_near or data.get("in_production")):
+        seasons = todb_items(get_todb(f"/video/{video_id}/season/all"))
+        regular_seasons = []
+        for season in seasons:
+            try:
+                season_number = int(season.get("season_number") or 0)
+            except (TypeError, ValueError):
+                season_number = 0
+            season_date = season.get("date_air") or ""
+            if season_number > 0 and year_start <= season_date <= today_text:
+                regular_seasons.append((season_date, season_number, season))
+        if not regular_seasons:
             continue
+        season_date, season_number, season = max(regular_seasons, key=lambda value: (value[0], value[1]))
+
+        episodes = todb_items(
+            get_todb(f"/video/{video_id}/season/{season_number}/episode/all")
+        )
+        regular_episodes = [
+            episode for episode in episodes
+            if todb_is_regular_variety_episode(episode) and episode.get("date_air") <= today_text
+        ]
+        if not regular_episodes:
+            continue
+        latest_episode = max(
+            regular_episodes,
+            key=lambda episode: (episode.get("date_air") or "", int(episode.get("episode_number") or 0)),
+        )
+        latest_episode_date = latest_episode.get("date_air") or ""
+        future_episodes = [
+            episode for episode in episodes
+            if todb_is_regular_variety_episode(episode)
+            and today_text < (episode.get("date_air") or "") <= future_text
+        ]
+        next_episode_date = min(
+            (episode.get("date_air") for episode in future_episodes),
+            default="",
+        )
+        status = str(detail.get("status") or "").lower()
+        active_status = status in {"returning", "in production", "pilot", "planned", "rumored"}
+        if not active_status and latest_episode_date < recent_text and not next_episode_date:
+            continue
+
+        tmdb_id = todb_external_tmdb_id(video_id, "tv")
+        if not tmdb_id or tmdb_id in seen_tmdb:
+            continue
+        poster_path = detail.get("image_poster") or item.get("image_poster") or season.get("image_poster")
+        seen_tmdb.add(tmdb_id)
         results.append(
             {
-                "tmdb_id": int(data["id"]),
+                "tmdb_id": tmdb_id,
                 "tmdb_type": "tv",
-                "title": data.get("name") or item.get("name") or f"TMDB {data['id']}",
-                "first_air_date": data.get("first_air_date") or "",
-                "season_air_date": season_air_date,
-                "season_number": int(latest_season.get("season_number") or 0),
-                "latest_episode_date": main_episode_date,
-                "last_air_date": last_air,
-                "next_air_date": next_air,
-                "sort_date": last_air or next_air or data.get("first_air_date") or "",
-                "popularity": float(data.get("popularity") or item.get("popularity") or 0),
-                "poster_path": data.get("poster_path") or item.get("poster_path"),
+                "title": detail.get("video_title") or item.get("video_title") or f"T0DB {video_id}",
+                "first_air_date": detail.get("date_air") or item.get("date_air") or "",
+                "season_air_date": season_date,
+                "season_number": season_number,
+                "latest_episode_date": latest_episode_date,
+                "next_air_date": next_episode_date,
+                "sort_date": latest_episode_date or season_date,
+                "poster_path": poster_path,
+                "poster_url": f"{TODB_IMAGE_BASE}/w500/{poster_path}" if poster_path else None,
             }
         )
 
-    # 当天有正片更新的综艺置顶，其余再按当前年度最新普通季上线日期排序。
-    today_text = today.isoformat()
+    # 当天有正片更新的综艺置顶，其余按当前年度最新季/正片日期从新到旧。
     results.sort(
         key=lambda item: (
             item["latest_episode_date"] == today_text,
-            item["season_air_date"],
+            item["sort_date"],
             item["tmdb_id"],
         ),
         reverse=True,
@@ -1826,10 +1916,9 @@ def main():
     cache = load_json(CACHE_PATH, {})
     release_state = load_json(RELEASE_STATE_PATH, {})
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
-    headers = tmdb_headers()
     base = config["site_base_url"].rstrip("/")
 
-    kamen_items = fetch_franchise_series(KAMEN_RIDER_SERIES, headers, now)
+    kamen_items = fetch_franchise_series(KAMEN_RIDER_SERIES, {}, now)
     kamen_selected = write_franchise_feed(
         kamen_items,
         "假面骑士正剧（2000年至今）",
@@ -1840,7 +1929,7 @@ def main():
         KAMEN_SELECTION_PATH,
         str(config.get("kamen_rider_name") or "").strip(),
     )
-    sentai_items = fetch_franchise_series(SUPER_SENTAI_SERIES, headers, now)
+    sentai_items = fetch_franchise_series(SUPER_SENTAI_SERIES, {}, now)
     sentai_selected = write_franchise_feed(
         sentai_items,
         "东映超级战队正剧（1975年至今）",
@@ -1852,7 +1941,7 @@ def main():
         str(config.get("super_sentai_name") or "").strip(),
     )
 
-    variety_items = fetch_chinese_variety(headers, now, limit=50)
+    variety_items = fetch_todb_variety(now, limit=50)
     variety_cover_candidates = [item for item in variety_items if item.get("poster_path")]
     variety_should_update = detect_new_variety_today(
         variety_items, WATCH_PATH, now, release_state
@@ -1869,7 +1958,7 @@ def main():
         )
         return
     if len(variety_cover_candidates) < 3:
-        raise RuntimeError(f"指定平台的在播综艺海报不足 3 张，当前仅有 {len(variety_cover_candidates)} 张")
+        raise RuntimeError(f"T0DB 当前在播综艺海报不足 3 张，当前仅有 {len(variety_cover_candidates)} 张")
     variety_selected = select_daily_cover(variety_cover_candidates, now, VARIETY_SELECTION_PATH)
     make_cover(variety_selected, now, VARIETY_COVER_PATH)
     # 保留旧地址，避免已经填入 cover.gif 的用户丢图；两个文件内容保持一致。
