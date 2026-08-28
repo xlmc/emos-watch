@@ -64,6 +64,11 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
     "Referer": "https://m.douban.com/tv/",
 }
+TODB_HEADERS = {
+    "User-Agent": HEADERS["User-Agent"],
+    "Referer": "https://theotherdb.org/",
+    "Origin": "https://theotherdb.org",
+}
 MAINLAND = "中国大陆"
 
 
@@ -109,7 +114,7 @@ def get_json(url: str, *, params: dict | None = None, headers: dict | None = Non
 
 def get_todb(path: str, params: dict | None = None):
     """读取 T0DB 公开资料接口。T0DB 的 video_id 仅用于查询，输出仍转为 TMDB ID。"""
-    return get_json(f"{TODB_API_BASE}{path}", params=params, headers=HEADERS)
+    return get_json(f"{TODB_API_BASE}{path}", params=params, headers=TODB_HEADERS)
 
 
 def todb_external_tmdb_id(video_id: int, tmdb_type: str = "tv") -> int | None:
