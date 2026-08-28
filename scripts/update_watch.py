@@ -55,8 +55,6 @@ HEADERS = {
 }
 TODB_HEADERS = {
     "User-Agent": HEADERS["User-Agent"],
-    "Referer": "https://theotherdb.org/",
-    "Origin": "https://theotherdb.org",
 }
 
 def load_json(path: Path, default):
@@ -93,14 +91,15 @@ def get_todb(path: str, params: dict | None = None):
     headers = dict(TODB_HEADERS)
     token = os.environ.get("TODB_API_TOKEN", "").strip()
     if token:
-        headers["Authorization"] = f"Bearer {token}"
+        headers["Authorization"] = token if token.lower().startswith("bearer ") else f"Bearer {token}"
     try:
         return get_json(f"{TODB_API_BASE}{path}", params=params, headers=headers)
     except requests.HTTPError as exc:
         if exc.response is not None and exc.response.status_code == 403:
+            detail = (exc.response.text or "").strip().replace("\n", " ")[:300]
             raise RuntimeError(
-                "T0DB 返回 403。请在 GitHub Actions Secret 中配置 TODB_API_TOKEN "
-                "（对应 Postman 集合里的 api_token），不要把 token 写入代码。"
+                "T0DB 返回 403。响应信息："
+                f"{detail or '（接口未返回错误正文）'}"
             ) from exc
         raise
 
