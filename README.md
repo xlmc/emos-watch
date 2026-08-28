@@ -30,7 +30,7 @@
 
    T0DB 对 GitHub Actions 出口请求会返回 403，因此需要这个 Bearer token；不要把 token 写入仓库文件。
 
-3. 到 `Actions` 手动运行“更新综艺、假面骑士与超级战队片单”。第一次成功后，仓库会出现日番、综艺、假面骑士和超级战队的 JSON/GIF 文件。`watch.json`、`cover.gif` 作为旧综艺地址兼容保留。
+3. 到 `Actions` 手动运行“更新综艺、日番、假面骑士与超级战队片单”。第一次成功后，仓库会出现日番、综艺、假面骑士和超级战队的 JSON/GIF 文件。`watch.json`、`cover.gif` 作为旧综艺地址兼容保留。
 
 4. EMOS 动态片单地址：
 
