@@ -24,11 +24,11 @@
 2. 在仓库 `Settings → Secrets and variables → Actions` 新建 Secret：
 
    ```text
-   名称：TMDB_API_TOKEN
+   名称：TMDB_ACCESS_TOKEN
    值：TMDB Read Access Token
    ```
 
-   四个片单都使用此密钥，不再需要 `TODB_API_TOKEN`。
+   四个片单都使用此密钥，不再需要 T0DB Secret。
 
 3. 到 `Actions` 手动运行“更新综艺、日番、假面骑士与超级战队片单”。第一次成功后，仓库会出现日番、综艺、假面骑士和超级战队的 JSON/GIF 文件。`watch.json`、`cover.gif` 作为旧综艺地址兼容保留。
 
