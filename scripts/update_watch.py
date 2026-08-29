@@ -362,6 +362,7 @@ def fetch_tmdb_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> 
                     "tmdb_id": tmdb_id,
                     "tmdb_type": "tv",
                     "title": item.get("name") or item.get("original_name") or f"TMDB {tmdb_id}",
+                    "search_titles": [item.get("name"), item.get("original_name")],
                     "first_air_date": first_air_date,
                     "poster_path": item.get("poster_path"),
                 }
@@ -423,6 +424,7 @@ query ($page: Int, $perPage: Int, $from: FuzzyDateInt, $until: FuzzyDateInt) {
       startDate_greater: $from,
       startDate_lesser: $until,
       format_in: [TV, TV_SHORT, ONA],
+      isAdult: false,
       sort: START_DATE_DESC
     ) {
       id
@@ -437,34 +439,38 @@ def fetch_anilist_anime(now: datetime, limit: int = 100) -> list[dict]:
     """从 AniList 获取今年日本 TV/短番/ONA，日期稍后与其他源合并。"""
     items = []
     try:
-        payload = post_json(
-            ANILIST_API_URL,
-            {
-                "query": ANILIST_QUERY,
-                "variables": {
-                    "page": 1,
-                    "perPage": min(limit, 50),
-                    "from": int(f"{now.year - 1}1231"),
-                    "until": int((now.date() + timedelta(days=1)).strftime("%Y%m%d")),
-                },
-            },
-            headers={"Content-Type": "application/json", "User-Agent": "emos-watch/1.0"},
-        )
-        if payload.get("errors"):
-            raise RuntimeError(payload["errors"])
-        for item in payload.get("data", {}).get("Page", {}).get("media", []):
-            date = item.get("startDate") or {}
-            if not date.get("year") or not date.get("month") or not date.get("day"):
-                continue
-            title = item.get("title") or {}
-            items.append(
+        for page_number in range(1, (limit + 49) // 50 + 1):
+            payload = post_json(
+                ANILIST_API_URL,
                 {
-                    "source": "anilist",
-                    "title": title.get("romaji") or title.get("native") or title.get("english"),
-                    "search_titles": [title.get("romaji"), title.get("native"), title.get("english")],
-                    "first_air_date": f"{date['year']:04d}-{date['month']:02d}-{date['day']:02d}",
-                }
+                    "query": ANILIST_QUERY,
+                    "variables": {
+                        "page": page_number,
+                        "perPage": min(50, limit - len(items)),
+                        "from": int(f"{now.year - 1}1231"),
+                        "until": int((now.date() + timedelta(days=1)).strftime("%Y%m%d")),
+                    },
+                },
+                headers={"Content-Type": "application/json", "User-Agent": "emos-watch/1.0"},
             )
+            if payload.get("errors"):
+                raise RuntimeError(payload["errors"])
+            page = payload.get("data", {}).get("Page", {})
+            for item in page.get("media", []):
+                date = item.get("startDate") or {}
+                if not date.get("year") or not date.get("month") or not date.get("day"):
+                    continue
+                title = item.get("title") or {}
+                items.append(
+                    {
+                        "source": "anilist",
+                        "title": title.get("romaji") or title.get("native") or title.get("english"),
+                        "search_titles": [title.get("romaji"), title.get("native"), title.get("english")],
+                        "first_air_date": f"{date['year']:04d}-{date['month']:02d}-{date['day']:02d}",
+                    }
+                )
+            if not page.get("pageInfo", {}).get("hasNextPage") or len(items) >= limit:
+                break
     except Exception as exc:
         print(f"警告：AniList 获取失败，继续使用其他日番源：{exc}")
         return []
@@ -487,6 +493,19 @@ def resolve_external_tv_to_tmdb(item: dict, headers: dict) -> dict | None:
         )
         if not result:
             continue
+        source_title = normalize_title(title)
+        candidate_titles = {
+            normalize_title(value)
+            for value in (result.get("name"), result.get("original_name"))
+            if value
+        }
+        if not any(
+            source_title == candidate
+            or (len(source_title) >= 5 and source_title in candidate)
+            or (len(candidate) >= 5 and candidate in source_title)
+            for candidate in candidate_titles
+        ):
+            continue
         data = get_json(f"{TMDB_API_BASE}/tv/{result['id']}", params={"language": "zh-CN"}, headers=headers)
         if "JP" not in (data.get("origin_country") or []) and data.get("original_language") != "ja":
             continue
@@ -501,24 +520,54 @@ def resolve_external_tv_to_tmdb(item: dict, headers: dict) -> dict | None:
 
 def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> list[dict]:
     """联合 TMDB、Bangumi、AniList，按首播时间倒序合并并统一为 TMDB ID。"""
-    tmdb_items = fetch_tmdb_japanese_anime(headers, now, limit)
+    tmdb_items = fetch_tmdb_japanese_anime(headers, now, max(limit * 2, 100))
     merged = {item["tmdb_id"]: item for item in tmdb_items}
-    known_titles = {normalize_title(item["title"]) for item in merged.values()}
+    known_titles = {
+        normalize_title(title)
+        for item in merged.values()
+        for title in ([item.get("title")] + list(item.get("search_titles") or []))
+        if title
+    }
 
-    external_items = fetch_bangumi_anime(now, 100) + fetch_anilist_anime(now, 100)
+    bgm_items = fetch_bangumi_anime(now, 100)
+    anilist_items = fetch_anilist_anime(now, 100)
+    external_items = bgm_items + anilist_items
     external_items.sort(key=lambda item: item["first_air_date"], reverse=True)
+
+    unresolved = []
+    seen_external_titles = set()
     for item in external_items:
         aliases = {normalize_title(value) for value in item.get("search_titles", []) if value}
         if aliases & known_titles:
             continue
-        if len(merged) >= limit:
+        signature = tuple(sorted(aliases))
+        if not aliases or signature in seen_external_titles:
+            continue
+        seen_external_titles.add(signature)
+        unresolved.append(item)
+        if len(unresolved) >= 60:
             break
-        resolved = resolve_external_tv_to_tmdb(item, headers)
+
+    def safe_resolve(item: dict) -> dict | None:
+        try:
+            return resolve_external_tv_to_tmdb(item, headers)
+        except Exception as exc:
+            print(f"警告：{item.get('source')} 条目映射 TMDB 失败：{item.get('title')}：{exc}")
+            return None
+
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        resolved_items = list(executor.map(safe_resolve, unresolved))
+
+    for resolved in resolved_items:
         if not resolved or resolved["tmdb_id"] in merged:
             continue
         merged[resolved["tmdb_id"]] = resolved
         known_titles.add(normalize_title(resolved["title"]))
 
+    print(
+        f"日番三源候选：TMDB {len(tmdb_items)} 部、Bangumi {len(bgm_items)} 部、"
+        f"AniList {len(anilist_items)} 部；统一 TMDB ID 后 {len(merged)} 部。"
+    )
     return sorted(merged.values(), key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)[:limit]
 
 def previous_month_start(today) -> str:
@@ -1374,15 +1423,14 @@ def main():
     base = config["site_base_url"].rstrip("/")
     headers = tmdb_headers()
 
-    japan_items = fetch_tmdb_japanese_anime(headers, now, limit=50)
+    japan_items = fetch_japanese_anime(headers, now, limit=50)
     japan_cover_candidates = [item for item in japan_items if item.get("poster_path")]
     if len(japan_cover_candidates) < 3:
         raise RuntimeError(f"TMDB 当前日番海报不足 3 张，当前仅有 {len(japan_cover_candidates)} 张")
     japan_selected = select_daily_cover(japan_cover_candidates, now, JAPAN_SELECTION_PATH)
     make_cover(japan_selected, now, JAPAN_COVER_PATH)
-    japan_previous_name = str(load_json(JAPAN_WATCH_PATH, {}).get("name") or "").strip()
     japan_watch = {
-        "name": str(config.get("japan_name") or "").strip() or japan_previous_name or "厕纸",
+        "name": "厕纸",
         "cover": f"{base}/cover-japan.gif",
         "updated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
         "videos": [
