@@ -55,6 +55,8 @@ jobs:
 
       - name: Refresh jsDelivr cover cache
         run: |
+          # 等 GitHub 分支指针和生成文件在 jsDelivr 源站同步后再清缓存。
+          sleep 30
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-variety.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-japan.json
