@@ -24,7 +24,7 @@
 2. 在仓库 `Settings → Secrets and variables → Actions` 新建 Secret：
 
    ```text
-   名称：TMDB_ACCESS_TOKEN
+   名称：TMDB_API_TOKEN（也兼容旧名称 TMDB_ACCESS_TOKEN）
    值：TMDB Read Access Token
    ```
 
