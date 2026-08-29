@@ -86,12 +86,9 @@ def get_json(url: str, *, params: dict | None = None, headers: dict | None = Non
 
 def tmdb_headers() -> dict:
     """构造 TMDB v4 Bearer 鉴权请求头，不把密钥写入仓库。"""
-    token = (
-        os.environ.get("TMDB_ACCESS_TOKEN", "").strip()
-        or os.environ.get("TMDB_API_TOKEN", "").strip()
-    )
+    token = os.environ.get("TMDB_API_TOKEN", "").strip()
     if not token:
-        raise RuntimeError("缺少 TMDB_ACCESS_TOKEN，请在 GitHub Actions Secrets 中配置 TMDB Read Access Token。")
+        raise RuntimeError("缺少 TMDB_API_TOKEN，请在 GitHub Actions Secrets 中配置 TMDB API Read Access Token。")
     authorization = token if token.lower().startswith("bearer ") else f"Bearer {token}"
     return {
         "Authorization": authorization,

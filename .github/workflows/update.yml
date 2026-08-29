@@ -42,7 +42,6 @@ jobs:
 
       - name: Generate watch feeds and liquid glass GIF covers
         env:
-          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
           TMDB_API_TOKEN: ${{ secrets.TMDB_API_TOKEN }}
         run: python scripts/update_watch.py
 
