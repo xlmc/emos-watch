@@ -240,10 +240,6 @@
       "season_air_date": "2026-05-14",
       "latest_episode_date": "2026-08-28"
     },
-    "tv:116777": {
-      "season_air_date": "2026-06-12",
-      "latest_episode_date": "2026-08-28"
-    },
     "tv:91914": {
       "season_air_date": "2026-06-19",
       "latest_episode_date": "2026-08-28"
@@ -287,6 +283,10 @@
     "tv:199332": {
       "season_air_date": "2026-01-04",
       "latest_episode_date": "2026-08-23"
+    },
+    "tv:116777": {
+      "season_air_date": "2026-06-12",
+      "latest_episode_date": "2026-08-21"
     },
     "tv:124265": {
       "season_air_date": "2026-06-03",
