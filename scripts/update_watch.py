@@ -518,7 +518,7 @@ def resolve_external_tv_to_tmdb(item: dict, headers: dict) -> dict | None:
         }
     return None
 
-def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> list[dict]:
+def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 100) -> list[dict]:
     """联合 TMDB、Bangumi、AniList，按首播时间倒序合并并统一为 TMDB ID。"""
     tmdb_items = fetch_tmdb_japanese_anime(headers, now, max(limit * 2, 100))
     merged = {item["tmdb_id"]: item for item in tmdb_items}
@@ -1423,7 +1423,7 @@ def main():
     base = config["site_base_url"].rstrip("/")
     headers = tmdb_headers()
 
-    japan_items = fetch_japanese_anime(headers, now, limit=50)
+    japan_items = fetch_japanese_anime(headers, now, limit=100)
     japan_cover_candidates = [item for item in japan_items if item.get("poster_path")]
     if len(japan_cover_candidates) < 3:
         raise RuntimeError(f"TMDB 当前日番海报不足 3 张，当前仅有 {len(japan_cover_candidates)} 张")

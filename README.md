@@ -5,7 +5,7 @@
 综艺、假面骑士和超级战队名称可在 `config.json` 的 `variety_name`、`kamen_rider_name`、`super_sentai_name` 中分别设置。日番片单名称永久固定为“厕纸”，不读取配置或旧片单名称。其他名称配置项留空时保留仓库已有名称，首次生成才使用默认名称。
 
 - 片单 1：从 TMDB 筛选中国大陆真人秀/脱口秀类型；只取当前年度已上线的最新普通季，排除未来节目和特别篇，仍在播或近 120 天有正片更新的节目优先，当天有正片更新的置顶，最多 50 部。
-- 片单 2：同时订阅 TMDB、Bangumi（BGM）和 AniList 的今年日本动画，三源合并并统一映射为 TMDB ID，按首播时间从新到旧，最多 50 部，片单名称永久为“厕纸”。
+- 片单 2：同时订阅 TMDB、Bangumi（BGM）和 AniList 的今年日本动画，三源合并并统一映射为 TMDB ID，按首播时间从新到旧，最多 100 部，片单名称永久为“厕纸”。
 - 片单 3：从 TMDB 获取假面骑士 2000 年至今的正剧 TV 系列，按首播时间从新到旧。
 - 片单 4：从 TMDB 获取东映超级战队从 1975 年《秘密战队五连者》至今的正剧 TV 系列，按首播时间从新到旧。
 
@@ -119,5 +119,5 @@ https://watch.zzzj.de5.net/watch-japan.json
 
 ## 数据源说明
 
-综艺片单使用 TMDB Discover TV、详情、季和分集接口，筛选中国大陆综艺并按正片日期排序。日番片单订阅 TMDB Discover TV、Bangumi Subject Search 和 AniList GraphQL Media；筛选本年度已经上线的日本动画，去重并映射为 TMDB TV ID 后，按首播时间从新到旧输出，最多 50 部。假面骑士和超级战队使用固定的正剧系列白名单从 TMDB Search TV 查询，不录入电影、特别篇、剧场版或衍生作品。
+综艺片单使用 TMDB Discover TV、详情、季和分集接口，筛选中国大陆综艺并按正片日期排序。日番片单订阅 TMDB Discover TV、Bangumi Subject Search 和 AniList GraphQL Media；筛选本年度已经上线的日本动画，去重并映射为 TMDB TV ID 后，按首播时间从新到旧输出，最多 100 部。假面骑士和超级战队使用固定的正剧系列白名单从 TMDB Search TV 查询，不录入电影、特别篇、剧场版或衍生作品。
 
