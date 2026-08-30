@@ -220,6 +220,10 @@
       "season_air_date": "2026-08-08",
       "latest_episode_date": "2026-08-29"
     },
+    "tv:296215": {
+      "season_air_date": "2026-07-11",
+      "latest_episode_date": "2026-08-29"
+    },
     "tv:261471": {
       "season_air_date": "2026-06-26",
       "latest_episode_date": "2026-08-29"
@@ -395,10 +399,6 @@
     "tv:254532": {
       "season_air_date": "2026-01-05",
       "latest_episode_date": "2026-03-17"
-    },
-    "tv:274031": {
-      "season_air_date": "2026-01-02",
-      "latest_episode_date": "2026-03-06"
     }
   },
   "tv_finale_dates_v1": {
