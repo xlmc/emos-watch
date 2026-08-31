@@ -200,6 +200,10 @@
     "tv:216487": "2026-04-04"
   },
   "variety_update_v2": {
+    "tv:103147": {
+      "season_air_date": "2026-08-03",
+      "latest_episode_date": "2026-08-31"
+    },
     "tv:296202": {
       "season_air_date": "2026-06-27",
       "latest_episode_date": "2026-08-30"
@@ -274,10 +278,6 @@
     },
     "tv:294253": {
       "season_air_date": "2026-06-16",
-      "latest_episode_date": "2026-08-25"
-    },
-    "tv:103147": {
-      "season_air_date": "2026-08-03",
       "latest_episode_date": "2026-08-25"
     },
     "tv:201781": {
