@@ -1,138 +1,138 @@
 {
   "name": "国内流媒体热播更新综艺（50部）",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-08-31 09:39:58",
+  "updated_at": "2026-09-01 00:23:46",
   "videos": [
+    {
+      "tmdb_id": 294253,
+      "tmdb_type": "tv",
+      "title": "我们的宿舍",
+      "sort": 1
+    },
     {
       "tmdb_id": 103147,
       "tmdb_type": "tv",
       "title": "心动的信号",
-      "sort": 1
+      "sort": 2
     },
     {
       "tmdb_id": 296202,
       "tmdb_type": "tv",
       "title": "地球超新鲜",
-      "sort": 2
+      "sort": 3
     },
     {
       "tmdb_id": 259700,
       "tmdb_type": "tv",
       "title": "忙忙碌碌寻宝藏",
-      "sort": 3
-    },
-    {
-      "tmdb_id": 126490,
-      "tmdb_type": "tv",
-      "title": "我家那闺女",
       "sort": 4
-    },
-    {
-      "tmdb_id": 103863,
-      "tmdb_type": "tv",
-      "title": "中国新说唱",
-      "sort": 5
-    },
-    {
-      "tmdb_id": 298320,
-      "tmdb_type": "tv",
-      "title": "合伙人",
-      "sort": 6
-    },
-    {
-      "tmdb_id": 296215,
-      "tmdb_type": "tv",
-      "title": "姐姐当家",
-      "sort": 7
-    },
-    {
-      "tmdb_id": 261471,
-      "tmdb_type": "tv",
-      "title": "脱口秀和Ta的朋友们",
-      "sort": 8
-    },
-    {
-      "tmdb_id": 261391,
-      "tmdb_type": "tv",
-      "title": "喜剧之王单口季",
-      "sort": 9
-    },
-    {
-      "tmdb_id": 131040,
-      "tmdb_type": "tv",
-      "title": "披荆斩棘",
-      "sort": 10
-    },
-    {
-      "tmdb_id": 330048,
-      "tmdb_type": "tv",
-      "title": "心动就住在一起",
-      "sort": 11
-    },
-    {
-      "tmdb_id": 298789,
-      "tmdb_type": "tv",
-      "title": "一站到底",
-      "sort": 12
-    },
-    {
-      "tmdb_id": 219934,
-      "tmdb_type": "tv",
-      "title": "种地吧",
-      "sort": 13
-    },
-    {
-      "tmdb_id": 91914,
-      "tmdb_type": "tv",
-      "title": "中餐厅",
-      "sort": 14
-    },
-    {
-      "tmdb_id": 296217,
-      "tmdb_type": "tv",
-      "title": "一饭封神",
-      "sort": 15
-    },
-    {
-      "tmdb_id": 119171,
-      "tmdb_type": "tv",
-      "title": "爱情保卫战",
-      "sort": 16
-    },
-    {
-      "tmdb_id": 297509,
-      "tmdb_type": "tv",
-      "title": "食神·百厨大战",
-      "sort": 17
-    },
-    {
-      "tmdb_id": 109096,
-      "tmdb_type": "tv",
-      "title": "密室大逃脱 大神版",
-      "sort": 18
-    },
-    {
-      "tmdb_id": 89861,
-      "tmdb_type": "tv",
-      "title": "密室大逃脱",
-      "sort": 19
-    },
-    {
-      "tmdb_id": 294253,
-      "tmdb_type": "tv",
-      "title": "我们的宿舍",
-      "sort": 20
-    },
-    {
-      "tmdb_id": 201781,
-      "tmdb_type": "tv",
-      "title": "爸爸当家",
-      "sort": 21
     },
     {
       "tmdb_id": 199332,
       "tmdb_type": "tv",
       "title": "非你莫属",
+      "sort": 5
+    },
+    {
+      "tmdb_id": 126490,
+      "tmdb_type": "tv",
+      "title": "我家那闺女",
+      "sort": 6
+    },
+    {
+      "tmdb_id": 103863,
+      "tmdb_type": "tv",
+      "title": "中国新说唱",
+      "sort": 7
+    },
+    {
+      "tmdb_id": 298320,
+      "tmdb_type": "tv",
+      "title": "伦敦合伙人",
+      "sort": 8
+    },
+    {
+      "tmdb_id": 296215,
+      "tmdb_type": "tv",
+      "title": "姐姐当家",
+      "sort": 9
+    },
+    {
+      "tmdb_id": 261471,
+      "tmdb_type": "tv",
+      "title": "脱口秀和Ta的朋友们",
+      "sort": 10
+    },
+    {
+      "tmdb_id": 261391,
+      "tmdb_type": "tv",
+      "title": "喜剧之王单口季",
+      "sort": 11
+    },
+    {
+      "tmdb_id": 131040,
+      "tmdb_type": "tv",
+      "title": "披荆斩棘",
+      "sort": 12
+    },
+    {
+      "tmdb_id": 330048,
+      "tmdb_type": "tv",
+      "title": "心动就住在一起",
+      "sort": 13
+    },
+    {
+      "tmdb_id": 298789,
+      "tmdb_type": "tv",
+      "title": "一站到底",
+      "sort": 14
+    },
+    {
+      "tmdb_id": 219934,
+      "tmdb_type": "tv",
+      "title": "种地吧",
+      "sort": 15
+    },
+    {
+      "tmdb_id": 91914,
+      "tmdb_type": "tv",
+      "title": "中餐厅",
+      "sort": 16
+    },
+    {
+      "tmdb_id": 296217,
+      "tmdb_type": "tv",
+      "title": "一饭封神",
+      "sort": 17
+    },
+    {
+      "tmdb_id": 119171,
+      "tmdb_type": "tv",
+      "title": "爱情保卫战",
+      "sort": 18
+    },
+    {
+      "tmdb_id": 297509,
+      "tmdb_type": "tv",
+      "title": "食神·百厨大战",
+      "sort": 19
+    },
+    {
+      "tmdb_id": 109096,
+      "tmdb_type": "tv",
+      "title": "密室大逃脱 大神版",
+      "sort": 20
+    },
+    {
+      "tmdb_id": 89861,
+      "tmdb_type": "tv",
+      "title": "密室大逃脱",
+      "sort": 21
+    },
+    {
+      "tmdb_id": 201781,
+      "tmdb_type": "tv",
+      "title": "爸爸当家",
       "sort": 22
     },
     {
