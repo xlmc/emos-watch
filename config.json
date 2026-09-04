@@ -1,8 +1,8 @@
 {
   "site_base_url": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main",
-  "variety_name": "",
-  "kamen_rider_name": "",
-  "super_sentai_name": "",
+"variety_name": "今日更新综艺",
+"kamen_rider_name": "假面骑士",
+"super_sentai_name": "超级战队",
   "tv_limit": 20,
   "movie_limit": 10,
   "animation_limit": 20,
