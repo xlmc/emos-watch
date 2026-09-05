@@ -200,16 +200,28 @@
     "tv:216487": "2026-04-04"
   },
   "variety_update_v2": {
+    "tv:261391": {
+      "season_air_date": "2026-07-03",
+      "latest_episode_date": "2026-09-05"
+    },
+    "tv:154770": {
+      "season_air_date": "2026-01-03",
+      "latest_episode_date": "2026-09-05"
+    },
+    "tv:131040": {
+      "season_air_date": "2026-08-15",
+      "latest_episode_date": "2026-09-05"
+    },
+    "tv:103863": {
+      "season_air_date": "2026-06-27",
+      "latest_episode_date": "2026-09-05"
+    },
     "tv:330048": {
       "season_air_date": "2026-08-21",
       "latest_episode_date": "2026-09-04"
     },
-    "tv:261391": {
-      "season_air_date": "2026-07-03",
-      "latest_episode_date": "2026-09-04"
-    },
-    "tv:131040": {
-      "season_air_date": "2026-08-15",
+    "tv:298789": {
+      "season_air_date": "2026-08-07",
       "latest_episode_date": "2026-09-04"
     },
     "tv:116777": {
@@ -264,10 +276,6 @@
       "season_air_date": "2026-08-30",
       "latest_episode_date": "2026-08-30"
     },
-    "tv:103863": {
-      "season_air_date": "2026-06-27",
-      "latest_episode_date": "2026-08-30"
-    },
     "tv:298320": {
       "season_air_date": "2026-08-08",
       "latest_episode_date": "2026-08-29"
@@ -280,10 +288,6 @@
       "season_air_date": "2026-06-26",
       "latest_episode_date": "2026-08-29"
     },
-    "tv:298789": {
-      "season_air_date": "2026-08-07",
-      "latest_episode_date": "2026-08-28"
-    },
     "tv:219934": {
       "season_air_date": "2026-05-14",
       "latest_episode_date": "2026-08-28"
@@ -291,10 +295,6 @@
     "tv:201781": {
       "season_air_date": "2026-05-18",
       "latest_episode_date": "2026-08-24"
-    },
-    "tv:154770": {
-      "season_air_date": "2026-01-03",
-      "latest_episode_date": "2026-08-22"
     },
     "tv:124265": {
       "season_air_date": "2026-06-03",
