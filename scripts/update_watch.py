@@ -22,7 +22,6 @@ MAPPING_PATH = ROOT / "mapping.json"
 DATA_DIR = ROOT / "data"
 DATA_DIR.mkdir(exist_ok=True)
 CACHE_PATH = DATA_DIR / "mapping-cache.json"
-RELEASE_STATE_PATH = DATA_DIR / "release-state.json"
 SELECTION_PATH = DATA_DIR / "cover-selection.json"
 VARIETY_SELECTION_PATH = DATA_DIR / "cover-variety-selection.json"
 JAPAN_SELECTION_PATH = DATA_DIR / "cover-japan-selection.json"
@@ -990,6 +989,10 @@ def write_tmdb_mixed_feed(
     output_path.write_text(json.dumps(feed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 TMDB_VARIETY_GENRE_IDS = {10764, 10767}
+VARIETY_RECENT_DAYS = 45
+VARIETY_EXCLUDED_TITLE_TERMS = (
+    "mv", "music video", "音乐视频", "特别篇", "番外", "纯享", "纯享版",
+)
 VARIETY_EXCLUDED_EPISODE_TERMS = (
     "特别篇", "番外", "花絮", "加更", "抢先看", "纯享", "训练室", "企划",
     "直播", "彩蛋", "预告", "预览", "幕后", "bonus", "special", "trailer", "preview",
@@ -1232,27 +1235,49 @@ def tmdb_is_regular_variety_episode(episode: dict) -> bool:
     return not any(term.lower() in title for term in VARIETY_EXCLUDED_EPISODE_TERMS)
 
 def fetch_tmdb_variety(headers: dict, now: datetime, limit: int = 50) -> list[dict]:
-    """从 TMDB 获取本年度有新季或正片更新的中国大陆综艺。"""
+    """获取当前仍在播/近期播出的中国大陆综艺，并把当天正片更新的节目置顶。"""
     today = now.date()
     today_text = today.isoformat()
     year_start = f"{now.year}-01-01"
-    recent_text = (today - timedelta(days=120)).isoformat()
+    recent_text = (today - timedelta(days=VARIETY_RECENT_DAYS)).isoformat()
     future_text = (today + timedelta(days=30)).isoformat()
 
-    discovered = fetch_tmdb_discover(
-        "tv",
-        headers,
-        {
-            "language": "zh-CN",
-            "sort_by": "popularity.desc",
-            "first_air_date.lte": today_text,
-            "with_origin_country": "CN",
-            "with_genres": "10764|10767",
-            "include_null_first_air_dates": "false",
-        },
-        limit=160,
-        max_pages=8,
+    # 热度池保证在播大节目不会丢失；首播日期池补足当天新上线、但热度还没起来的新节目。
+    discovered = {}
+    discovery_queries = (
+        (
+            {
+                "language": "zh-CN",
+                "sort_by": "popularity.desc",
+                "first_air_date.lte": today_text,
+                "with_origin_country": "CN",
+                "with_genres": "10764|10767",
+                "include_null_first_air_dates": "false",
+            },
+            160,
+            8,
+        ),
+        (
+            {
+                "language": "zh-CN",
+                "sort_by": "first_air_date.desc",
+                "first_air_date.gte": year_start,
+                "first_air_date.lte": today_text,
+                "with_origin_country": "CN",
+                "with_genres": "10764|10767",
+                "include_null_first_air_dates": "false",
+            },
+            160,
+            8,
+        ),
     )
+    for params, query_limit, max_pages in discovery_queries:
+        for item in fetch_tmdb_discover(
+            "tv", headers, params, limit=query_limit, max_pages=max_pages
+        ):
+            if item.get("id"):
+                discovered[int(item["id"])] = item
+    discovered_items = list(discovered.values())
 
     with ThreadPoolExecutor(max_workers=8) as executor:
         details = list(
@@ -1262,15 +1287,19 @@ def fetch_tmdb_variety(headers: dict, now: datetime, limit: int = 50) -> list[di
                     params={"language": "zh-CN"},
                     headers=headers,
                 ),
-                discovered,
+                discovered_items,
             )
         )
 
     candidates = []
-    for item, detail in zip(discovered, details):
+    for item, detail in zip(discovered_items, details):
         countries = set(detail.get("origin_country") or [])
         genre_ids = {int(value.get("id")) for value in (detail.get("genres") or []) if value.get("id")}
         if "CN" not in countries or not genre_ids.intersection(TMDB_VARIETY_GENRE_IDS):
+            continue
+        candidate_title = detail.get("name") or item.get("name") or f"TMDB {detail['id']}"
+        title_lower = str(candidate_title).lower()
+        if any(term.lower() in title_lower for term in VARIETY_EXCLUDED_TITLE_TERMS):
             continue
         season = latest_regular_season(detail, today)
         if not season:
@@ -1290,8 +1319,16 @@ def fetch_tmdb_variety(headers: dict, now: datetime, limit: int = 50) -> list[di
         )
         return item, detail, season, payload
 
+    # 先按最新普通季日期处理，避免低热度的新节目被热门条目挤掉。
+    candidates.sort(
+        key=lambda value: (
+            value[2].get("air_date") or "",
+            value[0].get("popularity") or 0,
+        ),
+        reverse=True,
+    )
     with ThreadPoolExecutor(max_workers=8) as executor:
-        season_payloads = list(executor.map(load_season, candidates[:100]))
+        season_payloads = list(executor.map(load_season, candidates[:200]))
 
     results = []
     for item, detail, season, season_payload in season_payloads:
@@ -1301,16 +1338,6 @@ def fetch_tmdb_variety(headers: dict, now: datetime, limit: int = 50) -> list[di
             if tmdb_is_regular_variety_episode(episode)
             and (episode.get("air_date") or "") <= today_text
         ]
-        if not regular_episodes:
-            continue
-        latest_episode = max(
-            regular_episodes,
-            key=lambda episode: (
-                episode.get("air_date") or "",
-                int(episode.get("episode_number") or 0),
-            ),
-        )
-        latest_episode_date = latest_episode.get("air_date") or ""
         future_episodes = [
             episode
             for episode in (season_payload.get("episodes") or [])
@@ -1321,21 +1348,40 @@ def fetch_tmdb_variety(headers: dict, now: datetime, limit: int = 50) -> list[di
             (episode.get("air_date") for episode in future_episodes),
             default="",
         )
-        active_status = detail.get("status") in {"Returning Series", "In Production", "Pilot"}
-        if not active_status and latest_episode_date < recent_text and not next_episode_date:
+        if regular_episodes:
+            latest_episode = max(
+                regular_episodes,
+                key=lambda episode: (
+                    episode.get("air_date") or "",
+                    int(episode.get("episode_number") or 0),
+                ),
+            )
+            latest_episode_date = latest_episode.get("air_date") or ""
+        else:
+            latest_episode_date = ""
+        if (
+            not regular_episodes
+            and season.get("air_date") != today_text
+            and not next_episode_date
+        ) or (
+            latest_episode_date
+            and latest_episode_date < recent_text
+            and not next_episode_date
+        ):
             continue
+        title = detail.get("name") or item.get("name") or f"TMDB {detail['id']}"
         poster_path = detail.get("poster_path") or season.get("poster_path") or item.get("poster_path")
         results.append(
             {
                 "tmdb_id": int(detail["id"]),
                 "tmdb_type": "tv",
-                "title": detail.get("name") or item.get("name") or f"TMDB {detail['id']}",
+                "title": title,
                 "first_air_date": detail.get("first_air_date") or "",
                 "season_air_date": season.get("air_date") or "",
                 "season_number": int(season.get("season_number") or 0),
                 "latest_episode_date": latest_episode_date,
                 "next_air_date": next_episode_date,
-                "sort_date": latest_episode_date or season.get("air_date") or "",
+                "popularity": float(item.get("popularity") or detail.get("popularity") or 0),
                 "poster_path": poster_path,
             }
         )
@@ -1343,7 +1389,9 @@ def fetch_tmdb_variety(headers: dict, now: datetime, limit: int = 50) -> list[di
     results.sort(
         key=lambda item: (
             item["latest_episode_date"] == today_text,
-            item["sort_date"],
+            item["season_air_date"],
+            item["latest_episode_date"],
+            item.get("popularity", 0),
             item["tmdb_id"],
         ),
         reverse=True,
@@ -1377,48 +1425,10 @@ def select_daily_cover(candidates: list[dict], now: datetime, selection_path: Pa
     )
     return selected
 
-def detect_new_variety_today(
-    items: list[dict],
-    output_path: Path,
-    now: datetime,
-    state: dict,
-) -> bool:
-    """只有当天出现新季上线或正片更新时，才允许重排综艺片单。"""
-    state_key = "variety_update_v2"
-    previous = state.get(state_key)
-    today = now.strftime("%Y-%m-%d")
-
-    # 首次启用时不沿用旧状态，确保当天确实更新过的正片能触发一次排序。
-    if previous is None:
-        previous = {}
-
-    current = {}
-    has_new_update = False
-    for item in items:
-        season_date = item.get("season_air_date") or ""
-        episode_date = item.get("latest_episode_date") or ""
-        if not season_date and not episode_date:
-            continue
-        key = f"{item['tmdb_type']}:{item['tmdb_id']}"
-        current[key] = {
-            "season_air_date": season_date,
-            "latest_episode_date": episode_date,
-        }
-        old = previous.get(key) if isinstance(previous.get(key), dict) else {}
-        if (
-            season_date == today and old.get("season_air_date") != today
-        ) or (
-            episode_date == today and old.get("latest_episode_date") != today
-        ):
-            has_new_update = True
-    state[state_key] = current
-    return has_new_update
-
 def main():
     config = load_json(CONFIG_PATH, {})
     manual = load_json(MAPPING_PATH, {})
     cache = load_json(CACHE_PATH, {})
-    release_state = load_json(RELEASE_STATE_PATH, {})
     now = datetime.now(ZoneInfo("Asia/Shanghai"))
     base = config["site_base_url"].rstrip("/")
     headers = tmdb_headers()
@@ -1470,20 +1480,6 @@ def main():
 
     variety_items = fetch_tmdb_variety(headers, now, limit=50)
     variety_cover_candidates = [item for item in variety_items if item.get("poster_path")]
-    variety_should_update = detect_new_variety_today(
-        variety_items, WATCH_PATH, now, release_state
-    )
-    if not variety_should_update and VARIETY_WATCH_PATH.exists():
-        # 没有当天新综艺时，视频列表和封面均保持原样。
-        RELEASE_STATE_PATH.write_text(
-            json.dumps(release_state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-        )
-        CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print(
-            f"已更新日番 {len(japan_items)} 部、假面骑士正剧 {len(kamen_items)} 部、超级战队正剧 {len(sentai_items)} 部；"
-            "综艺无当日新上线，保持综艺片单和封面不变。"
-        )
-        return
     if len(variety_cover_candidates) < 3:
         raise RuntimeError(f"TMDB 当前在播综艺海报不足 3 张，当前仅有 {len(variety_cover_candidates)} 张")
     variety_selected = select_daily_cover(variety_cover_candidates, now, VARIETY_SELECTION_PATH)
@@ -1511,9 +1507,6 @@ def main():
     WATCH_PATH.write_text(json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     VARIETY_WATCH_PATH.write_text(
         json.dumps(variety_watch, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    RELEASE_STATE_PATH.write_text(
-        json.dumps(release_state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
