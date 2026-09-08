@@ -1,7 +1,7 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-09-08 09:27:51",
+  "updated_at": "2026-09-08 21:04:36",
   "videos": [
     {
       "tmdb_id": 331831,
@@ -178,15 +178,15 @@
       "sort": 29
     },
     {
-      "tmdb_id": 296202,
-      "tmdb_type": "tv",
-      "title": "地球超新鲜",
-      "sort": 30
-    },
-    {
       "tmdb_id": 326694,
       "tmdb_type": "tv",
       "title": "说唱巅峰对决2026",
+      "sort": 30
+    },
+    {
+      "tmdb_id": 296202,
+      "tmdb_type": "tv",
+      "title": "地球超新鲜",
       "sort": 31
     },
     {
