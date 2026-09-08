@@ -1,66 +1,66 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-09-07 18:01:04",
+  "updated_at": "2026-09-08 09:27:51",
   "videos": [
+    {
+      "tmdb_id": 331831,
+      "tmdb_type": "tv",
+      "title": "加油！汪汪",
+      "sort": 1
+    },
     {
       "tmdb_id": 333888,
       "tmdb_type": "tv",
       "title": "博物馆夜行指“楠”",
-      "sort": 1
+      "sort": 2
     },
     {
       "tmdb_id": 333124,
       "tmdb_type": "tv",
       "title": "娜就聊姐姐",
-      "sort": 2
+      "sort": 3
     },
     {
       "tmdb_id": 126490,
       "tmdb_type": "tv",
       "title": "我家那闺女",
-      "sort": 3
+      "sort": 4
     },
     {
       "tmdb_id": 333585,
       "tmdb_type": "tv",
       "title": "2026青春芒果夜",
-      "sort": 4
+      "sort": 5
     },
     {
       "tmdb_id": 330048,
       "tmdb_type": "tv",
       "title": "心动就住在一起",
-      "sort": 5
+      "sort": 6
     },
     {
       "tmdb_id": 131040,
       "tmdb_type": "tv",
       "title": "披荆斩棘",
-      "sort": 6
+      "sort": 7
     },
     {
       "tmdb_id": 322674,
       "tmdb_type": "tv",
       "title": "OK了老铁们",
-      "sort": 7
+      "sort": 8
     },
     {
       "tmdb_id": 331649,
       "tmdb_type": "tv",
       "title": "大哥小助理",
-      "sort": 8
+      "sort": 9
     },
     {
       "tmdb_id": 331569,
       "tmdb_type": "tv",
       "title": "不想睡的星期五",
-      "sort": 9
-    },
-    {
-      "tmdb_id": 331831,
-      "tmdb_type": "tv",
-      "title": "加油！汪汪",
       "sort": 10
     },
     {
@@ -142,165 +142,165 @@
       "sort": 23
     },
     {
+      "tmdb_id": 296215,
+      "tmdb_type": "tv",
+      "title": "姐姐当家",
+      "sort": 24
+    },
+    {
       "tmdb_id": 109096,
       "tmdb_type": "tv",
       "title": "密室大逃脱 大神版",
-      "sort": 24
+      "sort": 25
     },
     {
       "tmdb_id": 332566,
       "tmdb_type": "tv",
       "title": "天籁与少年",
-      "sort": 25
+      "sort": 26
     },
     {
       "tmdb_id": 261391,
       "tmdb_type": "tv",
       "title": "喜剧之王单口季",
-      "sort": 26
+      "sort": 27
     },
     {
       "tmdb_id": 326406,
       "tmdb_type": "tv",
       "title": "快乐老家",
-      "sort": 27
+      "sort": 28
     },
     {
       "tmdb_id": 103863,
       "tmdb_type": "tv",
       "title": "中国新说唱",
-      "sort": 28
+      "sort": 29
     },
     {
       "tmdb_id": 296202,
       "tmdb_type": "tv",
       "title": "地球超新鲜",
-      "sort": 29
+      "sort": 30
     },
     {
       "tmdb_id": 326694,
       "tmdb_type": "tv",
       "title": "说唱巅峰对决2026",
-      "sort": 30
+      "sort": 31
     },
     {
       "tmdb_id": 261471,
       "tmdb_type": "tv",
       "title": "脱口秀和Ta的朋友们",
-      "sort": 31
+      "sort": 32
     },
     {
       "tmdb_id": 297509,
       "tmdb_type": "tv",
       "title": "食神·百厨大战",
-      "sort": 32
+      "sort": 33
     },
     {
       "tmdb_id": 259700,
       "tmdb_type": "tv",
       "title": "忙忙碌碌寻宝藏",
-      "sort": 33
+      "sort": 34
     },
     {
       "tmdb_id": 91914,
       "tmdb_type": "tv",
       "title": "中餐厅",
-      "sort": 34
+      "sort": 35
     },
     {
       "tmdb_id": 294253,
       "tmdb_type": "tv",
       "title": "我们的宿舍",
-      "sort": 35
+      "sort": 36
     },
     {
       "tmdb_id": 325617,
       "tmdb_type": "tv",
       "title": "少年无尽夏",
-      "sort": 36
+      "sort": 37
     },
     {
       "tmdb_id": 325579,
       "tmdb_type": "tv",
       "title": "离线周末",
-      "sort": 37
+      "sort": 38
     },
     {
       "tmdb_id": 325575,
       "tmdb_type": "tv",
       "title": "户外成长计划",
-      "sort": 38
+      "sort": 39
     },
     {
       "tmdb_id": 116777,
       "tmdb_type": "tv",
       "title": "天赐的声音",
-      "sort": 39
+      "sort": 40
     },
     {
       "tmdb_id": 325041,
       "tmdb_type": "tv",
       "title": "天才厨人",
-      "sort": 40
+      "sort": 41
     },
     {
       "tmdb_id": 124265,
       "tmdb_type": "tv",
       "title": "喜欢你我也是",
-      "sort": 41
+      "sort": 42
     },
     {
       "tmdb_id": 324480,
       "tmdb_type": "tv",
       "title": "我们与恋爱的距离",
-      "sort": 42
+      "sort": 43
     },
     {
       "tmdb_id": 154420,
       "tmdb_type": "tv",
       "title": "半熟恋人",
-      "sort": 43
+      "sort": 44
     },
     {
       "tmdb_id": 289983,
       "tmdb_type": "tv",
       "title": "这是我的西游",
-      "sort": 44
+      "sort": 45
     },
     {
       "tmdb_id": 251718,
       "tmdb_type": "tv",
       "title": "这是我的西游",
-      "sort": 45
+      "sort": 46
     },
     {
       "tmdb_id": 203003,
       "tmdb_type": "tv",
       "title": "开始推理吧",
-      "sort": 46
+      "sort": 47
     },
     {
       "tmdb_id": 322722,
       "tmdb_type": "tv",
       "title": "国乐无双",
-      "sort": 47
+      "sort": 48
     },
     {
       "tmdb_id": 107467,
       "tmdb_type": "tv",
       "title": "我是歌手",
-      "sort": 48
+      "sort": 49
     },
     {
       "tmdb_id": 201781,
       "tmdb_type": "tv",
       "title": "爸爸当家",
-      "sort": 49
-    },
-    {
-      "tmdb_id": 326900,
-      "tmdb_type": "tv",
-      "title": "自然光",
       "sort": 50
     }
   ]
