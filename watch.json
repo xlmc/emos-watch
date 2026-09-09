@@ -1,156 +1,156 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-09-08 21:04:36",
+  "updated_at": "2026-09-09 09:37:20",
   "videos": [
-    {
-      "tmdb_id": 331831,
-      "tmdb_type": "tv",
-      "title": "加油！汪汪",
-      "sort": 1
-    },
-    {
-      "tmdb_id": 333888,
-      "tmdb_type": "tv",
-      "title": "博物馆夜行指“楠”",
-      "sort": 2
-    },
-    {
-      "tmdb_id": 333124,
-      "tmdb_type": "tv",
-      "title": "娜就聊姐姐",
-      "sort": 3
-    },
-    {
-      "tmdb_id": 126490,
-      "tmdb_type": "tv",
-      "title": "我家那闺女",
-      "sort": 4
-    },
-    {
-      "tmdb_id": 333585,
-      "tmdb_type": "tv",
-      "title": "2026青春芒果夜",
-      "sort": 5
-    },
-    {
-      "tmdb_id": 330048,
-      "tmdb_type": "tv",
-      "title": "心动就住在一起",
-      "sort": 6
-    },
-    {
-      "tmdb_id": 131040,
-      "tmdb_type": "tv",
-      "title": "披荆斩棘",
-      "sort": 7
-    },
-    {
-      "tmdb_id": 322674,
-      "tmdb_type": "tv",
-      "title": "OK了老铁们",
-      "sort": 8
-    },
-    {
-      "tmdb_id": 331649,
-      "tmdb_type": "tv",
-      "title": "大哥小助理",
-      "sort": 9
-    },
-    {
-      "tmdb_id": 331569,
-      "tmdb_type": "tv",
-      "title": "不想睡的星期五",
-      "sort": 10
-    },
-    {
-      "tmdb_id": 298320,
-      "tmdb_type": "tv",
-      "title": "合伙人",
-      "sort": 11
-    },
-    {
-      "tmdb_id": 331587,
-      "tmdb_type": "tv",
-      "title": "伦敦合伙人",
-      "sort": 12
-    },
-    {
-      "tmdb_id": 298789,
-      "tmdb_type": "tv",
-      "title": "一站到底",
-      "sort": 13
-    },
-    {
-      "tmdb_id": 330926,
-      "tmdb_type": "tv",
-      "title": "一路向海的少年",
-      "sort": 14
-    },
     {
       "tmdb_id": 331686,
       "tmdb_type": "tv",
       "title": "姐姐快醒醒",
-      "sort": 15
-    },
-    {
-      "tmdb_id": 332570,
-      "tmdb_type": "tv",
-      "title": "耀眼一夏",
-      "sort": 16
-    },
-    {
-      "tmdb_id": 103147,
-      "tmdb_type": "tv",
-      "title": "心动的信号",
-      "sort": 17
-    },
-    {
-      "tmdb_id": 296217,
-      "tmdb_type": "tv",
-      "title": "一饭封神",
-      "sort": 18
-    },
-    {
-      "tmdb_id": 330052,
-      "tmdb_type": "tv",
-      "title": "家乡美食大赛",
-      "sort": 19
-    },
-    {
-      "tmdb_id": 329869,
-      "tmdb_type": "tv",
-      "title": "开始奏乐开始舞",
-      "sort": 20
-    },
-    {
-      "tmdb_id": 329598,
-      "tmdb_type": "tv",
-      "title": "宇宙帮帮忙",
-      "sort": 21
+      "sort": 1
     },
     {
       "tmdb_id": 89861,
       "tmdb_type": "tv",
       "title": "密室大逃脱",
-      "sort": 22
-    },
-    {
-      "tmdb_id": 329500,
-      "tmdb_type": "tv",
-      "title": "野狗骨头·意犹未尽",
-      "sort": 23
-    },
-    {
-      "tmdb_id": 296215,
-      "tmdb_type": "tv",
-      "title": "姐姐当家",
-      "sort": 24
+      "sort": 2
     },
     {
       "tmdb_id": 109096,
       "tmdb_type": "tv",
       "title": "密室大逃脱 大神版",
+      "sort": 3
+    },
+    {
+      "tmdb_id": 333888,
+      "tmdb_type": "tv",
+      "title": "博物馆夜行指“楠”",
+      "sort": 4
+    },
+    {
+      "tmdb_id": 333124,
+      "tmdb_type": "tv",
+      "title": "娜就聊姐姐",
+      "sort": 5
+    },
+    {
+      "tmdb_id": 126490,
+      "tmdb_type": "tv",
+      "title": "我家那闺女",
+      "sort": 6
+    },
+    {
+      "tmdb_id": 333585,
+      "tmdb_type": "tv",
+      "title": "2026青春芒果夜",
+      "sort": 7
+    },
+    {
+      "tmdb_id": 330048,
+      "tmdb_type": "tv",
+      "title": "心动就住在一起",
+      "sort": 8
+    },
+    {
+      "tmdb_id": 131040,
+      "tmdb_type": "tv",
+      "title": "披荆斩棘",
+      "sort": 9
+    },
+    {
+      "tmdb_id": 322674,
+      "tmdb_type": "tv",
+      "title": "OK了老铁们",
+      "sort": 10
+    },
+    {
+      "tmdb_id": 331649,
+      "tmdb_type": "tv",
+      "title": "大哥小助理",
+      "sort": 11
+    },
+    {
+      "tmdb_id": 331569,
+      "tmdb_type": "tv",
+      "title": "不想睡的星期五",
+      "sort": 12
+    },
+    {
+      "tmdb_id": 331831,
+      "tmdb_type": "tv",
+      "title": "加油！汪汪",
+      "sort": 13
+    },
+    {
+      "tmdb_id": 298320,
+      "tmdb_type": "tv",
+      "title": "合伙人",
+      "sort": 14
+    },
+    {
+      "tmdb_id": 331587,
+      "tmdb_type": "tv",
+      "title": "伦敦合伙人",
+      "sort": 15
+    },
+    {
+      "tmdb_id": 298789,
+      "tmdb_type": "tv",
+      "title": "一站到底",
+      "sort": 16
+    },
+    {
+      "tmdb_id": 330926,
+      "tmdb_type": "tv",
+      "title": "一路向海的少年",
+      "sort": 17
+    },
+    {
+      "tmdb_id": 332570,
+      "tmdb_type": "tv",
+      "title": "耀眼一夏",
+      "sort": 18
+    },
+    {
+      "tmdb_id": 103147,
+      "tmdb_type": "tv",
+      "title": "心动的信号",
+      "sort": 19
+    },
+    {
+      "tmdb_id": 296217,
+      "tmdb_type": "tv",
+      "title": "一饭封神",
+      "sort": 20
+    },
+    {
+      "tmdb_id": 330052,
+      "tmdb_type": "tv",
+      "title": "家乡美食大赛",
+      "sort": 21
+    },
+    {
+      "tmdb_id": 329869,
+      "tmdb_type": "tv",
+      "title": "开始奏乐开始舞",
+      "sort": 22
+    },
+    {
+      "tmdb_id": 329598,
+      "tmdb_type": "tv",
+      "title": "宇宙帮帮忙",
+      "sort": 23
+    },
+    {
+      "tmdb_id": 329500,
+      "tmdb_type": "tv",
+      "title": "野狗骨头·意犹未尽",
+      "sort": 24
+    },
+    {
+      "tmdb_id": 296215,
+      "tmdb_type": "tv",
+      "title": "姐姐当家",
       "sort": 25
     },
     {
