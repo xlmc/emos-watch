@@ -1,7 +1,7 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-09-11 09:30:41",
+  "updated_at": "2026-09-11 21:01:17",
   "videos": [
     {
       "tmdb_id": 296785,
@@ -34,39 +34,39 @@
       "sort": 5
     },
     {
+      "tmdb_id": 331569,
+      "tmdb_type": "tv",
+      "title": "不想睡的星期五",
+      "sort": 6
+    },
+    {
       "tmdb_id": 333888,
       "tmdb_type": "tv",
       "title": "博物馆夜行指“楠”",
-      "sort": 6
+      "sort": 7
     },
     {
       "tmdb_id": 333124,
       "tmdb_type": "tv",
       "title": "娜就聊姐姐",
-      "sort": 7
+      "sort": 8
     },
     {
       "tmdb_id": 126490,
       "tmdb_type": "tv",
       "title": "我家那闺女",
-      "sort": 8
+      "sort": 9
     },
     {
       "tmdb_id": 333585,
       "tmdb_type": "tv",
       "title": "2026青春芒果夜",
-      "sort": 9
+      "sort": 10
     },
     {
       "tmdb_id": 322674,
       "tmdb_type": "tv",
       "title": "OK了老铁们",
-      "sort": 10
-    },
-    {
-      "tmdb_id": 331569,
-      "tmdb_type": "tv",
-      "title": "不想睡的星期五",
       "sort": 11
     },
     {
