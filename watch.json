@@ -1,7 +1,7 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-09-13 09:27:07",
+  "updated_at": "2026-09-13 21:28:10",
   "videos": [
     {
       "tmdb_id": 332321,
@@ -10,33 +10,33 @@
       "sort": 1
     },
     {
-      "tmdb_id": 103863,
+      "tmdb_id": 126490,
       "tmdb_type": "tv",
-      "title": "中国新说唱",
+      "title": "我家那闺女",
       "sort": 2
+    },
+    {
+      "tmdb_id": 330052,
+      "tmdb_type": "tv",
+      "title": "家乡美食大赛",
+      "sort": 3
     },
     {
       "tmdb_id": 121876,
       "tmdb_type": "tv",
       "title": "花儿与少年",
-      "sort": 3
+      "sort": 4
     },
     {
       "tmdb_id": 333888,
       "tmdb_type": "tv",
       "title": "博物馆夜行指“楠”",
-      "sort": 4
+      "sort": 5
     },
     {
       "tmdb_id": 333124,
       "tmdb_type": "tv",
       "title": "娜就聊姐姐",
-      "sort": 5
-    },
-    {
-      "tmdb_id": 126490,
-      "tmdb_type": "tv",
-      "title": "我家那闺女",
       "sort": 6
     },
     {
@@ -130,63 +130,63 @@
       "sort": 21
     },
     {
-      "tmdb_id": 330052,
-      "tmdb_type": "tv",
-      "title": "家乡美食大赛",
-      "sort": 22
-    },
-    {
       "tmdb_id": 329869,
       "tmdb_type": "tv",
       "title": "开始奏乐开始舞",
-      "sort": 23
+      "sort": 22
     },
     {
       "tmdb_id": 329598,
       "tmdb_type": "tv",
       "title": "宇宙帮帮忙",
-      "sort": 24
+      "sort": 23
     },
     {
       "tmdb_id": 89861,
       "tmdb_type": "tv",
       "title": "密室大逃脱",
-      "sort": 25
+      "sort": 24
     },
     {
       "tmdb_id": 329500,
       "tmdb_type": "tv",
       "title": "野狗骨头·意犹未尽",
-      "sort": 26
+      "sort": 25
     },
     {
       "tmdb_id": 296215,
       "tmdb_type": "tv",
       "title": "姐姐当家",
-      "sort": 27
+      "sort": 26
     },
     {
       "tmdb_id": 109096,
       "tmdb_type": "tv",
       "title": "密室大逃脱 大神版",
-      "sort": 28
+      "sort": 27
     },
     {
       "tmdb_id": 332566,
       "tmdb_type": "tv",
       "title": "天籁与少年",
-      "sort": 29
+      "sort": 28
     },
     {
       "tmdb_id": 261391,
       "tmdb_type": "tv",
       "title": "喜剧之王单口季",
-      "sort": 30
+      "sort": 29
     },
     {
       "tmdb_id": 326406,
       "tmdb_type": "tv",
       "title": "快乐老家",
+      "sort": 30
+    },
+    {
+      "tmdb_id": 103863,
+      "tmdb_type": "tv",
+      "title": "中国新说唱",
       "sort": 31
     },
     {
