@@ -334,7 +334,7 @@ def fetch_tmdb_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> 
     results = []
     seen = set()
 
-    for page in range(1, 11):
+    for page in range(1, 21):
         payload = get_json(
             f"{TMDB_API_BASE}/discover/tv",
             params={
@@ -375,10 +375,14 @@ def fetch_tmdb_japanese_anime(headers: dict, now: datetime, limit: int = 50) -> 
     return results[:limit]
 
 def fetch_bangumi_anime(now: datetime, limit: int = 100) -> list[dict]:
-    """从 Bangumi 获取今年日本 TV 动画，日期稍后与 TMDB/AniList 合并。"""
+    """从 Bangumi 获取今年日本 TV 动画（含续作季），日期稍后与 TMDB/AniList 合并。
+
+    v0 搜索接口每页固定最多返回 20 条，与请求的 limit 无关，必须按 offset 翻完 total。
+    """
     items = []
+    page_size = 20
     try:
-        for offset in range(0, 200, 50):
+        for offset in range(0, max(limit, page_size), page_size):
             payload = post_json(
                 f"{BGM_API_BASE}/search/subjects",
                 {
@@ -391,7 +395,7 @@ def fetch_bangumi_anime(now: datetime, limit: int = 100) -> list[dict]:
                         "nsfw": False,
                     },
                 },
-                params={"limit": 50, "offset": offset},
+                params={"limit": page_size, "offset": offset},
                 headers={"User-Agent": "emos-watch/1.0 (https://github.com/xlmc/emos-watch)"},
             )
             page = payload.get("data", [])
@@ -406,7 +410,8 @@ def fetch_bangumi_anime(now: datetime, limit: int = 100) -> list[dict]:
                         "first_air_date": item["date"],
                     }
                 )
-            if len(page) < 50 or offset + len(page) >= int(payload.get("total", 0)) or len(items) >= limit:
+            total = int(payload.get("total", 0))
+            if not page or offset + len(page) >= total or len(items) >= limit:
                 break
     except Exception as exc:
         print(f"警告：Bangumi 获取失败，继续使用其他日番源：{exc}")
@@ -479,17 +484,25 @@ def resolve_external_tv_to_tmdb(item: dict, headers: dict) -> dict | None:
     year = int(item["first_air_date"][:4])
     subject = {"title": item["title"], "year": year, "tmdb_type": "tv"}
     for title in dict.fromkeys(value for value in item.get("search_titles", []) if value):
-        params = {
-            "query": title,
-            "language": "zh-CN",
-            "include_adult": "false",
-            "first_air_date_year": year,
-            "page": 1,
-        }
-        result = choose_tmdb_result(
-            {**subject, "title": title},
-            get_json(f"{TMDB_API_BASE}/search/tv", params=params, headers=headers).get("results", []),
-        )
+        result = None
+        # 先按外部源年份精确搜索；搜不到再放开年份重试，以便命中
+        # “续作季挂在老剧集条目下”的情况（如 2026 年的芙莉莲 S2 挂在 2023 年条目）。
+        for year_filter in (year, None):
+            params = {
+                "query": title,
+                "language": "zh-CN",
+                "include_adult": "false",
+                "page": 1,
+            }
+            if year_filter:
+                params["first_air_date_year"] = year_filter
+            found = choose_tmdb_result(
+                {**subject, "title": title},
+                get_json(f"{TMDB_API_BASE}/search/tv", params=params, headers=headers).get("results", []),
+            )
+            if found:
+                result = found
+                break
         if not result:
             continue
         source_title = normalize_title(title)
@@ -505,7 +518,11 @@ def resolve_external_tv_to_tmdb(item: dict, headers: dict) -> dict | None:
             for candidate in candidate_titles
         ):
             continue
-        data = get_json(f"{TMDB_API_BASE}/tv/{result['id']}", params={"language": "zh-CN"}, headers=headers)
+        data = get_json(
+            f"{TMDB_API_BASE}/tv/{result['id']}",
+            params={"language": "zh-CN", "append_to_response": "external_ids"},
+            headers=headers,
+        )
         if "JP" not in (data.get("origin_country") or []) and data.get("original_language") != "ja":
             continue
         return {
@@ -514,12 +531,108 @@ def resolve_external_tv_to_tmdb(item: dict, headers: dict) -> dict | None:
             "title": data.get("name") or item["title"],
             "first_air_date": data.get("first_air_date") or item["first_air_date"],
             "poster_path": data.get("poster_path"),
+            "_detail": data,
         }
     return None
 
-def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 100) -> list[dict]:
-    """联合 TMDB、Bangumi、AniList，按首播时间倒序合并并统一为 TMDB ID。"""
-    tmdb_items = fetch_tmdb_japanese_anime(headers, now, max(limit * 2, 100))
+def season_premiere_in_window(detail: dict, year_start: str, today: str) -> str | None:
+    """取该剧集今年内已开播的最新一季首播日期；没有则返回 None。
+
+    续作季挂在老剧集条目下（如 2026 年的芙莉莲 S2 挂在 2023 年条目），
+    剧集级 first_air_date 说明不了今年有新内容，必须按季首播日期判断；
+    同时它天然过滤掉日期在未来、尚未开播的条目。
+    """
+    dates = [season.get("air_date") for season in detail.get("seasons") or []]
+    if detail.get("first_air_date"):
+        dates.append(detail["first_air_date"])
+    in_window = sorted(date for date in dates if date and year_start <= date <= today)
+    return in_window[-1] if in_window else None
+
+def fetch_tv_detail(tmdb_id: int, headers: dict) -> dict:
+    return get_json(
+        f"{TMDB_API_BASE}/tv/{tmdb_id}",
+        params={"language": "zh-CN", "append_to_response": "external_ids"},
+        headers=headers,
+    )
+
+def apply_redirects(merged: dict, redirects: dict) -> dict:
+    """按 mapping.json 的 tmdb_redirects 把重复 TMDB 条目重定向到主条目。"""
+    if not redirects:
+        return merged
+    result = {}
+    ordered = [tmdb_id for tmdb_id in merged if str(tmdb_id) not in redirects]
+    ordered += [tmdb_id for tmdb_id in merged if str(tmdb_id) in redirects]
+    for tmdb_id in ordered:
+        target = int(redirects.get(str(tmdb_id), tmdb_id))
+        if target in result:
+            continue
+        # 重定向来源的 _detail 属于旧 ID，丢弃后由 enrich 阶段按主条目重新获取。
+        result[target] = {**{k: v for k, v in merged[tmdb_id].items() if k != "_detail"}, "tmdb_id": target}
+    return result
+
+def dedupe_candidates(items: list[dict]) -> list[dict]:
+    """按 TMDB external_ids（IMDb/TVDB）和归一化标题合并重复条目，保留热度更高、有译名的一个。
+
+    TMDB 上同一部动画可能存在多个条目（不同 ID、不同译名），仅按 tmdb_id
+    去重会把同一部番在片单里输出两次。
+    """
+    parent = list(range(len(items)))
+
+    def find(index: int) -> int:
+        while parent[index] != index:
+            parent[index] = parent[parent[index]]
+            index = parent[index]
+        return index
+
+    def union(a: int, b: int) -> None:
+        parent[find(a)] = find(b)
+
+    key_to_index = {}
+    for index, item in enumerate(items):
+        external_ids = item.get("external_ids") or {}
+        keys = []
+        if external_ids.get("imdb_id"):
+            keys.append(("imdb", external_ids["imdb_id"]))
+        if external_ids.get("tvdb_id"):
+            keys.append(("tvdb", external_ids["tvdb_id"]))
+        normalized = normalize_title(item.get("title") or "")
+        if normalized:
+            keys.append(("title", normalized))
+        for key in keys:
+            if key in key_to_index:
+                union(index, key_to_index[key])
+            else:
+                key_to_index[key] = index
+
+    groups = {}
+    for index, item in enumerate(items):
+        groups.setdefault(find(index), []).append(item)
+
+    kept = []
+    for group in groups.values():
+        kept.append(
+            max(
+                group,
+                key=lambda item: (
+                    float(item.get("popularity") or 0),
+                    1 if item.get("title") and item.get("title") != item.get("original_name") else 0,
+                    item["tmdb_id"],
+                ),
+            )
+        )
+    return kept
+
+def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 500, redirects: dict | None = None) -> list[dict]:
+    """联合 TMDB、Bangumi、AniList，统一为 TMDB ID，按今年内最新季首播时间倒序输出。
+
+    覆盖两类条目：今年首播的新番（TMDB Discover 按剧集首播日期窗口抓取），
+    以及挂在老剧集条目下的今年续作季（由 Bangumi/AniList 提供，映射回 TMDB
+    后取最新已开播季的首播日期参与排序）。只保留今年窗口内确实已开播的条目。
+    """
+    year_start = f"{now.year}-01-01"
+    today = now.strftime("%Y-%m-%d")
+
+    tmdb_items = fetch_tmdb_japanese_anime(headers, now, 400)
     merged = {item["tmdb_id"]: item for item in tmdb_items}
     known_titles = {
         normalize_title(title)
@@ -528,24 +641,23 @@ def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 100) -> list
         if title
     }
 
-    bgm_items = fetch_bangumi_anime(now, 100)
-    anilist_items = fetch_anilist_anime(now, 100)
+    bgm_items = fetch_bangumi_anime(now, 400)
+    anilist_items = fetch_anilist_anime(now, 400)
     external_items = bgm_items + anilist_items
     external_items.sort(key=lambda item: item["first_air_date"], reverse=True)
 
     unresolved = []
-    seen_external_titles = set()
+    seen_alias_pool = set()
     for item in external_items:
         aliases = {normalize_title(value) for value in item.get("search_titles", []) if value}
         if aliases & known_titles:
             continue
-        signature = tuple(sorted(aliases))
-        if not aliases or signature in seen_external_titles:
+        # 与已见过的任一别名重叠即视为同一部番（Bangumi/AniList 对同一部番
+        # 的标题集合通常部分重叠），避免跨源重复解析。
+        if not aliases or aliases & seen_alias_pool:
             continue
-        seen_external_titles.add(signature)
+        seen_alias_pool |= aliases
         unresolved.append(item)
-        if len(unresolved) >= 60:
-            break
 
     def safe_resolve(item: dict) -> dict | None:
         try:
@@ -561,13 +673,41 @@ def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 100) -> list
         if not resolved or resolved["tmdb_id"] in merged:
             continue
         merged[resolved["tmdb_id"]] = resolved
-        known_titles.add(normalize_title(resolved["title"]))
 
+    merged = apply_redirects(merged, redirects or {})
+
+    def enrich(item: dict) -> dict | None:
+        try:
+            detail = item.get("_detail") or fetch_tv_detail(item["tmdb_id"], headers)
+        except Exception as exc:
+            print(f"警告：获取 TMDB 详情失败，跳过 TMDB {item['tmdb_id']}：{exc}")
+            return None
+        sort_date = season_premiere_in_window(detail, year_start, today)
+        if not sort_date:
+            return None
+        title = detail.get("name") or item["title"]
+        return {
+            "tmdb_id": item["tmdb_id"],
+            "tmdb_type": "tv",
+            "title": title,
+            "first_air_date": detail.get("first_air_date") or item.get("first_air_date") or "",
+            "poster_path": detail.get("poster_path") or item.get("poster_path"),
+            "sort_date": sort_date,
+            "popularity": float(detail.get("popularity") or 0),
+            "original_name": detail.get("original_name") or title,
+            "external_ids": detail.get("external_ids") or {},
+        }
+
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        enriched = [item for item in executor.map(enrich, merged.values()) if item]
+
+    candidates = dedupe_candidates(enriched)
     print(
         f"日番三源候选：TMDB {len(tmdb_items)} 部、Bangumi {len(bgm_items)} 部、"
-        f"AniList {len(anilist_items)} 部；统一 TMDB ID 后 {len(merged)} 部。"
+        f"AniList {len(anilist_items)} 部；统一 TMDB ID 后 {len(merged)} 部，"
+        f"今年窗口内 {len(enriched)} 部，去重后 {len(candidates)} 部。"
     )
-    return sorted(merged.values(), key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)[:limit]
+    return sorted(candidates, key=lambda item: (item["sort_date"], item["tmdb_id"]), reverse=True)[:limit]
 
 def previous_month_start(today) -> str:
     first_day = today.replace(day=1)
@@ -1433,7 +1573,12 @@ def main():
     base = config["site_base_url"].rstrip("/")
     headers = tmdb_headers()
 
-    japan_items = fetch_japanese_anime(headers, now, limit=100)
+    japan_redirects = {
+        str(source_id): int(target_id)
+        for source_id, target_id in (manual.get("tmdb_redirects") or {}).items()
+        if str(source_id).strip() and str(target_id).strip()
+    }
+    japan_items = fetch_japanese_anime(headers, now, limit=500, redirects=japan_redirects)
     japan_cover_candidates = [item for item in japan_items if item.get("poster_path")]
     if len(japan_cover_candidates) < 3:
         raise RuntimeError(f"TMDB 当前日番海报不足 3 张，当前仅有 {len(japan_cover_candidates)} 张")
