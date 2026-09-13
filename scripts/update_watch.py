@@ -480,71 +480,132 @@ def fetch_anilist_anime(now: datetime, limit: int = 100) -> list[dict]:
         return []
     return sorted(items, key=lambda item: item["first_air_date"], reverse=True)[:limit]
 
-def resolve_external_tv_to_tmdb(item: dict, headers: dict) -> dict | None:
+SEASON_MARK_RE = re.compile(
+    r"第\s*[0-9一二三四五六七八九十]+\s*[季期]"
+    r"|[\s：:・~～\-]?[Ⅰ-Ⅴ]+\s*$"
+    r"|[\s：:・~～\-]?(?:II|III|IV)\s*$"
+    r"|[0-9]+\s*(?:nd|rd|th)\s*season"
+    r"|season\s*[0-9]+",
+    re.I,
+)
+
+def strip_season_markers(title: str) -> str:
+    """去掉标题里的季数后缀，生成备用搜索词（如 無職転生Ⅲ -> 無職転生）。"""
+    stripped = SEASON_MARK_RE.sub(" ", title)
+    return re.sub(r"\s{2,}", " ", stripped).strip(" -~～：:・")
+
+def title_matches(query_title: str, result: dict) -> bool:
+    source_title = normalize_title(query_title)
+    candidate_titles = {
+        normalize_title(value)
+        for value in (result.get("name"), result.get("original_name"))
+        if value
+    }
+    return any(
+        source_title == candidate
+        or (len(source_title) >= 5 and source_title in candidate)
+        or (len(candidate) >= 5 and candidate in source_title)
+        for candidate in candidate_titles
+    )
+
+def resolve_external_tv_to_tmdb(item: dict, headers: dict, year_start: str, today: str) -> dict | None:
+    """把 Bangumi/AniList 条目映射到 TMDB 剧集。
+
+    每个搜索词先按外部源年份精确搜、搜不到再放开年份，并附带剥掉季数后缀的
+    变体；对标题匹配的前几个候选逐一查详情，返回第一个满足“日本动画且今年
+    窗口内有播出”的条目——避免人气最高但内容停留在往年的老条目，挡住今年
+    有新内容的正确条目（续作季或被并入 Season 1 的后续集数）。
+    """
     year = int(item["first_air_date"][:4])
-    subject = {"title": item["title"], "year": year, "tmdb_type": "tv"}
+    queries = []
+    seen_queries = set()
     for title in dict.fromkeys(value for value in item.get("search_titles", []) if value):
-        result = None
-        # 先按外部源年份精确搜索；搜不到再放开年份重试，以便命中
-        # “续作季挂在老剧集条目下”的情况（如 2026 年的芙莉莲 S2 挂在 2023 年条目）。
+        for query in (title, strip_season_markers(title)):
+            # 不能用 normalize_title 做去重键：它本身会剥掉“第X季”，
+            # 会把原始标题和剥后变体误判成同一个词。
+            key = query.strip().lower()
+            if key and key not in seen_queries:
+                seen_queries.add(key)
+                queries.append(query)
+
+    detailed: dict[int, dict] = {}
+    fallback = None
+    for query in queries:
+        source_title = normalize_title(query)
         for year_filter in (year, None):
             params = {
-                "query": title,
+                "query": query,
                 "language": "zh-CN",
                 "include_adult": "false",
                 "page": 1,
             }
             if year_filter:
                 params["first_air_date_year"] = year_filter
-            found = choose_tmdb_result(
-                {**subject, "title": title},
-                get_json(f"{TMDB_API_BASE}/search/tv", params=params, headers=headers).get("results", []),
-            )
-            if found:
-                result = found
+            results = get_json(f"{TMDB_API_BASE}/search/tv", params=params, headers=headers).get("results", [])
+            candidates = [result for result in results if title_matches(query, result)]
+
+            def rank(result: dict) -> tuple:
+                points = 0
+                for value in (result.get("name"), result.get("original_name")):
+                    candidate = normalize_title(value or "")
+                    if not candidate:
+                        continue
+                    if source_title == candidate:
+                        points = max(points, 100)
+                    elif (len(source_title) >= 5 and source_title in candidate) or (
+                        len(candidate) >= 5 and candidate in source_title
+                    ):
+                        points = max(points, 45)
+                if (result.get("first_air_date") or "")[:4] == str(year):
+                    points += 35
+                return points, float(result.get("popularity") or 0)
+
+            candidates.sort(key=rank, reverse=True)
+            for result in candidates[:3]:
+                tmdb_id = int(result["id"])
+                data = detailed.get(tmdb_id) or get_json(
+                    f"{TMDB_API_BASE}/tv/{tmdb_id}",
+                    params={"language": "zh-CN", "append_to_response": "external_ids"},
+                    headers=headers,
+                )
+                detailed[tmdb_id] = data
+                if "JP" not in (data.get("origin_country") or []) and data.get("original_language") != "ja":
+                    continue
+                if not season_premiere_in_window(data, year_start, today):
+                    if fallback is None:
+                        fallback = (tmdb_id, data.get("name"))
+                    continue
+                return {
+                    "tmdb_id": tmdb_id,
+                    "tmdb_type": "tv",
+                    "title": data.get("name") or item["title"],
+                    "first_air_date": data.get("first_air_date") or item["first_air_date"],
+                    "poster_path": data.get("poster_path"),
+                    "_detail": data,
+                }
+            if len(detailed) >= 8:
                 break
-        if not result:
-            continue
-        source_title = normalize_title(title)
-        candidate_titles = {
-            normalize_title(value)
-            for value in (result.get("name"), result.get("original_name"))
-            if value
-        }
-        if not any(
-            source_title == candidate
-            or (len(source_title) >= 5 and source_title in candidate)
-            or (len(candidate) >= 5 and candidate in source_title)
-            for candidate in candidate_titles
-        ):
-            continue
-        data = get_json(
-            f"{TMDB_API_BASE}/tv/{result['id']}",
-            params={"language": "zh-CN", "append_to_response": "external_ids"},
-            headers=headers,
+    if fallback is not None:
+        print(
+            f"日番映射提示：[{item.get('source')}] {item.get('title')} 命中 TMDB {fallback[0]}"
+            f"（{fallback[1]}），但今年窗口内无播出记录，跳过。"
         )
-        if "JP" not in (data.get("origin_country") or []) and data.get("original_language") != "ja":
-            continue
-        return {
-            "tmdb_id": int(data["id"]),
-            "tmdb_type": "tv",
-            "title": data.get("name") or item["title"],
-            "first_air_date": data.get("first_air_date") or item["first_air_date"],
-            "poster_path": data.get("poster_path"),
-            "_detail": data,
-        }
     return None
 
 def season_premiere_in_window(detail: dict, year_start: str, today: str) -> str | None:
-    """取该剧集今年内已开播的最新一季首播日期；没有则返回 None。
+    """取该剧集今年内最新一次“开播”日期；今年没有任何播出记录则返回 None。
 
-    续作季挂在老剧集条目下（如 2026 年的芙莉莲 S2 挂在 2023 年条目），
-    剧集级 first_air_date 说明不了今年有新内容，必须按季首播日期判断；
-    同时它天然过滤掉日期在未来、尚未开播的条目。
+    续作季挂在老剧集条目下、甚至新集数被并入 Season 1（如芙莉莲 2026 年的
+    集数记在 2023 年条目的 S1 里），剧集级 first_air_date 都说明不了今年有
+    新内容，因此同时参考各季首播日期与最近一集播出日期；窗口上限同时过滤掉
+    日期在未来、尚未开播的条目。
     """
     dates = [season.get("air_date") for season in detail.get("seasons") or []]
     if detail.get("first_air_date"):
         dates.append(detail["first_air_date"])
+    last_episode = detail.get("last_episode_to_air") or {}
+    if last_episode.get("air_date"):
+        dates.append(last_episode["air_date"])
     in_window = sorted(date for date in dates if date and year_start <= date <= today)
     return in_window[-1] if in_window else None
 
@@ -661,13 +722,19 @@ def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 500, redirec
 
     def safe_resolve(item: dict) -> dict | None:
         try:
-            return resolve_external_tv_to_tmdb(item, headers)
+            return resolve_external_tv_to_tmdb(item, headers, year_start, today)
         except Exception as exc:
             print(f"警告：{item.get('source')} 条目映射 TMDB 失败：{item.get('title')}：{exc}")
             return None
 
     with ThreadPoolExecutor(max_workers=6) as executor:
         resolved_items = list(executor.map(safe_resolve, unresolved))
+
+    failed_resolves = sum(1 for resolved in resolved_items if not resolved)
+    for item, resolved in zip(unresolved, resolved_items):
+        if not resolved:
+            print(f"日番映射失败：[{item.get('source')}] {item.get('first_air_date')} {item.get('title')}")
+    print(f"日番外部源映射：尝试 {len(unresolved)} 条，成功 {len(unresolved) - failed_resolves} 条，失败 {failed_resolves} 条。")
 
     for resolved in resolved_items:
         if not resolved or resolved["tmdb_id"] in merged:
