@@ -1,12 +1,12 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-09-14 23:15:27",
+  "updated_at": "2026-09-15 09:55:43",
   "videos": [
     {
-      "tmdb_id": 333888,
+      "tmdb_id": 331831,
       "tmdb_type": "tv",
-      "title": "博物馆夜行指“楠”",
+      "title": "加油！汪汪",
       "sort": 1
     },
     {
@@ -22,63 +22,63 @@
       "sort": 3
     },
     {
+      "tmdb_id": 333888,
+      "tmdb_type": "tv",
+      "title": "博物馆夜行指“楠”",
+      "sort": 4
+    },
+    {
       "tmdb_id": 333124,
       "tmdb_type": "tv",
       "title": "娜就聊姐姐",
-      "sort": 4
+      "sort": 5
     },
     {
       "tmdb_id": 126490,
       "tmdb_type": "tv",
       "title": "我家那闺女",
-      "sort": 5
+      "sort": 6
     },
     {
       "tmdb_id": 333585,
       "tmdb_type": "tv",
       "title": "2026青春芒果夜",
-      "sort": 6
+      "sort": 7
     },
     {
       "tmdb_id": 335129,
       "tmdb_type": "tv",
       "title": "2026 JUMP PARK互动舞台",
-      "sort": 7
+      "sort": 8
     },
     {
       "tmdb_id": 330048,
       "tmdb_type": "tv",
       "title": "心动就住在一起",
-      "sort": 8
+      "sort": 9
     },
     {
       "tmdb_id": 131040,
       "tmdb_type": "tv",
       "title": "披荆斩棘",
-      "sort": 9
+      "sort": 10
     },
     {
       "tmdb_id": 322674,
       "tmdb_type": "tv",
       "title": "OK了老铁们",
-      "sort": 10
+      "sort": 11
     },
     {
       "tmdb_id": 331649,
       "tmdb_type": "tv",
       "title": "大哥小助理",
-      "sort": 11
+      "sort": 12
     },
     {
       "tmdb_id": 331569,
       "tmdb_type": "tv",
       "title": "不想睡的星期五",
-      "sort": 12
-    },
-    {
-      "tmdb_id": 331831,
-      "tmdb_type": "tv",
-      "title": "加油！汪汪",
       "sort": 13
     },
     {
@@ -292,15 +292,15 @@
       "sort": 48
     },
     {
-      "tmdb_id": 251718,
-      "tmdb_type": "tv",
-      "title": "这是我的西游",
-      "sort": 49
-    },
-    {
       "tmdb_id": 203003,
       "tmdb_type": "tv",
       "title": "开始推理吧",
+      "sort": 49
+    },
+    {
+      "tmdb_id": 322722,
+      "tmdb_type": "tv",
+      "title": "国乐无双",
       "sort": 50
     }
   ]
