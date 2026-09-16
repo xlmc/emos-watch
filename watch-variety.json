@@ -1,7 +1,7 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-09-16 09:45:25",
+  "updated_at": "2026-09-16 21:44:51",
   "videos": [
     {
       "tmdb_id": 331686,
@@ -190,15 +190,15 @@
       "sort": 31
     },
     {
-      "tmdb_id": 103863,
-      "tmdb_type": "tv",
-      "title": "中国新说唱",
-      "sort": 32
-    },
-    {
       "tmdb_id": 326694,
       "tmdb_type": "tv",
       "title": "说唱巅峰对决2026",
+      "sort": 32
+    },
+    {
+      "tmdb_id": 103863,
+      "tmdb_type": "tv",
+      "title": "中国新说唱",
       "sort": 33
     },
     {
