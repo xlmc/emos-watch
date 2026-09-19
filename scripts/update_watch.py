@@ -571,7 +571,7 @@ def resolve_external_tv_to_tmdb(item: dict, headers: dict, year_start: str, toda
                 detailed[tmdb_id] = data
                 if "JP" not in (data.get("origin_country") or []) and data.get("original_language") != "ja":
                     continue
-                if not season_premiere_in_window(data, year_start, today):
+                if not anime_activity_date_in_window(data, year_start, today):
                     if fallback is None:
                         fallback = (tmdb_id, data.get("name"))
                     continue
@@ -580,6 +580,7 @@ def resolve_external_tv_to_tmdb(item: dict, headers: dict, year_start: str, toda
                     "tmdb_type": "tv",
                     "title": data.get("name") or item["title"],
                     "first_air_date": data.get("first_air_date") or item["first_air_date"],
+                    "season_premiere_date": item["first_air_date"],
                     "poster_path": data.get("poster_path"),
                     "_detail": data,
                 }
@@ -592,14 +593,9 @@ def resolve_external_tv_to_tmdb(item: dict, headers: dict, year_start: str, toda
         )
     return None
 
-def season_premiere_in_window(detail: dict, year_start: str, today: str) -> str | None:
-    """取该剧集今年内最新一次“开播”日期；今年没有任何播出记录则返回 None。
+def anime_activity_date_in_window(detail: dict, year_start: str, today: str) -> str | None:
+    """取该剧集今年内最新的播出活动日期，用于判断是否确实有今年内容。"""
 
-    续作季挂在老剧集条目下、甚至新集数被并入 Season 1（如芙莉莲 2026 年的
-    集数记在 2023 年条目的 S1 里），剧集级 first_air_date 都说明不了今年有
-    新内容，因此同时参考各季首播日期与最近一集播出日期；窗口上限同时过滤掉
-    日期在未来、尚未开播的条目。
-    """
     dates = [season.get("air_date") for season in detail.get("seasons") or []]
     if detail.get("first_air_date"):
         dates.append(detail["first_air_date"])
@@ -608,6 +604,27 @@ def season_premiere_in_window(detail: dict, year_start: str, today: str) -> str 
         dates.append(last_episode["air_date"])
     in_window = sorted(date for date in dates if date and year_start <= date <= today)
     return in_window[-1] if in_window else None
+
+def latest_season_premiere_in_window(detail: dict, year_start: str, today: str) -> str | None:
+    """取今年已开播的最新普通季首播日期，不能被后续单集更新日期替代。
+
+    续作季挂在老剧集条目下、甚至新集数被并入 Season 1（如芙莉莲 2026 年的
+    集数记在 2023 年条目的 S1 里）时，由 Bangumi/AniList 提供的季度首播日期
+    作为外部映射条目的备用排序日期。
+    """
+    dates = []
+    for season in detail.get("seasons") or []:
+        try:
+            season_number = int(season.get("season_number") or 0)
+        except (TypeError, ValueError):
+            season_number = 0
+        air_date = season.get("air_date") or ""
+        if season_number > 0 and year_start <= air_date <= today:
+            dates.append(air_date)
+    first_air_date = detail.get("first_air_date") or ""
+    if not dates and year_start <= first_air_date <= today:
+        dates.append(first_air_date)
+    return max(dates) if dates else None
 
 def fetch_tv_detail(tmdb_id: int, headers: dict) -> dict:
     return get_json(
@@ -749,7 +766,11 @@ def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 500, redirec
         except Exception as exc:
             print(f"警告：获取 TMDB 详情失败，跳过 TMDB {item['tmdb_id']}：{exc}")
             return None
-        sort_date = season_premiere_in_window(detail, year_start, today)
+        sort_date = latest_season_premiere_in_window(detail, year_start, today)
+        if not sort_date:
+            external_premiere = item.get("season_premiere_date") or ""
+            if year_start <= external_premiere <= today:
+                sort_date = external_premiere
         if not sort_date:
             return None
         title = detail.get("name") or item["title"]
