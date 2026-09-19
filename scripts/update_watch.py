@@ -1235,6 +1235,7 @@ KAMEN_RIDER_SERIES = (
     (2023, "Kamen Rider Gotchard", "仮面ライダーガッチャード", "假面骑士歌查德"),
     (2024, "Kamen Rider Gavv", "仮面ライダーガヴ", "假面骑士加布"),
     (2025, "Kamen Rider Zeztz", "Kamen Rider ZEZTZ", "仮面ライダーゼッツ"),
+    (2026, "Kamen Rider My-TH", "Kamen Rider MY-TH", "仮面ライダーマイス", "假面骑士麦斯"),
 )
 
 SUPER_SENTAI_SERIES = (
