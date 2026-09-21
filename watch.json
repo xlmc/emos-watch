@@ -1,78 +1,78 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-09-20 21:13:37",
+  "updated_at": "2026-09-21 09:44:17",
   "videos": [
     {
-      "tmdb_id": 126490,
+      "tmdb_id": 333888,
       "tmdb_type": "tv",
-      "title": "我家那闺女",
+      "title": "博物馆夜行指“楠”",
       "sort": 1
     },
     {
-      "tmdb_id": 131040,
+      "tmdb_id": 103147,
       "tmdb_type": "tv",
-      "title": "披荆斩棘",
+      "title": "心动的信号",
       "sort": 2
-    },
-    {
-      "tmdb_id": 330052,
-      "tmdb_type": "tv",
-      "title": "家乡美食大赛",
-      "sort": 3
     },
     {
       "tmdb_id": 87150,
       "tmdb_type": "tv",
       "title": "梦想改造家",
-      "sort": 4
+      "sort": 3
     },
     {
       "tmdb_id": 332321,
       "tmdb_type": "tv",
       "title": "XY计划",
-      "sort": 5
+      "sort": 4
     },
     {
       "tmdb_id": 296785,
       "tmdb_type": "tv",
       "title": "打歌",
-      "sort": 6
+      "sort": 5
     },
     {
       "tmdb_id": 121876,
       "tmdb_type": "tv",
       "title": "花儿与少年",
-      "sort": 7
-    },
-    {
-      "tmdb_id": 333888,
-      "tmdb_type": "tv",
-      "title": "博物馆夜行指“楠”",
-      "sort": 8
+      "sort": 6
     },
     {
       "tmdb_id": 333124,
       "tmdb_type": "tv",
       "title": "娜就聊姐姐",
-      "sort": 9
+      "sort": 7
+    },
+    {
+      "tmdb_id": 126490,
+      "tmdb_type": "tv",
+      "title": "我家那闺女",
+      "sort": 8
     },
     {
       "tmdb_id": 333585,
       "tmdb_type": "tv",
       "title": "2026青春芒果夜",
-      "sort": 10
+      "sort": 9
     },
     {
       "tmdb_id": 335129,
       "tmdb_type": "tv",
       "title": "2026 JUMP PARK互动舞台",
-      "sort": 11
+      "sort": 10
     },
     {
       "tmdb_id": 330048,
       "tmdb_type": "tv",
       "title": "心动就住在一起",
+      "sort": 11
+    },
+    {
+      "tmdb_id": 131040,
+      "tmdb_type": "tv",
+      "title": "披荆斩棘",
       "sort": 12
     },
     {
@@ -130,15 +130,15 @@
       "sort": 21
     },
     {
-      "tmdb_id": 103147,
-      "tmdb_type": "tv",
-      "title": "心动的信号",
-      "sort": 22
-    },
-    {
       "tmdb_id": 296217,
       "tmdb_type": "tv",
       "title": "一饭封神",
+      "sort": 22
+    },
+    {
+      "tmdb_id": 330052,
+      "tmdb_type": "tv",
+      "title": "家乡美食大赛",
       "sort": 23
     },
     {
