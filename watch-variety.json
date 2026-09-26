@@ -1,7 +1,7 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-09-26 10:03:24",
+  "updated_at": "2026-09-26 21:23:31",
   "videos": [
     {
       "tmdb_id": 332321,
@@ -286,21 +286,21 @@
       "sort": 47
     },
     {
+      "tmdb_id": 272272,
+      "tmdb_type": "tv",
+      "title": "J Music",
+      "sort": 48
+    },
+    {
       "tmdb_id": 119171,
       "tmdb_type": "tv",
       "title": "爱情保卫战",
-      "sort": 48
+      "sort": 49
     },
     {
       "tmdb_id": 223348,
       "tmdb_type": "tv",
       "title": "开讲啦",
-      "sort": 49
-    },
-    {
-      "tmdb_id": 199332,
-      "tmdb_type": "tv",
-      "title": "非你莫属",
       "sort": 50
     }
   ]
