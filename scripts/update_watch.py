@@ -427,11 +427,13 @@ query ($page: Int, $perPage: Int, $from: FuzzyDateInt, $until: FuzzyDateInt) {
       countryOfOrigin: JP,
       startDate_greater: $from,
       startDate_lesser: $until,
-      format_in: [TV, TV_SHORT, ONA],
+      format_in: [TV, ONA],
       isAdult: false,
       sort: START_DATE_DESC
     ) {
       id
+      format
+      duration
       title { romaji english native }
       startDate { year month day }
     }
@@ -440,7 +442,7 @@ query ($page: Int, $perPage: Int, $from: FuzzyDateInt, $until: FuzzyDateInt) {
 """
 
 def fetch_anilist_anime(now: datetime, limit: int = 100) -> list[dict]:
-    """从 AniList 获取今年日本 TV/短番/ONA，日期稍后与其他源合并。"""
+    """从 AniList 获取今年非短片日本 TV/ONA，详情阶段再核对 TMDB 资料。"""
     items = []
     try:
         for page_number in range(1, (limit + 49) // 50 + 1):
@@ -461,6 +463,10 @@ def fetch_anilist_anime(now: datetime, limit: int = 100) -> list[dict]:
                 raise RuntimeError(payload["errors"])
             page = payload.get("data", {}).get("Page", {})
             for item in page.get("media", []):
+                if item.get("format") not in {"TV", "ONA"}:
+                    continue
+                if positive_int(item.get("duration")) < JAPAN_ANIME_MIN_RUNTIME:
+                    continue
                 date = item.get("startDate") or {}
                 if not date.get("year") or not date.get("month") or not date.get("day"):
                     continue
@@ -488,6 +494,47 @@ SEASON_MARK_RE = re.compile(
     r"|season\s*[0-9]+",
     re.I,
 )
+
+JAPAN_ANIME_MIN_RUNTIME = 15
+
+def positive_int(value) -> int:
+    try:
+        return max(0, int(value or 0))
+    except (TypeError, ValueError, OverflowError):
+        return 0
+
+def japanese_anime_rejection_reason(detail: dict, today: str) -> str | None:
+    """所有来源共用的最终门槛；未知资料不能被其他来源的日期或标题补过。"""
+    if "JP" not in (detail.get("origin_country") or []) and detail.get("original_language") != "ja":
+        return "非日本作品"
+    if not any(positive_int(genre.get("id")) == 16 for genre in detail.get("genres") or []):
+        return "缺少动画类型"
+    if not str(detail.get("name") or "").strip():
+        return "缺少标题"
+    if not str(detail.get("overview") or "").strip():
+        return "缺少简介"
+    if not detail.get("poster_path"):
+        return "缺少海报"
+    first_air_date = detail.get("first_air_date") or ""
+    if not parse_iso_date(first_air_date) or first_air_date > today:
+        return "首播日期缺失或尚未开播"
+    regular_seasons = [
+        season for season in detail.get("seasons") or []
+        if positive_int(season.get("season_number")) > 0
+        and positive_int(season.get("episode_count")) > 0
+        and parse_iso_date(season.get("air_date"))
+        and season["air_date"] <= today
+    ]
+    if not regular_seasons:
+        return "缺少已开播普通季及集数资料"
+    runtimes = [positive_int(value) for value in detail.get("episode_run_time") or []]
+    runtimes.append(positive_int((detail.get("last_episode_to_air") or {}).get("runtime")))
+    runtime = max(runtimes, default=0)
+    if not runtime:
+        return "缺少单集时长"
+    if runtime < JAPAN_ANIME_MIN_RUNTIME:
+        return f"短片（单集 {runtime} 分钟）"
+    return None
 
 def strip_season_markers(title: str) -> str:
     """去掉标题里的季数后缀，生成备用搜索词（如 無職転生Ⅲ -> 無職転生）。"""
@@ -569,6 +616,8 @@ def resolve_external_tv_to_tmdb(item: dict, headers: dict, year_start: str, toda
                     headers=headers,
                 )
                 detailed[tmdb_id] = data
+                if japanese_anime_rejection_reason(data, today):
+                    continue
                 if "JP" not in (data.get("origin_country") or []) and data.get("original_language") != "ja":
                     continue
                 if not anime_activity_date_in_window(data, year_start, today):
@@ -765,6 +814,10 @@ def fetch_japanese_anime(headers: dict, now: datetime, limit: int = 500, redirec
             detail = item.get("_detail") or fetch_tv_detail(item["tmdb_id"], headers)
         except Exception as exc:
             print(f"警告：获取 TMDB 详情失败，跳过 TMDB {item['tmdb_id']}：{exc}")
+            return None
+        rejection = japanese_anime_rejection_reason(detail, today)
+        if rejection:
+            print(f"日番剔除：TMDB {item['tmdb_id']} {detail.get('name') or item.get('title')}：{rejection}")
             return None
         sort_date = latest_season_premiere_in_window(detail, year_start, today)
         if not sort_date:

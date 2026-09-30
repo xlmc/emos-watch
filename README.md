@@ -133,5 +133,7 @@ https://watch.zzzj.de5.net/watch-japan.json
 
 ## 数据源说明
 
+日番统一在 TMDB 详情阶段检查日本来源、动画类型、标题、简介、海报、有效首播日期、已开播普通季和正集数。要求已知单集时长至少 15 分钟（使用 `episode_run_time` 或已播集的 `runtime`）；短片和关键资料缺失的条目暂不收录，AniList 也不再采集 `TV_SHORT`。这里只验证片单元数据资格，不能保证播放器中有对应播放资源。排序仍按今年最新普通季的首播日期由新到旧。
+
 综艺片单使用 TMDB Discover TV、详情、季和分集接口，筛选中国大陆综艺并按正片日期排序。日番片单订阅 TMDB Discover TV、Bangumi Subject Search 和 AniList GraphQL Media；筛选本年度已经上线的日本动画（含今年开播的续作季，取剧集在 TMDB 上最新已开播季的首播日期），按 IMDb/TVDB ID、标题去重并映射为 TMDB TV ID 后，严格按最新普通季首播日期从新到旧输出，上限 500 部。最近一集日期仅用于确认今年确实有播出内容，不参与排序。假面骑士和超级战队使用固定的正剧系列白名单从 TMDB Search TV 查询，不录入电影、特别篇、剧场版或衍生作品。
 
