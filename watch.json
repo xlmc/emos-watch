@@ -1,7 +1,7 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-10-03 21:55:57",
+  "updated_at": "2026-10-03 23:32:26",
   "videos": [
     {
       "tmdb_id": 332321,
@@ -268,34 +268,40 @@
       "sort": 44
     },
     {
+      "tmdb_id": 201781,
+      "tmdb_type": "tv",
+      "title": "爸爸当家",
+      "sort": 45
+    },
+    {
       "tmdb_id": 326900,
       "tmdb_type": "tv",
       "title": "自然光",
-      "sort": 45
+      "sort": 46
     },
     {
       "tmdb_id": 219934,
       "tmdb_type": "tv",
       "title": "种地吧",
-      "sort": 46
+      "sort": 47
+    },
+    {
+      "tmdb_id": 272272,
+      "tmdb_type": "tv",
+      "title": "J Music",
+      "sort": 48
     },
     {
       "tmdb_id": 119171,
       "tmdb_type": "tv",
       "title": "爱情保卫战",
-      "sort": 47
-    },
-    {
-      "tmdb_id": 199332,
-      "tmdb_type": "tv",
-      "title": "非你莫属",
-      "sort": 48
-    },
-    {
-      "tmdb_id": 201453,
-      "tmdb_type": "tv",
-      "title": "甜蜜的任务",
       "sort": 49
+    },
+    {
+      "tmdb_id": 223348,
+      "tmdb_type": "tv",
+      "title": "开讲啦",
+      "sort": 50
     }
   ]
 }
