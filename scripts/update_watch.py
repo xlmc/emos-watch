@@ -27,6 +27,10 @@ VARIETY_SELECTION_PATH = DATA_DIR / "cover-variety-selection.json"
 JAPAN_SELECTION_PATH = DATA_DIR / "cover-japan-selection.json"
 KAMEN_SELECTION_PATH = DATA_DIR / "cover-kamen-rider-selection.json"
 SENTAI_SELECTION_PATH = DATA_DIR / "cover-super-sentai-selection.json"
+SHORT_DRAMA_CATALOG_PATH = ROOT / "short-drama-catalog.json"
+SHORT_DRAMA_SELECTION_PATH = DATA_DIR / "cover-short-drama-selection.json"
+SHORT_DRAMA_WATCH_PATH = ROOT / "watch-short-drama.json"
+SHORT_DRAMA_COVER_PATH = ROOT / "cover-short-drama.gif"
 WATCH_PATH = ROOT / "watch.json"
 VARIETY_WATCH_PATH = ROOT / "watch-variety.json"
 JAPAN_WATCH_PATH = ROOT / "watch-japan.json"
@@ -1456,6 +1460,74 @@ def fetch_franchise_series(entries: tuple[tuple, ...], headers: dict, now: datet
     resolved.sort(key=lambda item: (item["first_air_date"], item["tmdb_id"]), reverse=True)
     return resolved
 
+def short_drama_rejection_reason(detail: dict, entry: dict, today: str) -> str | None:
+    """横屏身份由带平台来源的精选名单确认，TMDB 核对作品身份和资料。"""
+    if entry.get("format") != "landscape" or not str(entry.get("source_url") or "").startswith("https://"):
+        return "缺少横屏确认和平台来源"
+    aliases = {normalize_title(value) for value in [entry.get("title"), *(entry.get("aliases") or [])] if value}
+    names = {normalize_title(value) for value in (detail.get("name"), detail.get("original_name")) if value}
+    if not aliases.intersection(names):
+        return "作品标题不匹配"
+    first_air_date = detail.get("first_air_date") or ""
+    if not parse_iso_date(first_air_date) or first_air_date > today or first_air_date[:4] != str(entry.get("year")):
+        return "首播年份不符或尚未开播"
+    if "CN" not in (detail.get("origin_country") or []) or detail.get("original_language") not in {"zh", "cn"}:
+        return "非大陆中文剧集"
+    genres = {positive_int(genre.get("id")) for genre in detail.get("genres") or []}
+    if not genres or genres.intersection({16, 99, 10764, 10763, 10767, 10762}):
+        return "非真人剧情剧集"
+    if not str(detail.get("overview") or "").strip() or not detail.get("poster_path"):
+        return "简介或海报缺失"
+    seasons = [season for season in detail.get("seasons") or [] if positive_int(season.get("season_number")) > 0 and positive_int(season.get("episode_count")) > 0 and parse_iso_date(season.get("air_date")) and season["air_date"] <= today]
+    if not seasons or positive_int(detail.get("number_of_episodes")) < 2:
+        return "缺少普通季及正片集数"
+    runtimes = [positive_int(value) for value in detail.get("episode_run_time") or []]
+    runtimes.append(positive_int((detail.get("last_episode_to_air") or {}).get("runtime")))
+    runtime = max(runtimes, default=0)
+    if not 5 <= runtime <= 35:
+        return "时长未知或不符合横屏短剧范围（5至35分钟）"
+    return None
+
+def fetch_curated_short_dramas(headers: dict, now: datetime, catalog: list[dict], limit: int = 50) -> list[dict]:
+    """逐个精确匹配平台精选短剧，按 TMDB 热度排序；不把热度当作平台榜单。"""
+    today = now.strftime("%Y-%m-%d")
+
+    def resolve(entry: dict) -> dict | None:
+        if entry.get("format") != "landscape" or not entry.get("source_url"):
+            print(f"短剧跳过：{entry.get('title')}：缺少横屏和来源确认")
+            return None
+        queries = list(dict.fromkeys([entry["title"], *(entry.get("aliases") or [])]))
+        seen = set()
+        for query in queries:
+            payload = get_json(f"{TMDB_API_BASE}/search/tv", params={"query": query, "language": "zh-CN", "first_air_date_year": entry["year"], "include_adult": "false", "page": 1}, headers=headers)
+            for result in payload.get("results") or []:
+                tmdb_id = positive_int(result.get("id"))
+                if not tmdb_id or tmdb_id in seen:
+                    continue
+                seen.add(tmdb_id)
+                aliases = {normalize_title(value) for value in queries}
+                names = {normalize_title(value) for value in (result.get("name"), result.get("original_name")) if value}
+                if not aliases.intersection(names):
+                    continue
+                detail = fetch_tv_detail(tmdb_id, headers)
+                reason = short_drama_rejection_reason(detail, entry, today)
+                if reason:
+                    print(f"短剧跳过：TMDB {tmdb_id} {entry['title']}：{reason}")
+                    continue
+                return {
+                    "tmdb_id": tmdb_id, "tmdb_type": "tv", "title": detail.get("name") or entry["title"],
+                    "first_air_date": detail["first_air_date"], "poster_path": detail["poster_path"],
+                    "popularity": float(detail.get("popularity") or 0), "vote_count": positive_int(detail.get("vote_count")),
+                    "vote_average": float(detail.get("vote_average") or 0),
+                }
+        print(f"短剧未入选：{entry['title']}：没有匹配到资料完整的 TMDB 正剧")
+        return None
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        resolved = [item for item in executor.map(resolve, catalog) if item]
+    deduped = {item["tmdb_id"]: item for item in resolved}
+    return sorted(deduped.values(), key=lambda item: (item["popularity"], item["vote_count"], item["vote_average"], item["first_air_date"], item["tmdb_id"]), reverse=True)[:limit]
+
 def write_franchise_feed(
     items: list[dict],
     name: str,
@@ -1465,11 +1537,15 @@ def write_franchise_feed(
     cover_path: Path,
     selection_path: Path,
     feed_name: str = "",
+    allow_small_cover: bool = False,
 ):
     cover_candidates = [item for item in items if item.get("poster_path")]
-    if len(cover_candidates) < 3:
+    if not cover_candidates or (len(cover_candidates) < 3 and not allow_small_cover):
         raise RuntimeError(f"{name} 可用海报不足 3 张，当前仅有 {len(cover_candidates)} 张")
-    selected = select_daily_cover(cover_candidates, now, selection_path)
+    if len(cover_candidates) < 3:
+        selected = (cover_candidates * 3)[:3]
+    else:
+        selected = select_daily_cover(cover_candidates, now, selection_path)
     make_cover(selected, now, cover_path)
     saved_name = str(load_json(watch_path, {}).get("name") or "").strip()
     final_name = str(feed_name or "").strip() or saved_name or f"{name}（{len(items)}部）"
@@ -1764,6 +1840,19 @@ def main():
         SENTAI_SELECTION_PATH,
         str(config.get("super_sentai_name") or "").strip(),
     )
+
+    short_drama_catalog = load_json(SHORT_DRAMA_CATALOG_PATH, [])
+    short_drama_items = fetch_curated_short_dramas(
+        headers, now, short_drama_catalog,
+        limit=positive_int(config.get("short_drama_limit")) or 50,
+    )
+    write_franchise_feed(
+        short_drama_items, "横屏精品短剧", base, now,
+        SHORT_DRAMA_WATCH_PATH, SHORT_DRAMA_COVER_PATH, SHORT_DRAMA_SELECTION_PATH,
+        str(config.get("short_drama_name") or "横屏精品短剧").strip(),
+        allow_small_cover=True,
+    )
+    print(f"横屏精品短剧：精选名单 {len(short_drama_catalog)} 部，TMDB 核验入选 {len(short_drama_items)} 部，按 TMDB 热度排序。")
 
     variety_items = fetch_tmdb_variety(headers, now, limit=50)
     variety_cover_candidates = [item for item in variety_items if item.get("poster_path")]

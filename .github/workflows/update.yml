@@ -1,4 +1,4 @@
-name: 更新综艺、日番、假面骑士与超级战队片单
+name: 更新综艺、日番、特摄与横屏短剧片单
 
 # 内容筛选规则变更时自动重新生成片单。
 
@@ -12,6 +12,7 @@ on:
     paths:
       - "config.json"
       - "mapping.json"
+      - "short-drama-catalog.json"
       - "requirements.txt"
       - "scripts/**"
       - ".github/workflows/update.yml"
@@ -40,7 +41,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
 
-      - name: Verify anime selection rules
+      - name: Verify feed selection rules
         run: python -m unittest discover -s tests -v
 
       - name: Generate watch feeds and liquid glass GIF covers
@@ -52,7 +53,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A watch.json watch-variety.json watch-japan.json watch-kamen-rider.json watch-super-sentai.json cover.gif cover-variety.gif cover-japan.gif cover-kamen-rider.gif cover-super-sentai.gif data
+          git add -A watch.json watch-variety.json watch-japan.json watch-kamen-rider.json watch-super-sentai.json watch-short-drama.json cover.gif cover-variety.gif cover-japan.gif cover-kamen-rider.gif cover-super-sentai.gif cover-short-drama.gif data
           git diff --cached --quiet || git commit -m "更新综艺及特摄正剧片单"
           git push
 
@@ -65,9 +66,11 @@ jobs:
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-japan.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-kamen-rider.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-super-sentai.json
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/watch-short-drama.json
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-japan.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-kamen-rider.gif
           curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-super-sentai.gif
+          curl -fsS https://purge.jsdelivr.net/gh/xlmc/emos-watch@main/cover-short-drama.gif
 

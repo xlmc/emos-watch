@@ -131,6 +131,16 @@ https://watch.zzzj.de5.net/watch-japan.json
 
 不要把 GitHub PAT、TMDB Token 写入仓库。GitHub Actions 使用仓库自带的 `GITHUB_TOKEN` 提交每日生成文件。
 
+## 横屏精品短剧片单
+
+EMOS 订阅地址：[watch-short-drama.json](https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/watch-short-drama.json)。片单名称由 `config.json` 的 `short_drama_name` 设置，数量上限由 `short_drama_limit` 设置（默认 50，符合条件不足时不凑数）。
+
+第一版收录已核实的平台横屏真人短剧精选名单，位于 `short-drama-catalog.json`，每部附平台来源、首播年份和搜索别名。精选是人工编辑选择，不代表平台官方精品认证；可保留已完结佳作，不限今年。新作品需核实横屏身份后加入该名单，不能自动覆盖平台全部新剧。
+
+每天北京时间约 07:50、16:50 重新匹配 TMDB TV ID、校验资料并按 TMDB `popularity` 从高到低排列，同热度依次参考评分人数、评分、首播日期。这是 TMDB 热度排序，不是平台实时热榜，也不把少量评分当作精品依据。要求大陆中文真人剧集、标题和首播年份精确匹配、简介及海报完整、普通季及集数可用，已知单集时长 5 至 35 分钟；不接收电影、动画、综艺、花絮或未经核实的竖屏微短剧。海报不足三张时重复已有海报生成三联封面；无合格条目时报错，不发布空片单。播放资源可用性仍由 EMOS 对接的播放源决定。
+
+更新精选名单也会触发 GitHub Actions，自动生成 JSON、GIF 并刷新 CDN。
+
 ## 数据源说明
 
 日番统一在 TMDB 详情阶段检查日本来源、动画类型、标题、简介、海报、有效首播日期、已开播普通季和正集数。要求已知单集时长至少 15 分钟（使用 `episode_run_time` 或已播集的 `runtime`）；短片和关键资料缺失的条目暂不收录，AniList 也不再采集 `TV_SHORT`。这里只验证片单元数据资格，不能保证播放器中有对应播放资源。排序仍按今年最新普通季的首播日期由新到旧。

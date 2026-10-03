@@ -3,6 +3,8 @@
   "variety_name": "今日更新综艺",
   "kamen_rider_name": "假面骑士",
   "super_sentai_name": "超级战队",
+  "short_drama_name": "横屏精品短剧",
+  "short_drama_limit": 50,
   "tv_limit": 20,
   "movie_limit": 10,
   "animation_limit": 20,
