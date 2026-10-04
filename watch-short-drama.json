@@ -1,7 +1,7 @@
 {
   "name": "横屏精品短剧",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-short-drama.gif",
-  "updated_at": "2026-10-03 23:32:26",
+  "updated_at": "2026-10-04 10:52:45",
   "videos": [
     {
       "tmdb_id": 250900,
@@ -10,15 +10,15 @@
       "sort": 1
     },
     {
-      "tmdb_id": 210851,
-      "tmdb_type": "tv",
-      "title": "虚颜",
-      "sort": 2
-    },
-    {
       "tmdb_id": 247408,
       "tmdb_type": "tv",
       "title": "执笔",
+      "sort": 2
+    },
+    {
+      "tmdb_id": 210851,
+      "tmdb_type": "tv",
+      "title": "虚颜",
       "sort": 3
     },
     {
