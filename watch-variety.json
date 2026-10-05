@@ -1,72 +1,72 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-10-04 22:23:02",
+  "updated_at": "2026-10-05 10:26:02",
   "videos": [
     {
-      "tmdb_id": 126490,
+      "tmdb_id": 103147,
       "tmdb_type": "tv",
-      "title": "我家那闺女",
+      "title": "心动的信号",
       "sort": 1
-    },
-    {
-      "tmdb_id": 330052,
-      "tmdb_type": "tv",
-      "title": "家乡美食大赛",
-      "sort": 2
     },
     {
       "tmdb_id": 336866,
       "tmdb_type": "tv",
       "title": "向内一公里",
-      "sort": 3
+      "sort": 2
     },
     {
       "tmdb_id": 336051,
       "tmdb_type": "tv",
       "title": "东方纹样·有点东西",
-      "sort": 4
+      "sort": 3
     },
     {
       "tmdb_id": 332321,
       "tmdb_type": "tv",
       "title": "XY计划",
-      "sort": 5
+      "sort": 4
     },
     {
       "tmdb_id": 296785,
       "tmdb_type": "tv",
       "title": "打歌",
-      "sort": 6
+      "sort": 5
     },
     {
       "tmdb_id": 121876,
       "tmdb_type": "tv",
       "title": "花儿与少年",
-      "sort": 7
+      "sort": 6
     },
     {
       "tmdb_id": 87150,
       "tmdb_type": "tv",
       "title": "梦想改造家",
-      "sort": 8
+      "sort": 7
     },
     {
       "tmdb_id": 333888,
       "tmdb_type": "tv",
       "title": "博物馆夜行指“楠”",
-      "sort": 9
+      "sort": 8
     },
     {
       "tmdb_id": 291862,
       "tmdb_type": "tv",
       "title": "背后",
-      "sort": 10
+      "sort": 9
     },
     {
       "tmdb_id": 333124,
       "tmdb_type": "tv",
       "title": "娜就聊姐姐",
+      "sort": 10
+    },
+    {
+      "tmdb_id": 126490,
+      "tmdb_type": "tv",
+      "title": "我家那闺女",
       "sort": 11
     },
     {
@@ -130,21 +130,21 @@
       "sort": 21
     },
     {
-      "tmdb_id": 103147,
-      "tmdb_type": "tv",
-      "title": "心动的信号",
-      "sort": 22
-    },
-    {
       "tmdb_id": 330354,
       "tmdb_type": "tv",
       "title": "心动双重奏",
-      "sort": 23
+      "sort": 22
     },
     {
       "tmdb_id": 296217,
       "tmdb_type": "tv",
       "title": "一饭封神",
+      "sort": 23
+    },
+    {
+      "tmdb_id": 330052,
+      "tmdb_type": "tv",
+      "title": "家乡美食大赛",
       "sort": 24
     },
     {
@@ -262,45 +262,45 @@
       "sort": 43
     },
     {
-      "tmdb_id": 124265,
-      "tmdb_type": "tv",
-      "title": "喜欢你我也是",
-      "sort": 44
-    },
-    {
       "tmdb_id": 201781,
       "tmdb_type": "tv",
       "title": "爸爸当家",
-      "sort": 45
-    },
-    {
-      "tmdb_id": 326900,
-      "tmdb_type": "tv",
-      "title": "自然光",
-      "sort": 46
+      "sort": 44
     },
     {
       "tmdb_id": 219934,
       "tmdb_type": "tv",
       "title": "种地吧",
-      "sort": 47
+      "sort": 45
     },
     {
       "tmdb_id": 272272,
       "tmdb_type": "tv",
       "title": "J Music",
-      "sort": 48
+      "sort": 46
     },
     {
       "tmdb_id": 119171,
       "tmdb_type": "tv",
       "title": "爱情保卫战",
-      "sort": 49
+      "sort": 47
     },
     {
       "tmdb_id": 223348,
       "tmdb_type": "tv",
       "title": "开讲啦",
+      "sort": 48
+    },
+    {
+      "tmdb_id": 199332,
+      "tmdb_type": "tv",
+      "title": "非你莫属",
+      "sort": 49
+    },
+    {
+      "tmdb_id": 154770,
+      "tmdb_type": "tv",
+      "title": "你好，星期六",
       "sort": 50
     }
   ]
