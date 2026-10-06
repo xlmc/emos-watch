@@ -1,30 +1,30 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-10-06 11:21:36",
+  "updated_at": "2026-10-06 23:28:03",
   "videos": [
+    {
+      "tmdb_id": 336051,
+      "tmdb_type": "tv",
+      "title": "东方纹样·有点东西",
+      "sort": 1
+    },
     {
       "tmdb_id": 331831,
       "tmdb_type": "tv",
       "title": "加油！汪汪",
-      "sort": 1
+      "sort": 2
     },
     {
       "tmdb_id": 103147,
       "tmdb_type": "tv",
       "title": "心动的信号",
-      "sort": 2
+      "sort": 3
     },
     {
       "tmdb_id": 336866,
       "tmdb_type": "tv",
       "title": "向内一公里",
-      "sort": 3
-    },
-    {
-      "tmdb_id": 336051,
-      "tmdb_type": "tv",
-      "title": "东方纹样·有点东西",
       "sort": 4
     },
     {
