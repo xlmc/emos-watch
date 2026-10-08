@@ -1,0 +1,25 @@
+name: 一次性童年动画热度排序
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sort:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Match candidates and sort by TMDB popularity
+        env:
+          TMDB_API_TOKEN: ${{ secrets.TMDB_API_TOKEN }}
+        run: python tools/sort_childhood_animation.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: childhood-animation-sorted
+          path: sorting-results/
+          if-no-files-found: error
