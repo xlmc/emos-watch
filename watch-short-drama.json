@@ -1,7 +1,7 @@
 {
   "name": "横屏精品短剧",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-short-drama.gif",
-  "updated_at": "2026-10-08 23:52:14",
+  "updated_at": "2026-10-09 11:08:05",
   "videos": [
     {
       "tmdb_id": 210851,
@@ -16,15 +16,15 @@
       "sort": 2
     },
     {
-      "tmdb_id": 247408,
-      "tmdb_type": "tv",
-      "title": "执笔",
-      "sort": 3
-    },
-    {
       "tmdb_id": 230468,
       "tmdb_type": "tv",
       "title": "风月变",
+      "sort": 3
+    },
+    {
+      "tmdb_id": 247408,
+      "tmdb_type": "tv",
+      "title": "执笔",
       "sort": 4
     },
     {
