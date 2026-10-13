@@ -1,7 +1,7 @@
 {
   "name": "厕纸",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-japan.gif",
-  "updated_at": "2026-10-13 02:13:30",
+  "updated_at": "2026-10-13 11:56:14",
   "videos": [
     {
       "tmdb_id": 312359,
@@ -58,33 +58,33 @@
       "sort": 9
     },
     {
+      "tmdb_id": 230050,
+      "tmdb_type": "tv",
+      "title": "重生者的魔法一定要特别",
+      "sort": 10
+    },
+    {
       "tmdb_id": 134667,
       "tmdb_type": "tv",
       "title": "转生成为魔剑",
-      "sort": 10
+      "sort": 11
     },
     {
       "tmdb_id": 321518,
       "tmdb_type": "tv",
       "title": "世界最强魔女，就此开始",
-      "sort": 11
+      "sort": 12
     },
     {
       "tmdb_id": 313346,
       "tmdb_type": "tv",
       "title": "被放逐的作弊赋予魔术师享受随心所欲的第二人生。",
-      "sort": 12
+      "sort": 13
     },
     {
       "tmdb_id": 303272,
       "tmdb_type": "tv",
       "title": "魔法骑士雷阿斯",
-      "sort": 13
-    },
-    {
-      "tmdb_id": 230050,
-      "tmdb_type": "tv",
-      "title": "重生者的魔法一定要特别",
       "sort": 14
     },
     {
