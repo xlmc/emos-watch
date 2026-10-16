@@ -1,7 +1,7 @@
 {
   "name": "厕纸",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-japan.gif",
-  "updated_at": "2026-10-16 09:42:51",
+  "updated_at": "2026-10-16 21:32:31",
   "videos": [
     {
       "tmdb_id": 306565,
@@ -874,39 +874,39 @@
       "sort": 145
     },
     {
+      "tmdb_id": 305329,
+      "tmdb_type": "tv",
+      "title": "主播女孩重度依赖",
+      "sort": 146
+    },
+    {
       "tmdb_id": 299134,
       "tmdb_type": "tv",
       "title": "女仆小姐的贪吃日常",
-      "sort": 146
+      "sort": 147
     },
     {
       "tmdb_id": 296870,
       "tmdb_type": "tv",
       "title": "楠木邸的神明庭院",
-      "sort": 147
+      "sort": 148
     },
     {
       "tmdb_id": 286361,
       "tmdb_type": "tv",
       "title": "魔法姐妹露露特莉莉",
-      "sort": 148
+      "sort": 149
     },
     {
       "tmdb_id": 285818,
       "tmdb_type": "tv",
       "title": "迦楠大人的白给是恶魔级",
-      "sort": 149
+      "sort": 150
     },
     {
       "tmdb_id": 60761,
       "tmdb_type": "tv",
       "title": "钻石王牌",
-      "sort": 150
-    },
-    {
-      "tmdb_id": 305329,
-      "tmdb_type": "tv",
-      "title": "主播女孩重度依赖",
       "sort": 151
     },
     {
@@ -1012,15 +1012,15 @@
       "sort": 168
     },
     {
-      "tmdb_id": 274671,
-      "tmdb_type": "tv",
-      "title": "最强王者的第二人生",
-      "sort": 169
-    },
-    {
       "tmdb_id": 274622,
       "tmdb_type": "tv",
       "title": "加油吧！中村君！！",
+      "sort": 169
+    },
+    {
+      "tmdb_id": 274671,
+      "tmdb_type": "tv",
+      "title": "最强王者的第二人生",
       "sort": 170
     },
     {
