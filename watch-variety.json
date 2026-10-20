@@ -1,12 +1,12 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-10-19 23:52:48",
+  "updated_at": "2026-10-20 10:09:19",
   "videos": [
     {
-      "tmdb_id": 333888,
+      "tmdb_id": 331831,
       "tmdb_type": "tv",
-      "title": "博物馆夜行指“楠”",
+      "title": "加油！汪汪",
       "sort": 1
     },
     {
@@ -40,15 +40,15 @@
       "sort": 6
     },
     {
-      "tmdb_id": 337555,
-      "tmdb_type": "tv",
-      "title": "对味",
-      "sort": 7
-    },
-    {
       "tmdb_id": 336051,
       "tmdb_type": "tv",
       "title": "东方纹样·有点东西",
+      "sort": 7
+    },
+    {
+      "tmdb_id": 337555,
+      "tmdb_type": "tv",
+      "title": "对味",
       "sort": 8
     },
     {
@@ -76,51 +76,51 @@
       "sort": 12
     },
     {
+      "tmdb_id": 333888,
+      "tmdb_type": "tv",
+      "title": "博物馆夜行指“楠”",
+      "sort": 13
+    },
+    {
       "tmdb_id": 333124,
       "tmdb_type": "tv",
       "title": "娜就聊姐姐",
-      "sort": 13
+      "sort": 14
     },
     {
       "tmdb_id": 126490,
       "tmdb_type": "tv",
       "title": "我家那闺女",
-      "sort": 14
+      "sort": 15
     },
     {
       "tmdb_id": 294748,
       "tmdb_type": "tv",
       "title": "你好时光",
-      "sort": 15
+      "sort": 16
     },
     {
       "tmdb_id": 330048,
       "tmdb_type": "tv",
       "title": "心动就住在一起",
-      "sort": 16
+      "sort": 17
     },
     {
       "tmdb_id": 131040,
       "tmdb_type": "tv",
       "title": "披荆斩棘",
-      "sort": 17
+      "sort": 18
     },
     {
       "tmdb_id": 331649,
       "tmdb_type": "tv",
       "title": "大哥小助理",
-      "sort": 18
+      "sort": 19
     },
     {
       "tmdb_id": 331569,
       "tmdb_type": "tv",
       "title": "不想睡的星期五",
-      "sort": 19
-    },
-    {
-      "tmdb_id": 331831,
-      "tmdb_type": "tv",
-      "title": "加油！汪汪",
       "sort": 20
     },
     {
@@ -226,58 +226,46 @@
       "sort": 37
     },
     {
-      "tmdb_id": 91914,
-      "tmdb_type": "tv",
-      "title": "中餐厅",
-      "sort": 38
-    },
-    {
-      "tmdb_id": 116777,
-      "tmdb_type": "tv",
-      "title": "天赐的声音",
-      "sort": 39
-    },
-    {
       "tmdb_id": 326900,
       "tmdb_type": "tv",
       "title": "自然光",
-      "sort": 40
+      "sort": 38
     },
     {
       "tmdb_id": 272272,
       "tmdb_type": "tv",
       "title": "J Music",
-      "sort": 41
+      "sort": 39
     },
     {
       "tmdb_id": 119171,
       "tmdb_type": "tv",
       "title": "爱情保卫战",
-      "sort": 42
+      "sort": 40
     },
     {
       "tmdb_id": 199332,
       "tmdb_type": "tv",
       "title": "非你莫属",
-      "sort": 43
+      "sort": 41
     },
     {
       "tmdb_id": 223348,
       "tmdb_type": "tv",
       "title": "开讲啦",
-      "sort": 44
+      "sort": 42
     },
     {
       "tmdb_id": 154770,
       "tmdb_type": "tv",
       "title": "你好，星期六",
-      "sort": 45
+      "sort": 43
     },
     {
       "tmdb_id": 201453,
       "tmdb_type": "tv",
       "title": "甜蜜的任务",
-      "sort": 46
+      "sort": 44
     }
   ]
 }
