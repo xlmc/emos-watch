@@ -1,54 +1,54 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-10-20 10:09:19",
+  "updated_at": "2026-10-20 21:51:25",
   "videos": [
-    {
-      "tmdb_id": 331831,
-      "tmdb_type": "tv",
-      "title": "加油！汪汪",
-      "sort": 1
-    },
-    {
-      "tmdb_id": 338936,
-      "tmdb_type": "tv",
-      "title": "好好好你这么整是吧",
-      "sort": 2
-    },
-    {
-      "tmdb_id": 231620,
-      "tmdb_type": "tv",
-      "title": "现在就出发",
-      "sort": 3
-    },
-    {
-      "tmdb_id": 336866,
-      "tmdb_type": "tv",
-      "title": "向内一公里",
-      "sort": 4
-    },
-    {
-      "tmdb_id": 339002,
-      "tmdb_type": "tv",
-      "title": "朋友别见外",
-      "sort": 5
-    },
-    {
-      "tmdb_id": 337353,
-      "tmdb_type": "tv",
-      "title": "未完成的夏天",
-      "sort": 6
-    },
     {
       "tmdb_id": 336051,
       "tmdb_type": "tv",
       "title": "东方纹样·有点东西",
-      "sort": 7
+      "sort": 1
     },
     {
       "tmdb_id": 337555,
       "tmdb_type": "tv",
       "title": "对味",
+      "sort": 2
+    },
+    {
+      "tmdb_id": 331831,
+      "tmdb_type": "tv",
+      "title": "加油！汪汪",
+      "sort": 3
+    },
+    {
+      "tmdb_id": 338936,
+      "tmdb_type": "tv",
+      "title": "好好好你这么整是吧",
+      "sort": 4
+    },
+    {
+      "tmdb_id": 231620,
+      "tmdb_type": "tv",
+      "title": "现在就出发",
+      "sort": 5
+    },
+    {
+      "tmdb_id": 336866,
+      "tmdb_type": "tv",
+      "title": "向内一公里",
+      "sort": 6
+    },
+    {
+      "tmdb_id": 339002,
+      "tmdb_type": "tv",
+      "title": "朋友别见外",
+      "sort": 7
+    },
+    {
+      "tmdb_id": 337353,
+      "tmdb_type": "tv",
+      "title": "未完成的夏天",
       "sort": 8
     },
     {
