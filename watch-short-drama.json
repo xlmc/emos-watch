@@ -1,30 +1,30 @@
 {
   "name": "横屏精品短剧",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-short-drama.gif",
-  "updated_at": "2026-10-22 22:06:41",
+  "updated_at": "2026-10-23 10:00:27",
   "videos": [
-    {
-      "tmdb_id": 250900,
-      "tmdb_type": "tv",
-      "title": "难寻",
-      "sort": 1
-    },
     {
       "tmdb_id": 210851,
       "tmdb_type": "tv",
       "title": "虚颜",
-      "sort": 2
+      "sort": 1
     },
     {
-      "tmdb_id": 230468,
+      "tmdb_id": 250900,
       "tmdb_type": "tv",
-      "title": "风月变",
-      "sort": 3
+      "title": "难寻",
+      "sort": 2
     },
     {
       "tmdb_id": 229229,
       "tmdb_type": "tv",
       "title": "古相思曲",
+      "sort": 3
+    },
+    {
+      "tmdb_id": 230468,
+      "tmdb_type": "tv",
+      "title": "风月变",
       "sort": 4
     },
     {
