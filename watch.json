@@ -1,102 +1,102 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-10-26 23:28:56",
+  "updated_at": "2026-10-27 10:27:52",
   "videos": [
-    {
-      "tmdb_id": 333888,
-      "tmdb_type": "tv",
-      "title": "博物馆夜行指“楠”",
-      "sort": 1
-    },
     {
       "tmdb_id": 215280,
       "tmdb_type": "tv",
       "title": "南波万的聚会",
-      "sort": 2
+      "sort": 1
     },
     {
       "tmdb_id": 338938,
       "tmdb_type": "tv",
       "title": "后会友期",
-      "sort": 3
+      "sort": 2
     },
     {
       "tmdb_id": 339557,
       "tmdb_type": "tv",
       "title": "超正的我们",
-      "sort": 4
+      "sort": 3
     },
     {
       "tmdb_id": 106621,
       "tmdb_type": "tv",
       "title": "令人心动的offer",
-      "sort": 5
+      "sort": 4
     },
     {
       "tmdb_id": 338936,
       "tmdb_type": "tv",
       "title": "好好好你这么整是吧",
-      "sort": 6
+      "sort": 5
     },
     {
       "tmdb_id": 231620,
       "tmdb_type": "tv",
       "title": "现在就出发",
-      "sort": 7
+      "sort": 6
     },
     {
       "tmdb_id": 336866,
       "tmdb_type": "tv",
       "title": "向内一公里",
-      "sort": 8
+      "sort": 7
     },
     {
       "tmdb_id": 339002,
       "tmdb_type": "tv",
       "title": "朋友别见外",
-      "sort": 9
+      "sort": 8
     },
     {
       "tmdb_id": 337353,
       "tmdb_type": "tv",
       "title": "未完成的夏天",
-      "sort": 10
+      "sort": 9
     },
     {
       "tmdb_id": 337555,
       "tmdb_type": "tv",
       "title": "对味",
-      "sort": 11
+      "sort": 10
     },
     {
       "tmdb_id": 336051,
       "tmdb_type": "tv",
       "title": "东方纹样·有点东西",
-      "sort": 12
+      "sort": 11
     },
     {
       "tmdb_id": 87150,
       "tmdb_type": "tv",
       "title": "梦想改造家",
-      "sort": 13
+      "sort": 12
     },
     {
       "tmdb_id": 332321,
       "tmdb_type": "tv",
       "title": "XY计划",
-      "sort": 14
+      "sort": 13
     },
     {
       "tmdb_id": 337683,
       "tmdb_type": "tv",
       "title": "正好聊聊天",
-      "sort": 15
+      "sort": 14
     },
     {
       "tmdb_id": 121876,
       "tmdb_type": "tv",
       "title": "花儿与少年",
+      "sort": 15
+    },
+    {
+      "tmdb_id": 333888,
+      "tmdb_type": "tv",
+      "title": "博物馆夜行指“楠”",
       "sort": 16
     },
     {
@@ -266,6 +266,12 @@
       "tmdb_type": "tv",
       "title": "你好，星期六",
       "sort": 44
+    },
+    {
+      "tmdb_id": 201453,
+      "tmdb_type": "tv",
+      "title": "甜蜜的任务",
+      "sort": 45
     }
   ]
 }
