@@ -1,72 +1,72 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-10-27 10:27:52",
+  "updated_at": "2026-10-27 22:55:40",
   "videos": [
-    {
-      "tmdb_id": 215280,
-      "tmdb_type": "tv",
-      "title": "南波万的聚会",
-      "sort": 1
-    },
-    {
-      "tmdb_id": 338938,
-      "tmdb_type": "tv",
-      "title": "后会友期",
-      "sort": 2
-    },
-    {
-      "tmdb_id": 339557,
-      "tmdb_type": "tv",
-      "title": "超正的我们",
-      "sort": 3
-    },
-    {
-      "tmdb_id": 106621,
-      "tmdb_type": "tv",
-      "title": "令人心动的offer",
-      "sort": 4
-    },
-    {
-      "tmdb_id": 338936,
-      "tmdb_type": "tv",
-      "title": "好好好你这么整是吧",
-      "sort": 5
-    },
-    {
-      "tmdb_id": 231620,
-      "tmdb_type": "tv",
-      "title": "现在就出发",
-      "sort": 6
-    },
-    {
-      "tmdb_id": 336866,
-      "tmdb_type": "tv",
-      "title": "向内一公里",
-      "sort": 7
-    },
-    {
-      "tmdb_id": 339002,
-      "tmdb_type": "tv",
-      "title": "朋友别见外",
-      "sort": 8
-    },
-    {
-      "tmdb_id": 337353,
-      "tmdb_type": "tv",
-      "title": "未完成的夏天",
-      "sort": 9
-    },
     {
       "tmdb_id": 337555,
       "tmdb_type": "tv",
       "title": "对味",
-      "sort": 10
+      "sort": 1
     },
     {
       "tmdb_id": 336051,
       "tmdb_type": "tv",
       "title": "东方纹样·有点东西",
+      "sort": 2
+    },
+    {
+      "tmdb_id": 338938,
+      "tmdb_type": "tv",
+      "title": "后会友期",
+      "sort": 3
+    },
+    {
+      "tmdb_id": 339557,
+      "tmdb_type": "tv",
+      "title": "超正的我们",
+      "sort": 4
+    },
+    {
+      "tmdb_id": 106621,
+      "tmdb_type": "tv",
+      "title": "令人心动的offer",
+      "sort": 5
+    },
+    {
+      "tmdb_id": 338936,
+      "tmdb_type": "tv",
+      "title": "好好好你这么整是吧",
+      "sort": 6
+    },
+    {
+      "tmdb_id": 235912,
+      "tmdb_type": "tv",
+      "title": "去“湘”当有味的地方",
+      "sort": 7
+    },
+    {
+      "tmdb_id": 231620,
+      "tmdb_type": "tv",
+      "title": "现在就出发",
+      "sort": 8
+    },
+    {
+      "tmdb_id": 336866,
+      "tmdb_type": "tv",
+      "title": "向内一公里",
+      "sort": 9
+    },
+    {
+      "tmdb_id": 339002,
+      "tmdb_type": "tv",
+      "title": "朋友别见外",
+      "sort": 10
+    },
+    {
+      "tmdb_id": 337353,
+      "tmdb_type": "tv",
+      "title": "未完成的夏天",
       "sort": 11
     },
     {
@@ -88,190 +88,172 @@
       "sort": 14
     },
     {
-      "tmdb_id": 121876,
-      "tmdb_type": "tv",
-      "title": "花儿与少年",
-      "sort": 15
-    },
-    {
       "tmdb_id": 333888,
       "tmdb_type": "tv",
       "title": "博物馆夜行指“楠”",
-      "sort": 16
+      "sort": 15
     },
     {
       "tmdb_id": 333124,
       "tmdb_type": "tv",
       "title": "娜就聊姐姐",
-      "sort": 17
+      "sort": 16
     },
     {
       "tmdb_id": 126490,
       "tmdb_type": "tv",
       "title": "我家那闺女",
-      "sort": 18
+      "sort": 17
     },
     {
       "tmdb_id": 339445,
       "tmdb_type": "tv",
       "title": "飞行嘉宾",
-      "sort": 19
-    },
-    {
-      "tmdb_id": 294748,
-      "tmdb_type": "tv",
-      "title": "你好时光",
-      "sort": 20
+      "sort": 18
     },
     {
       "tmdb_id": 330048,
       "tmdb_type": "tv",
       "title": "心动就住在一起",
-      "sort": 21
+      "sort": 19
     },
     {
       "tmdb_id": 131040,
       "tmdb_type": "tv",
       "title": "披荆斩棘",
-      "sort": 22
+      "sort": 20
     },
     {
       "tmdb_id": 331569,
       "tmdb_type": "tv",
       "title": "不想睡的星期五",
-      "sort": 23
+      "sort": 21
     },
     {
       "tmdb_id": 331649,
       "tmdb_type": "tv",
       "title": "大哥小助理",
-      "sort": 24
+      "sort": 22
     },
     {
       "tmdb_id": 331831,
       "tmdb_type": "tv",
       "title": "加油！汪汪",
-      "sort": 25
+      "sort": 23
     },
     {
       "tmdb_id": 298320,
       "tmdb_type": "tv",
       "title": "合伙人",
-      "sort": 26
+      "sort": 24
     },
     {
       "tmdb_id": 331587,
       "tmdb_type": "tv",
       "title": "伦敦合伙人",
-      "sort": 27
+      "sort": 25
     },
     {
       "tmdb_id": 330926,
       "tmdb_type": "tv",
       "title": "一路向海的少年",
-      "sort": 28
+      "sort": 26
     },
     {
       "tmdb_id": 331686,
       "tmdb_type": "tv",
       "title": "姐姐快醒醒",
-      "sort": 29
+      "sort": 27
     },
     {
       "tmdb_id": 103147,
       "tmdb_type": "tv",
       "title": "心动的信号",
-      "sort": 30
+      "sort": 28
     },
     {
       "tmdb_id": 330354,
       "tmdb_type": "tv",
       "title": "心动双重奏",
-      "sort": 31
+      "sort": 29
     },
     {
       "tmdb_id": 296217,
       "tmdb_type": "tv",
       "title": "一饭封神",
-      "sort": 32
+      "sort": 30
     },
     {
       "tmdb_id": 330052,
       "tmdb_type": "tv",
       "title": "家乡美食大赛",
-      "sort": 33
+      "sort": 31
     },
     {
       "tmdb_id": 329869,
       "tmdb_type": "tv",
       "title": "开始奏乐开始舞",
-      "sort": 34
+      "sort": 32
     },
     {
       "tmdb_id": 89861,
       "tmdb_type": "tv",
       "title": "密室大逃脱",
-      "sort": 35
+      "sort": 33
     },
     {
       "tmdb_id": 328798,
       "tmdb_type": "tv",
       "title": "互相关注",
-      "sort": 36
+      "sort": 34
     },
     {
       "tmdb_id": 109096,
       "tmdb_type": "tv",
       "title": "密室大逃脱 大神版",
-      "sort": 37
+      "sort": 35
     },
     {
       "tmdb_id": 103863,
       "tmdb_type": "tv",
       "title": "中国新说唱",
-      "sort": 38
+      "sort": 36
     },
     {
       "tmdb_id": 326900,
       "tmdb_type": "tv",
       "title": "自然光",
-      "sort": 39
+      "sort": 37
     },
     {
       "tmdb_id": 272272,
       "tmdb_type": "tv",
       "title": "J Music",
-      "sort": 40
+      "sort": 38
     },
     {
       "tmdb_id": 119171,
       "tmdb_type": "tv",
       "title": "爱情保卫战",
-      "sort": 41
+      "sort": 39
     },
     {
       "tmdb_id": 199332,
       "tmdb_type": "tv",
       "title": "非你莫属",
-      "sort": 42
+      "sort": 40
     },
     {
       "tmdb_id": 223348,
       "tmdb_type": "tv",
       "title": "开讲啦",
-      "sort": 43
+      "sort": 41
     },
     {
       "tmdb_id": 154770,
       "tmdb_type": "tv",
       "title": "你好，星期六",
-      "sort": 44
-    },
-    {
-      "tmdb_id": 201453,
-      "tmdb_type": "tv",
-      "title": "甜蜜的任务",
-      "sort": 45
+      "sort": 42
     }
   ]
 }
