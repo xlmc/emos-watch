@@ -1,30 +1,30 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-10-29 23:33:38",
+  "updated_at": "2026-10-30 11:00:24",
   "videos": [
     {
-      "tmdb_id": 338938,
+      "tmdb_id": 131040,
       "tmdb_type": "tv",
-      "title": "后会友期",
+      "title": "披荆斩棘",
       "sort": 1
-    },
-    {
-      "tmdb_id": 339557,
-      "tmdb_type": "tv",
-      "title": "超正的我们",
-      "sort": 2
-    },
-    {
-      "tmdb_id": 333124,
-      "tmdb_type": "tv",
-      "title": "娜就聊姐姐",
-      "sort": 3
     },
     {
       "tmdb_id": 215280,
       "tmdb_type": "tv",
       "title": "南波万的聚会",
+      "sort": 2
+    },
+    {
+      "tmdb_id": 338938,
+      "tmdb_type": "tv",
+      "title": "后会友期",
+      "sort": 3
+    },
+    {
+      "tmdb_id": 339557,
+      "tmdb_type": "tv",
+      "title": "超正的我们",
       "sort": 4
     },
     {
@@ -100,27 +100,27 @@
       "sort": 16
     },
     {
+      "tmdb_id": 333124,
+      "tmdb_type": "tv",
+      "title": "娜就聊姐姐",
+      "sort": 17
+    },
+    {
       "tmdb_id": 126490,
       "tmdb_type": "tv",
       "title": "我家那闺女",
-      "sort": 17
+      "sort": 18
     },
     {
       "tmdb_id": 339445,
       "tmdb_type": "tv",
       "title": "飞行嘉宾",
-      "sort": 18
+      "sort": 19
     },
     {
       "tmdb_id": 330048,
       "tmdb_type": "tv",
       "title": "心动就住在一起",
-      "sort": 19
-    },
-    {
-      "tmdb_id": 131040,
-      "tmdb_type": "tv",
-      "title": "披荆斩棘",
       "sort": 20
     },
     {
