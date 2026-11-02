@@ -1,7 +1,7 @@
 {
   "name": "厕纸",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-japan.gif",
-  "updated_at": "2026-11-02 10:46:30",
+  "updated_at": "2026-11-03 02:50:41",
   "videos": [
     {
       "tmdb_id": 105248,
@@ -1036,21 +1036,21 @@
       "sort": 172
     },
     {
+      "tmdb_id": 72517,
+      "tmdb_type": "tv",
+      "title": "欢迎来到实力至上主义的教室",
+      "sort": 173
+    },
+    {
       "tmdb_id": 207564,
       "tmdb_type": "tv",
       "title": "转生成自动贩卖机的我今天也在迷宫徘徊",
-      "sort": 173
+      "sort": 174
     },
     {
       "tmdb_id": 208493,
       "tmdb_type": "tv",
       "title": "在异世界获得超强能力的我，在现实世界照样无敌～等级提升改变人生命运～",
-      "sort": 174
-    },
-    {
-      "tmdb_id": 72517,
-      "tmdb_type": "tv",
-      "title": "欢迎来到实力至上主义的教室",
       "sort": 175
     },
     {
