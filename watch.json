@@ -1,7 +1,7 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-11-05 00:36:07",
+  "updated_at": "2026-11-05 11:46:29",
   "videos": [
     {
       "tmdb_id": 338938,
@@ -70,15 +70,15 @@
       "sort": 11
     },
     {
-      "tmdb_id": 337555,
-      "tmdb_type": "tv",
-      "title": "对味",
-      "sort": 12
-    },
-    {
       "tmdb_id": 336051,
       "tmdb_type": "tv",
       "title": "东方纹样·有点东西",
+      "sort": 12
+    },
+    {
+      "tmdb_id": 337555,
+      "tmdb_type": "tv",
+      "title": "对味",
       "sort": 13
     },
     {
