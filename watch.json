@@ -1,7 +1,7 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-11-07 11:16:22",
+  "updated_at": "2026-11-07 23:10:50",
   "videos": [
     {
       "tmdb_id": 231620,
@@ -256,16 +256,22 @@
       "sort": 42
     },
     {
+      "tmdb_id": 249356,
+      "tmdb_type": "tv",
+      "title": "开门大吉",
+      "sort": 43
+    },
+    {
       "tmdb_id": 199332,
       "tmdb_type": "tv",
       "title": "非你莫属",
-      "sort": 43
+      "sort": 44
     },
     {
       "tmdb_id": 201453,
       "tmdb_type": "tv",
       "title": "甜蜜的任务",
-      "sort": 44
+      "sort": 45
     }
   ]
 }
