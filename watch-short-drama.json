@@ -1,7 +1,7 @@
 {
   "name": "横屏精品短剧",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-short-drama.gif",
-  "updated_at": "2026-11-11 11:08:27",
+  "updated_at": "2026-11-12 00:37:11",
   "videos": [
     {
       "tmdb_id": 210851,
@@ -10,21 +10,21 @@
       "sort": 1
     },
     {
+      "tmdb_id": 250900,
+      "tmdb_type": "tv",
+      "title": "难寻",
+      "sort": 2
+    },
+    {
       "tmdb_id": 229229,
       "tmdb_type": "tv",
       "title": "古相思曲",
-      "sort": 2
+      "sort": 3
     },
     {
       "tmdb_id": 247408,
       "tmdb_type": "tv",
       "title": "执笔",
-      "sort": 3
-    },
-    {
-      "tmdb_id": 250900,
-      "tmdb_type": "tv",
-      "title": "难寻",
       "sort": 4
     },
     {
