@@ -1,7 +1,7 @@
 {
   "name": "假面骑士",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-kamen-rider.gif",
-  "updated_at": "2026-11-13 11:39:10",
+  "updated_at": "2026-11-14 00:44:34",
   "videos": [
     {
       "tmdb_id": 318445,
@@ -42,7 +42,7 @@
     {
       "tmdb_id": 255623,
       "tmdb_type": "tv",
-      "title": "假面骑士Saber",
+      "title": "假面骑士圣刃",
       "sort": 7
     },
     {
@@ -54,7 +54,7 @@
     {
       "tmdb_id": 261927,
       "tmdb_type": "tv",
-      "title": "假面骑士Zi-O",
+      "title": "假面骑士时王",
       "sort": 9
     },
     {
@@ -162,7 +162,7 @@
     {
       "tmdb_id": 261965,
       "tmdb_type": "tv",
-      "title": "假面骑士AgitΩ",
+      "title": "假面骑士亚极陀",
       "sort": 27
     },
     {
