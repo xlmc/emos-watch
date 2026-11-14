@@ -1,7 +1,7 @@
 {
   "name": "假面骑士",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-kamen-rider.gif",
-  "updated_at": "2026-11-14 11:37:48",
+  "updated_at": "2026-11-14 23:21:07",
   "videos": [
     {
       "tmdb_id": 318445,
@@ -66,7 +66,7 @@
     {
       "tmdb_id": 262158,
       "tmdb_type": "tv",
-      "title": "假面骑士Ex-aid",
+      "title": "假面骑士艾克赛德",
       "sort": 11
     },
     {
@@ -108,7 +108,7 @@
     {
       "tmdb_id": 262157,
       "tmdb_type": "tv",
-      "title": "假面骑士W",
+      "title": "假面骑士双骑",
       "sort": 18
     },
     {
