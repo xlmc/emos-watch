@@ -1,36 +1,36 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-11-17 13:15:30",
+  "updated_at": "2026-11-18 01:54:02",
   "videos": [
-    {
-      "tmdb_id": 342265,
-      "tmdb_type": "tv",
-      "title": "一起淋场太阳雨",
-      "sort": 1
-    },
     {
       "tmdb_id": 114473,
       "tmdb_type": "tv",
       "title": "名侦探学院",
-      "sort": 2
+      "sort": 1
     },
     {
       "tmdb_id": 341991,
       "tmdb_type": "tv",
       "title": "我推的歌",
-      "sort": 3
+      "sort": 2
     },
     {
       "tmdb_id": 341535,
       "tmdb_type": "tv",
       "title": "趁热打铁",
-      "sort": 4
+      "sort": 3
     },
     {
       "tmdb_id": 341771,
       "tmdb_type": "tv",
       "title": "夏日的星星",
+      "sort": 4
+    },
+    {
+      "tmdb_id": 342265,
+      "tmdb_type": "tv",
+      "title": "一起淋场太阳雨",
       "sort": 5
     },
     {
