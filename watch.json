@@ -1,132 +1,132 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-11-18 12:44:06",
+  "updated_at": "2026-11-19 01:34:30",
   "videos": [
-    {
-      "tmdb_id": 114473,
-      "tmdb_type": "tv",
-      "title": "名侦探学院",
-      "sort": 1
-    },
-    {
-      "tmdb_id": 341991,
-      "tmdb_type": "tv",
-      "title": "我推的歌",
-      "sort": 2
-    },
     {
       "tmdb_id": 341535,
       "tmdb_type": "tv",
       "title": "趁热打铁",
-      "sort": 3
-    },
-    {
-      "tmdb_id": 341771,
-      "tmdb_type": "tv",
-      "title": "夏日的星星",
-      "sort": 4
-    },
-    {
-      "tmdb_id": 342265,
-      "tmdb_type": "tv",
-      "title": "一起淋场太阳雨",
-      "sort": 5
-    },
-    {
-      "tmdb_id": 261394,
-      "tmdb_type": "tv",
-      "title": "音乐缘计划",
-      "sort": 6
-    },
-    {
-      "tmdb_id": 341242,
-      "tmdb_type": "tv",
-      "title": "瞬间喜剧挑战赛",
-      "sort": 7
-    },
-    {
-      "tmdb_id": 341851,
-      "tmdb_type": "tv",
-      "title": "兰香如故·花胜秋宴",
-      "sort": 8
+      "sort": 1
     },
     {
       "tmdb_id": 338938,
       "tmdb_type": "tv",
       "title": "后会友期",
-      "sort": 9
-    },
-    {
-      "tmdb_id": 339557,
-      "tmdb_type": "tv",
-      "title": "超正的我们",
-      "sort": 10
-    },
-    {
-      "tmdb_id": 341434,
-      "tmdb_type": "tv",
-      "title": "后会友期 沉浸版",
-      "sort": 11
-    },
-    {
-      "tmdb_id": 106621,
-      "tmdb_type": "tv",
-      "title": "令人心动的offer",
-      "sort": 12
-    },
-    {
-      "tmdb_id": 338936,
-      "tmdb_type": "tv",
-      "title": "好好好你这么整是吧",
-      "sort": 13
-    },
-    {
-      "tmdb_id": 231620,
-      "tmdb_type": "tv",
-      "title": "现在就出发",
-      "sort": 14
-    },
-    {
-      "tmdb_id": 340654,
-      "tmdb_type": "tv",
-      "title": "国音正青春",
-      "sort": 15
-    },
-    {
-      "tmdb_id": 336866,
-      "tmdb_type": "tv",
-      "title": "向内一公里",
-      "sort": 16
-    },
-    {
-      "tmdb_id": 339002,
-      "tmdb_type": "tv",
-      "title": "朋友别见外",
-      "sort": 17
-    },
-    {
-      "tmdb_id": 337353,
-      "tmdb_type": "tv",
-      "title": "未完成的夏天",
-      "sort": 18
-    },
-    {
-      "tmdb_id": 337555,
-      "tmdb_type": "tv",
-      "title": "对味",
-      "sort": 19
-    },
-    {
-      "tmdb_id": 336051,
-      "tmdb_type": "tv",
-      "title": "东方纹样·有点东西",
-      "sort": 20
+      "sort": 2
     },
     {
       "tmdb_id": 87150,
       "tmdb_type": "tv",
       "title": "梦想改造家",
+      "sort": 3
+    },
+    {
+      "tmdb_id": 114473,
+      "tmdb_type": "tv",
+      "title": "名侦探学院",
+      "sort": 4
+    },
+    {
+      "tmdb_id": 341991,
+      "tmdb_type": "tv",
+      "title": "我推的歌",
+      "sort": 5
+    },
+    {
+      "tmdb_id": 341771,
+      "tmdb_type": "tv",
+      "title": "夏日的星星",
+      "sort": 6
+    },
+    {
+      "tmdb_id": 342265,
+      "tmdb_type": "tv",
+      "title": "一起淋场太阳雨",
+      "sort": 7
+    },
+    {
+      "tmdb_id": 261394,
+      "tmdb_type": "tv",
+      "title": "音乐缘计划",
+      "sort": 8
+    },
+    {
+      "tmdb_id": 341242,
+      "tmdb_type": "tv",
+      "title": "瞬间喜剧挑战赛",
+      "sort": 9
+    },
+    {
+      "tmdb_id": 341851,
+      "tmdb_type": "tv",
+      "title": "兰香如故·花胜秋宴",
+      "sort": 10
+    },
+    {
+      "tmdb_id": 339557,
+      "tmdb_type": "tv",
+      "title": "超正的我们",
+      "sort": 11
+    },
+    {
+      "tmdb_id": 341434,
+      "tmdb_type": "tv",
+      "title": "后会友期 沉浸版",
+      "sort": 12
+    },
+    {
+      "tmdb_id": 106621,
+      "tmdb_type": "tv",
+      "title": "令人心动的offer",
+      "sort": 13
+    },
+    {
+      "tmdb_id": 338936,
+      "tmdb_type": "tv",
+      "title": "好好好你这么整是吧",
+      "sort": 14
+    },
+    {
+      "tmdb_id": 231620,
+      "tmdb_type": "tv",
+      "title": "现在就出发",
+      "sort": 15
+    },
+    {
+      "tmdb_id": 340654,
+      "tmdb_type": "tv",
+      "title": "国音正青春",
+      "sort": 16
+    },
+    {
+      "tmdb_id": 336866,
+      "tmdb_type": "tv",
+      "title": "向内一公里",
+      "sort": 17
+    },
+    {
+      "tmdb_id": 339002,
+      "tmdb_type": "tv",
+      "title": "朋友别见外",
+      "sort": 18
+    },
+    {
+      "tmdb_id": 337353,
+      "tmdb_type": "tv",
+      "title": "未完成的夏天",
+      "sort": 19
+    },
+    {
+      "tmdb_id": 337555,
+      "tmdb_type": "tv",
+      "title": "对味",
+      "sort": 20
+    },
+    {
+      "tmdb_id": 336051,
+      "tmdb_type": "tv",
+      "title": "东方纹样·有点东西",
       "sort": 21
     },
     {
@@ -172,51 +172,51 @@
       "sort": 28
     },
     {
+      "tmdb_id": 94773,
+      "tmdb_type": "tv",
+      "title": "舞蹈新风暴",
+      "sort": 29
+    },
+    {
       "tmdb_id": 330048,
       "tmdb_type": "tv",
       "title": "心动就住在一起",
-      "sort": 29
+      "sort": 30
     },
     {
       "tmdb_id": 131040,
       "tmdb_type": "tv",
       "title": "披荆斩棘",
-      "sort": 30
+      "sort": 31
     },
     {
       "tmdb_id": 331569,
       "tmdb_type": "tv",
       "title": "不想睡的星期五",
-      "sort": 31
+      "sort": 32
     },
     {
       "tmdb_id": 331649,
       "tmdb_type": "tv",
       "title": "大哥小助理",
-      "sort": 32
+      "sort": 33
     },
     {
       "tmdb_id": 331831,
       "tmdb_type": "tv",
       "title": "加油！汪汪",
-      "sort": 33
+      "sort": 34
     },
     {
       "tmdb_id": 298320,
       "tmdb_type": "tv",
       "title": "合伙人",
-      "sort": 34
+      "sort": 35
     },
     {
       "tmdb_id": 331587,
       "tmdb_type": "tv",
       "title": "伦敦合伙人",
-      "sort": 35
-    },
-    {
-      "tmdb_id": 298789,
-      "tmdb_type": "tv",
-      "title": "一站到底",
       "sort": 36
     },
     {
