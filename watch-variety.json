@@ -1,66 +1,66 @@
 {
   "name": "今日更新综艺",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-variety.gif",
-  "updated_at": "2026-11-19 12:34:27",
+  "updated_at": "2026-11-20 01:40:52",
   "videos": [
     {
-      "tmdb_id": 341535,
+      "tmdb_id": 197906,
       "tmdb_type": "tv",
-      "title": "趁热打铁",
+      "title": "声生不息",
       "sort": 1
-    },
-    {
-      "tmdb_id": 338938,
-      "tmdb_type": "tv",
-      "title": "后会友期",
-      "sort": 2
-    },
-    {
-      "tmdb_id": 87150,
-      "tmdb_type": "tv",
-      "title": "梦想改造家",
-      "sort": 3
     },
     {
       "tmdb_id": 114473,
       "tmdb_type": "tv",
       "title": "名侦探学院",
-      "sort": 4
+      "sort": 2
     },
     {
       "tmdb_id": 341991,
       "tmdb_type": "tv",
       "title": "我推的歌",
-      "sort": 5
+      "sort": 3
+    },
+    {
+      "tmdb_id": 341535,
+      "tmdb_type": "tv",
+      "title": "趁热打铁",
+      "sort": 4
     },
     {
       "tmdb_id": 341771,
       "tmdb_type": "tv",
       "title": "夏日的星星",
-      "sort": 6
+      "sort": 5
     },
     {
       "tmdb_id": 342265,
       "tmdb_type": "tv",
       "title": "一起淋场太阳雨",
-      "sort": 7
+      "sort": 6
     },
     {
       "tmdb_id": 261394,
       "tmdb_type": "tv",
       "title": "音乐缘计划",
-      "sort": 8
+      "sort": 7
     },
     {
       "tmdb_id": 341242,
       "tmdb_type": "tv",
       "title": "瞬间喜剧挑战赛",
-      "sort": 9
+      "sort": 8
     },
     {
       "tmdb_id": 341851,
       "tmdb_type": "tv",
       "title": "兰香如故·花胜秋宴",
+      "sort": 9
+    },
+    {
+      "tmdb_id": 338938,
+      "tmdb_type": "tv",
+      "title": "后会友期",
       "sort": 10
     },
     {
@@ -130,15 +130,15 @@
       "sort": 21
     },
     {
-      "tmdb_id": 332321,
+      "tmdb_id": 87150,
       "tmdb_type": "tv",
-      "title": "XY计划",
+      "title": "梦想改造家",
       "sort": 22
     },
     {
-      "tmdb_id": 337683,
+      "tmdb_id": 332321,
       "tmdb_type": "tv",
-      "title": "正好聊聊天",
+      "title": "XY计划",
       "sort": 23
     },
     {
