@@ -1,7 +1,7 @@
 {
   "name": "厕纸",
   "cover": "https://cdn.jsdelivr.net/gh/xlmc/emos-watch@main/cover-japan.gif",
-  "updated_at": "2026-11-28 02:27:33",
+  "updated_at": "2026-11-28 13:00:31",
   "videos": [
     {
       "tmdb_id": 326247,
@@ -1264,100 +1264,94 @@
       "sort": 210
     },
     {
-      "tmdb_id": 324248,
-      "tmdb_type": "tv",
-      "title": "不洁之星",
-      "sort": 211
-    },
-    {
       "tmdb_id": 295366,
       "tmdb_type": "tv",
       "title": "身为魔族的我想向勇者小队的可爱女孩告白。",
-      "sort": 212
+      "sort": 211
     },
     {
       "tmdb_id": 293629,
       "tmdb_type": "tv",
       "title": "铠真传 武士军团",
-      "sort": 213
+      "sort": 212
     },
     {
       "tmdb_id": 285933,
       "tmdb_type": "tv",
       "title": "午夜的倾心旋律",
-      "sort": 214
+      "sort": 213
     },
     {
       "tmdb_id": 285743,
       "tmdb_type": "tv",
       "title": "和青梅竹马之间不会有恋爱喜剧",
-      "sort": 215
+      "sort": 214
     },
     {
       "tmdb_id": 284495,
       "tmdb_type": "tv",
       "title": "异世界的处置依社畜而定",
-      "sort": 216
+      "sort": 215
     },
     {
       "tmdb_id": 305163,
       "tmdb_type": "tv",
       "title": "打工仔的拷问日常",
-      "sort": 217
+      "sort": 216
     },
     {
       "tmdb_id": 293144,
       "tmdb_type": "tv",
       "title": "能帮我弄干净吗？",
-      "sort": 218
+      "sort": 217
     },
     {
       "tmdb_id": 280110,
       "tmdb_type": "tv",
       "title": "正义使者-我的英雄学院之非法英雄",
-      "sort": 219
+      "sort": 218
     },
     {
       "tmdb_id": 285166,
       "tmdb_type": "tv",
       "title": "泛而不精的我被逐出了勇者队伍",
-      "sort": 220
+      "sort": 219
     },
     {
       "tmdb_id": 282946,
       "tmdb_type": "tv",
       "title": "魔术师库诺看得见一切",
-      "sort": 221
+      "sort": 220
     },
     {
       "tmdb_id": 276393,
       "tmdb_type": "tv",
       "title": "现在的是哪一个多闻！ ？",
-      "sort": 222
+      "sort": 221
     },
     {
       "tmdb_id": 253476,
       "tmdb_type": "tv",
       "title": "异国日记",
-      "sort": 223
+      "sort": 222
     },
     {
       "tmdb_id": 154526,
       "tmdb_type": "tv",
       "title": "极速车魂",
-      "sort": 224
+      "sort": 223
     },
     {
       "tmdb_id": 249907,
       "tmdb_type": "tv",
       "title": "判处勇者刑：惩罚勇者9004队刑务记录",
-      "sort": 225
+      "sort": 224
     },
     {
       "tmdb_id": 229858,
       "tmdb_type": "tv",
       "title": "命运／奇异赝品",
-      "sort": 226
+      "sort": 225
     }
   ]
 }
